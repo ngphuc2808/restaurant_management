@@ -17,6 +17,7 @@ import { AccountDto } from '@/auth/dto/account.dto';
 import { LoginDto } from '@/auth/dto/login.dto';
 import { TokenDto } from '@/auth/dto/token.dto';
 import { RefreshTokenIdsStorage } from '@/auth/refresh-token-ids.storage';
+import { I18nService } from 'nestjs-i18n';
 
 @Injectable()
 export class AuthService {
@@ -27,6 +28,7 @@ export class AuthService {
     private jwtService: JwtService,
     private refreshTokenStorage: RefreshTokenIdsStorage,
     private configService: ConfigService,
+    private i18n: I18nService,
   ) {}
 
   async createAccount(accountDto: AccountDto): Promise<Account> {
@@ -37,7 +39,7 @@ export class AuthService {
     });
     if (existingAccount) {
       throw new BadRequestException({
-        message: 'Email already exists',
+        message: this.i18n.t('hello.message'),
         errors: [{ field: 'email', message: 'Email already exists' }],
       });
     }

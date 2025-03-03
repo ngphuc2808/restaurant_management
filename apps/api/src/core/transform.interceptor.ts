@@ -3,7 +3,6 @@ import {
   NestInterceptor,
   ExecutionContext,
   CallHandler,
-  BadGatewayException,
   HttpException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
