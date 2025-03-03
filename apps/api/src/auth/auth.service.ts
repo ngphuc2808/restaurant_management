@@ -36,7 +36,10 @@ export class AuthService {
       where: { email },
     });
     if (existingAccount) {
-      throw new ConflictException('Email already exists');
+      throw new BadRequestException({
+        message: 'Email already exists',
+        errors: [{ field: 'email', message: 'Email already exists' }],
+      });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);

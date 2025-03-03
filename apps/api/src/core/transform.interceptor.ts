@@ -1,12 +1,14 @@
-import { Reflector } from '@nestjs/core';
 import {
   Injectable,
   NestInterceptor,
   ExecutionContext,
   CallHandler,
+  BadGatewayException,
+  HttpException,
 } from '@nestjs/common';
-import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { Reflector } from '@nestjs/core';
+import { Observable, throwError } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
 
 import { RESPONSE_MESSAGE } from '@/constants/type';
 
@@ -34,6 +36,19 @@ export class TransformInterceptor<T>
           '',
         data,
       })),
+      catchError((err) => {
+        return throwError(
+          () =>
+            new HttpException(
+              {
+                statusCode: err.status || 500,
+                errors: err.response || null,
+                message: err.message || 'Internal Server Error',
+              },
+              err.status || 500,
+            ),
+        );
+      }),
     );
   }
 }

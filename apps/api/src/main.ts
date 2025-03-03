@@ -1,8 +1,13 @@
 import { NestFactory, Reflector } from '@nestjs/core';
-import { ValidationPipe, VersioningType } from '@nestjs/common';
+import {
+  UnprocessableEntityException,
+  ValidationPipe,
+  VersioningType,
+} from '@nestjs/common';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
+import { ValidationError } from 'class-validator';
 import * as cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 import { join } from 'path';
@@ -23,6 +28,15 @@ async function bootstrap() {
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
+      exceptionFactory: (validationErrors: ValidationError[] = []) => {
+        return new UnprocessableEntityException({
+          message: 'Lỗi xảy ra khi xác thực dữ liệu...',
+          errors: validationErrors.map((error) => ({
+            field: error.property,
+            message: Object.values(error.constraints).join(', '),
+          })),
+        });
+      },
     }),
   );
 

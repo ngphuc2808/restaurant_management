@@ -24,6 +24,7 @@ import { AccountDto } from '@/auth/dto/account.dto';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  @Public()
   @Post('register')
   async register(@Body() accountDto: AccountDto) {
     return this.authService.createAccount(accountDto);
