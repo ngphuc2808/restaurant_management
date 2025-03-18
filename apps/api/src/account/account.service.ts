@@ -5,6 +5,7 @@ import * as bcrypt from 'bcryptjs';
 
 import { CreateAccountReqDto } from '@/account/dto/req/create.req.dto';
 import { Role } from '@/constants/type';
+import { PaginationReqDto } from './dto/req/paginate.req.dto';
 
 @Injectable()
 export class AccountService {
@@ -20,9 +21,6 @@ export class AccountService {
         where: { id },
         omit: {
           password: true,
-          createdAt: true,
-          updatedAt: true,
-          ownerId: true,
         },
       });
     } catch (error) {
@@ -31,33 +29,82 @@ export class AccountService {
     }
   }
 
-  async create(accountDto: CreateAccountReqDto) {
-    const { email, password, name, avatar } = accountDto;
+  async getAccountList({ page, limit }: PaginationReqDto) {
+    const skip = (page - 1) * limit;
 
-    const existingAccount = await this.prisma.account.findUnique({
-      where: { email },
+    const accounts = await this.prisma.account.findMany({
+      skip,
+      take: limit,
+      orderBy: { createdAt: 'desc' },
+      omit: {
+        password: true,
+      },
     });
 
-    if (existingAccount) {
-      throw new BadRequestException({
-        message: this.i18n.t('errors.auth.email-already-exists'),
-        errors: [{ field: 'email', message: 'Email already exists' }],
-      });
-    }
+    const total = await this.prisma.account.count();
 
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    const data = {
-      name,
-      email,
-      password: hashedPassword,
-      avatar,
-      role: Role.Employee,
+    return {
+      accounts,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
     };
+  }
 
-    const account = await this.prisma.account.create({
-      data,
-    });
-    return account;
+  async create(accountDto: CreateAccountReqDto) {
+    try {
+      const { email, password, name, avatar } = accountDto;
+
+      const existingAccount = await this.prisma.account.findUnique({
+        where: { email },
+      });
+
+      if (existingAccount) {
+        throw new BadRequestException({
+          message: this.i18n.t('errors.auth.email-already-exists'),
+          errors: [{ field: 'email', message: 'Email already exists' }],
+        });
+      }
+
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      const data = {
+        name,
+        email,
+        password: hashedPassword,
+        avatar,
+        role: Role.Employee,
+      };
+
+      const account = await this.prisma.account.create({
+        data,
+        omit: {
+          password: true,
+        },
+      });
+      return account;
+    } catch (error) {
+      this.logger.error(error.message);
+      throw error;
+    }
+  }
+
+  async getAccountDetail(accountId: number) {
+    try {
+      return await this.prisma.account.findUniqueOrThrow({
+        where: {
+          id: accountId,
+        },
+        omit: {
+          password: true,
+        },
+      });
+    } catch (error) {
+      this.logger.error(error.message);
+      throw error;
+    }
   }
 }

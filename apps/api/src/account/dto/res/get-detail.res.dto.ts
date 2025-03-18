@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 
 import { AccountType } from '@/account/dto/types';
 
-export class MeResDto {
+export class GetDetailAccountResDto {
   @ApiProperty({ example: 200 })
   statusCode: number;
 
@@ -11,11 +11,12 @@ export class MeResDto {
 
   @ApiProperty({
     example: {
+      role: 'Employee',
       id: 1,
-      name: 'Admin',
-      email: 'admin@gmail.com',
+      name: 'Nhan vien',
+      email: 'email@test.com',
       avatar: '',
-      role: 'Admin',
+      ownerId: 1,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     },

@@ -3,7 +3,9 @@
     "invalid-account": "Invalid account",
     "email-already-exists": "Email already exists",
     "invalid-email": "Invalid email",
-    "invalid-email-or-password": "Invalid email or password"
+    "invalid-email-or-password": "Invalid email or password",
+    "no-user-found": "No user found",
+    "you-are-not-allowed-to-do-this": "You are not allowed to do this"
   },
   "authorization": {
     "invalid": "Invalid authorization"
