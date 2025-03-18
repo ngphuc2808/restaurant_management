@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { CreateDishDto } from './dto/create-dish.dto';
-import { UpdateDishDto } from './dto/update-dish.dto';
+
+import { CreateDishDto } from '@/dish/dto/create-dish.dto';
+import { UpdateDishDto } from '@/dish/dto/update-dish.dto';
 
 @Injectable()
 export class DishService {

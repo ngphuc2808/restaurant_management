@@ -29,7 +29,7 @@ import { DishModule } from '@/dish/dish.module';
     }),
     I18nModule.forRootAsync({
       useFactory: () => ({
-        fallbackLanguage: 'en',
+        fallbackLanguage: 'vi',
         loaderOptions: {
           path: path.join(__dirname, '/../src/i18n/'),
           watch: true,

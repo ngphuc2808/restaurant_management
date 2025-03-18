@@ -7,9 +7,10 @@ import {
   Param,
   Delete,
 } from '@nestjs/common';
-import { DishSnapshotService } from './dish-snapshot.service';
-import { CreateDishSnapshotDto } from './dto/create-dish-snapshot.dto';
-import { UpdateDishSnapshotDto } from './dto/update-dish-snapshot.dto';
+
+import { DishSnapshotService } from '@/dish-snapshot/dish-snapshot.service';
+import { CreateDishSnapshotDto } from '@/dish-snapshot/dto/create-dish-snapshot.dto';
+import { UpdateDishSnapshotDto } from '@/dish-snapshot/dto/update-dish-snapshot.dto';
 
 @Controller('dish-snapshot')
 export class DishSnapshotController {

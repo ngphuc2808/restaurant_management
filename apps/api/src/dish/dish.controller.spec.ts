@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { DishController } from './dish.controller';
-import { DishService } from './dish.service';
+
+import { DishController } from '@/dish/dish.controller';
+import { DishService } from '@/dish/dish.service';
 
 describe('DishController', () => {
   let controller: DishController;

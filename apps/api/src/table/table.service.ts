@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { CreateTableDto } from './dto/create-table.dto';
-import { UpdateTableDto } from './dto/update-table.dto';
+
+import { CreateTableDto } from '@/table/dto/create-table.dto';
+import { UpdateTableDto } from '@/table/dto/update-table.dto';
 
 @Injectable()
 export class TableService {

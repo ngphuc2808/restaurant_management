@@ -1,3 +1,5 @@
+import { SetMetadata } from '@nestjs/common';
+
 export const TokenType = {
   ForgotPasswordToken: 'ForgotPasswordToken',
   AccessToken: 'AccessToken',
@@ -56,3 +58,6 @@ export const OrderStatusValues = [
 export const ManagerRoom = 'manager' as const;
 
 export const RESPONSE_MESSAGE = 'response_message';
+
+export const ResponseMessage = (key: string) =>
+  SetMetadata(RESPONSE_MESSAGE, key);

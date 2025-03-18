@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { DishSnapshotService } from './dish-snapshot.service';
+
+import { DishSnapshotService } from '@/dish-snapshot/dish-snapshot.service';
 
 describe('DishSnapshotService', () => {
   let service: DishSnapshotService;

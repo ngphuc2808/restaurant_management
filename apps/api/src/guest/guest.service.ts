@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { CreateGuestDto } from './dto/create-guest.dto';
-import { UpdateGuestDto } from './dto/update-guest.dto';
+
+import { CreateGuestDto } from '@/guest/dto/create-guest.dto';
+import { UpdateGuestDto } from '@/guest/dto/update-guest.dto';
 
 @Injectable()
 export class GuestService {

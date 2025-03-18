@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { DishSnapshotController } from './dish-snapshot.controller';
-import { DishSnapshotService } from './dish-snapshot.service';
+
+import { DishSnapshotController } from '@/dish-snapshot/dish-snapshot.controller';
+import { DishSnapshotService } from '@/dish-snapshot/dish-snapshot.service';
 
 describe('DishSnapshotController', () => {
   let controller: DishSnapshotController;

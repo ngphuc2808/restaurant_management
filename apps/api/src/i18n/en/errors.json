@@ -1,0 +1,12 @@
+{
+  "auth": {
+    "invalid-account": "Invalid account"
+  },
+  "login": {
+    "invalid-email": "Invalid email",
+    "invalid-email-or-password": "Invalid email or password"
+  },
+  "token": {
+    "invalid": "Invalid token"
+  }
+}

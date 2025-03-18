@@ -1,19 +1,19 @@
 import { APP_GUARD } from '@nestjs/core';
-import { Module } from '@nestjs/common';
+import { Logger, Module } from '@nestjs/common';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import * as ms from 'ms';
 
+import { PrismaService } from '@/prisma.service';
 import { AuthService } from '@/auth/auth.service';
-import { AuthController } from '@/auth/auth.controller';
+import { RefreshTokenService } from '@/refresh-token/refresh-token.service';
 
+import { AuthController } from '@/auth/auth.controller';
 import { LocalStrategy } from '@/auth/strategies/local.strategy';
 import { JwtStrategy } from '@/auth/strategies/jwt.strategy';
 import { JwtAuthGuard } from '@/auth/guards/jwt-auth.guard';
 import { RefreshTokenStrategy } from '@/auth/strategies/refresh-token.strategy';
-import { RefreshTokenIdsStorage } from '@/auth/refresh-token-ids.storage';
-import { PrismaService } from '@/prisma.service';
 
 @Module({
   imports: [
@@ -33,12 +33,13 @@ import { PrismaService } from '@/prisma.service';
   ],
   controllers: [AuthController],
   providers: [
+    Logger,
     PrismaService,
     AuthService,
+    RefreshTokenService,
     LocalStrategy,
     JwtStrategy,
     RefreshTokenStrategy,
-    RefreshTokenIdsStorage,
     {
       provide: APP_GUARD,
       useClass: JwtAuthGuard,

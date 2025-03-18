@@ -7,9 +7,10 @@ import {
   Param,
   Delete,
 } from '@nestjs/common';
-import { AccountService } from './account.service';
-import { AccountDto } from './dto/create-account.dto';
-import { UpdateAccountDto } from './dto/update-account.dto';
+
+import { AccountService } from '@/account/account.service';
+import { AccountDto } from '@/account/dto/create-account.dto';
+import { UpdateAccountDto } from '@/account/dto/update-account.dto';
 
 @Controller('account')
 export class AccountController {

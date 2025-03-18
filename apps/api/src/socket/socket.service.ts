@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { CreateSocketDto } from './dto/create-socket.dto';
-import { UpdateSocketDto } from './dto/update-socket.dto';
+
+import { CreateSocketDto } from '@/socket/dto/create-socket.dto';
+import { UpdateSocketDto } from '@/socket/dto/update-socket.dto';
 
 @Injectable()
 export class SocketService {

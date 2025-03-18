@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
-import { DishService } from './dish.service';
-import { DishController } from './dish.controller';
+
+import { DishService } from '@/dish/dish.service';
+import { DishController } from '@/dish/dish.controller';
 
 @Module({
   controllers: [DishController],

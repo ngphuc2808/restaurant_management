@@ -1,26 +1,59 @@
 import { Injectable } from '@nestjs/common';
-import { CreateRefreshTokenDto } from './dto/create-refresh-token.dto';
-import { UpdateRefreshTokenDto } from './dto/update-refresh-token.dto';
+
+import { PrismaService } from '@/prisma.service';
 
 @Injectable()
 export class RefreshTokenService {
-  create(createRefreshTokenDto: CreateRefreshTokenDto) {
-    return 'This action adds a new refreshToken';
+  constructor(private prismaService: PrismaService) {}
+
+  async insert(
+    userId: number,
+    tokenId: string,
+    expiresAt: Date,
+  ): Promise<void> {
+    await this.prismaService.refreshToken.create({
+      data: {
+        token: tokenId,
+        accountId: userId,
+        expiresAt,
+      },
+    });
   }
 
-  findAll() {
-    return `This action returns all refreshToken`;
+  async findToken(tokenId: string) {
+    const storedToken = await this.prismaService.refreshToken.findUnique({
+      where: { token: tokenId },
+    });
+
+    return storedToken;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} refreshToken`;
+  async validate(userId: number, tokenId: string) {
+    const storedToken = await this.findToken(tokenId);
+
+    if (!storedToken || storedToken.accountId !== userId) {
+      return false;
+    }
+
+    if (storedToken.expiresAt < new Date()) {
+      await this.invalidate(tokenId);
+      return false;
+    }
+
+    return true;
   }
 
-  update(id: number, updateRefreshTokenDto: UpdateRefreshTokenDto) {
-    return `This action updates a #${id} refreshToken`;
+  async invalidate(tokenId: string) {
+    await this.prismaService.refreshToken.delete({
+      where: { token: tokenId },
+    });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} refreshToken`;
+  async removeToken(tokenId: string) {
+    const storedToken = await this.findToken(tokenId);
+
+    if (storedToken) {
+      await this.invalidate(tokenId);
+    }
   }
 }

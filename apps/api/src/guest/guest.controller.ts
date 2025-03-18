@@ -7,9 +7,10 @@ import {
   Param,
   Delete,
 } from '@nestjs/common';
-import { GuestService } from './guest.service';
-import { CreateGuestDto } from './dto/create-guest.dto';
-import { UpdateGuestDto } from './dto/update-guest.dto';
+
+import { GuestService } from '@/guest/guest.service';
+import { CreateGuestDto } from '@/guest/dto/create-guest.dto';
+import { UpdateGuestDto } from '@/guest/dto/update-guest.dto';
 
 @Controller('guest')
 export class GuestController {

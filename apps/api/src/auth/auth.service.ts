@@ -1,199 +1,176 @@
 import {
-  BadRequestException,
-  ConflictException,
   Injectable,
   Logger,
-  NotFoundException,
   UnauthorizedException,
+  UnprocessableEntityException,
 } from '@nestjs/common';
+import { I18nService } from 'nestjs-i18n';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcryptjs';
 import * as ms from 'ms';
 
 import { Account } from '@prisma/client';
+import { LoginReqDto } from '@/auth/dto/req/login.req.dto';
+
 import { PrismaService } from '@/prisma.service';
-import { AccountDto } from '@/auth/dto/account.dto';
-import { LoginDto } from '@/auth/dto/login.dto';
-import { TokenDto } from '@/auth/dto/token.dto';
-import { RefreshTokenIdsStorage } from '@/auth/refresh-token-ids.storage';
-import { I18nService } from 'nestjs-i18n';
+import { RefreshTokenService } from '@/refresh-token/refresh-token.service';
 
 @Injectable()
 export class AuthService {
-  private readonly logger = new Logger(AuthService.name);
-
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService,
-    private refreshTokenStorage: RefreshTokenIdsStorage,
+    private refreshTokenService: RefreshTokenService,
     private configService: ConfigService,
     private i18n: I18nService,
+    private logger: Logger,
   ) {}
 
-  async createAccount(accountDto: AccountDto): Promise<Account> {
-    const { email, password, name, avatar, role, ownerId } = accountDto;
-
-    const existingAccount = await this.prisma.account.findUnique({
-      where: { email },
-    });
-    if (existingAccount) {
-      throw new BadRequestException({
-        message: this.i18n.t('hello.message'),
-        errors: [{ field: 'email', message: 'Email already exists' }],
-      });
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    const data: Parameters<typeof this.prisma.account.create>[0]['data'] = {
-      name,
-      email,
-      password: hashedPassword,
-      avatar,
-      role,
-    };
-    if (ownerId && role === 'Employee') {
-      const owner = await this.prisma.account.findUnique({
-        where: { id: ownerId },
-      });
-      if (!owner) {
-        throw new NotFoundException(`Owner with id ${ownerId} does not exists`);
-      }
-      if (owner.role !== 'Owner') {
-        throw new BadRequestException(
-          `User with id ${ownerId} does not have Owner role`,
-        );
-      }
-
-      data.owner = {
-        connect: { id: ownerId },
-      };
-    }
-
+  async findAccountWithEmail(email: string) {
     try {
-      const newAccount = await this.prisma.account.create({ data });
-      return newAccount;
-    } catch (error) {
-      this.logger.error(`Error creating account: ${error.message}`);
-      throw new BadRequestException('Failed to create account', error.message);
-    }
-  }
+      const account = await this.prisma.account.findUnique({
+        where: { email },
+      });
 
-  async validateAccount(email: string, pass: string): Promise<Account | null> {
-    const account = await this.prisma.account.findUnique({
-      where: { email },
-    });
+      if (!account) {
+        throw new UnprocessableEntityException({
+          message: this.i18n.t('errors.login.invalid-email'),
+          errors: [
+            {
+              field: 'email',
+              message: this.i18n.t('errors.login.invalid-email'),
+            },
+          ],
+        });
+      }
 
-    if (account && (await bcrypt.compare(pass, account.password))) {
       return account;
+    } catch (error) {
+      this.logger.error(error.message);
+      throw error;
     }
-    return null;
   }
 
-  async login(loginDto: LoginDto): Promise<TokenDto> {
-    const { email, password } = loginDto;
+  async validateAccount(email: string, pass: string) {
+    try {
+      const account = await this.findAccountWithEmail(email);
 
-    const account = await this.validateAccount(email, password);
+      if (!(await bcrypt.compare(pass, account.password))) {
+        throw new UnprocessableEntityException({
+          message: this.i18n.t('errors.login.invalid-email-or-password'),
+          errors: [
+            {
+              field: 'password',
+              message: this.i18n.t('errors.login.invalid-email-or-password'),
+            },
+          ],
+        });
+      }
 
-    if (!account) {
-      throw new UnauthorizedException('Invalid credentials');
+      return account;
+    } catch (error) {
+      this.logger.error(error.message);
+      throw error;
     }
-
-    return this.generateTokens(account);
   }
 
-  async generateTokens(account: Account): Promise<TokenDto> {
-    const payload = {
-      id: account.id,
-      email: account.email,
-      role: account.role,
-    };
-    const accessToken = await this.jwtService.signAsync(payload);
-    const refreshToken = await this.getRefreshToken(payload);
+  async login(loginDto: LoginReqDto) {
+    try {
+      const { email, password } = loginDto;
 
-    return {
-      ...payload,
-      accessToken,
-      refreshToken,
-    };
+      const account = await this.validateAccount(email, password);
+      return this.generateTokens(account);
+    } catch (error) {
+      this.logger.error(error.message);
+      throw error;
+    }
   }
 
-  async getRefreshToken(account: {
-    id: number;
-    email: string;
-    role: string;
-  }): Promise<string> {
-    const data = {
-      id: account.id,
-      email: account.email,
-      role: account.role,
-    };
+  async generateTokens(account: Account) {
+    try {
+      const payload = {
+        id: account.id,
+        email: account.email,
+        role: account.role,
+      };
 
-    const expiresTime = this.configService.get('JWT_REFRESH_TOKEN_EXPIRES_IN');
-    const secret = this.configService.get('JWT_REFRESH_TOKEN_SECRET');
+      const accessToken = await this.jwtService.signAsync(payload);
+      const refreshToken = await this.getRefreshToken(payload);
 
-    const expiresAt = new Date(Date.now() + ms(expiresTime));
-
-    const refreshToken = await this.jwtService.signAsync(data, {
-      secret: secret,
-      expiresIn: Number(ms(expiresTime)) / 1000,
-    });
-
-    await this.refreshTokenStorage.insert(data.id, refreshToken, expiresAt);
-    return refreshToken;
+      return {
+        ...payload,
+        accessToken,
+        refreshToken,
+      };
+    } catch (error) {
+      this.logger.error(error.message);
+      throw error;
+    }
   }
 
-  async refreshAccessToken(refreshToken: string): Promise<TokenDto> {
+  async getRefreshToken(account: { id: number; email: string; role: string }) {
+    try {
+      const data = {
+        id: account.id,
+        email: account.email,
+        role: account.role,
+      };
+
+      const expiresTime = this.configService.get(
+        'JWT_REFRESH_TOKEN_EXPIRES_IN',
+      );
+      const secret = this.configService.get('JWT_REFRESH_TOKEN_SECRET');
+
+      const expiresAt = new Date(Date.now() + ms(expiresTime));
+
+      const refreshToken = await this.jwtService.signAsync(data, {
+        secret: secret,
+        expiresIn: Number(ms(expiresTime)) / 1000,
+      });
+
+      await this.refreshTokenService.insert(data.id, refreshToken, expiresAt);
+
+      return refreshToken;
+    } catch (error) {
+      this.logger.error(error.message);
+      throw error;
+    }
+  }
+
+  async processNewToken(refreshToken: string) {
     try {
       const secret = this.configService.get('JWT_REFRESH_TOKEN_SECRET');
-      const { sub } = await this.jwtService.verifyAsync(refreshToken, {
+      const { id, email } = await this.jwtService.verifyAsync(refreshToken, {
         secret,
       });
 
-      const userId = Number(sub);
-      const isValid = await this.refreshTokenStorage.validate(
+      const userId = Number(id);
+      const isValid = await this.refreshTokenService.validate(
         userId,
         refreshToken,
       );
+
       if (!isValid) {
-        throw new UnauthorizedException();
+        throw new UnauthorizedException(this.i18n.t('errors.token.invalid'));
       }
-      await this.refreshTokenStorage.invalidate(userId, refreshToken);
 
-      const account = await this.prisma.account.findUnique({
-        where: { id: userId },
-      });
-      if (!account) {
-        throw new UnauthorizedException();
-      }
+      await this.refreshTokenService.invalidate(refreshToken);
+      const account = await this.findAccountWithEmail(email);
+
       return this.generateTokens(account);
-    } catch (e) {
-      this.logger.error(e);
-      throw new UnauthorizedException();
+    } catch (error) {
+      this.logger.error(error.message);
+      throw error;
     }
   }
 
-  async logout(refreshToken: string): Promise<void> {
+  async logout(refreshToken: string) {
     try {
-      const secret = this.configService.get('JWT_REFRESH_TOKEN_SECRET');
-      const { sub } = await this.jwtService.verifyAsync(refreshToken, {
-        secret,
-      });
-      const userId = Number(sub);
-      await this.refreshTokenStorage.invalidate(userId, refreshToken);
-    } catch (e) {
-      this.logger.error('Failed to logout', e);
-      throw new UnauthorizedException();
+      await this.refreshTokenService.removeToken(refreshToken);
+    } catch (error) {
+      this.logger.error(error.message);
+      throw error;
     }
-  }
-
-  async getAccountBySocketId(socketId: string): Promise<Account | null> {
-    const socket = await this.prisma.socket.findUnique({
-      where: { socketId },
-      include: { account: true },
-    });
-
-    return socket?.account;
   }
 }

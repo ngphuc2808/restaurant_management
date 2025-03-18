@@ -103,7 +103,7 @@ const request = async <Response>(
     headers: {
       ...baseHeaders,
       ...options?.headers,
-      locale,
+      locale: locale ?? defaultLocale,
     } as any,
     body,
     method,
