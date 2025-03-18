@@ -6,11 +6,7 @@ import { PrismaService } from '@/prisma.service';
 export class RefreshTokenService {
   constructor(private prismaService: PrismaService) {}
 
-  async insert(
-    userId: number,
-    tokenId: string,
-    expiresAt: Date,
-  ): Promise<void> {
+  async insert(userId: number, tokenId: string, expiresAt: Date) {
     await this.prismaService.refreshToken.create({
       data: {
         token: tokenId,
@@ -18,6 +14,8 @@ export class RefreshTokenService {
         expiresAt,
       },
     });
+
+    return tokenId;
   }
 
   async findToken(tokenId: string) {

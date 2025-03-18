@@ -41,7 +41,7 @@ export class AuthService {
     const accessToken = Authorization.split(' ')[1];
 
     try {
-      const secret = this.configService.get('JWT_ACCESS_TOKEN_SECRET');
+      const secret = await this.configService.get('JWT_ACCESS_TOKEN_SECRET');
 
       const decodedAccessToken = await this.jwtService.verifyAsync(
         accessToken,
@@ -176,10 +176,10 @@ export class AuthService {
         role: account.role,
       };
 
-      const expiresTime = this.configService.get(
-        'JWT_REFRESH_TOKEN_EXPIRES_IN',
-      );
-      const secret = this.configService.get('JWT_REFRESH_TOKEN_SECRET');
+      const expiresTime =
+        (await this.configService.get('JWT_REFRESH_TOKEN_EXPIRES_IN')) || '7d';
+      const secret =
+        (await this.configService.get('JWT_REFRESH_TOKEN_SECRET')) || 'secret';
 
       const expiresAt = new Date(Date.now() + ms(expiresTime));
 
@@ -199,7 +199,7 @@ export class AuthService {
 
   async processNewToken(refreshToken: string) {
     try {
-      const secret = this.configService.get('JWT_REFRESH_TOKEN_SECRET');
+      const secret = await this.configService.get('JWT_REFRESH_TOKEN_SECRET');
       const { id, email } = await this.jwtService.verifyAsync(refreshToken, {
         secret,
       });

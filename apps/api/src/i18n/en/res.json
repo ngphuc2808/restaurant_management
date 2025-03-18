@@ -2,6 +2,12 @@
   "success": {
     "login": "Login successfully!",
     "logout": "Logout successfully!",
-    "refresh-token": "Refresh token successfully!"
+    "refresh-token": "Refresh token successfully!",
+    "account": {
+      "get": "Get account successfully!",
+      "create": "Create account successfully!",
+      "update": "Update account successfully!",
+      "delete": "Delete account successfully!"
+    }
   }
 }

@@ -13,7 +13,6 @@ import { AuthController } from '@/auth/auth.controller';
 import { LocalStrategy } from '@/auth/strategies/local.strategy';
 import { JwtStrategy } from '@/auth/strategies/jwt.strategy';
 import { JwtAuthGuard } from '@/auth/guards/jwt-auth.guard';
-import { RefreshTokenStrategy } from '@/auth/strategies/refresh-token.strategy';
 
 @Module({
   imports: [
@@ -39,7 +38,6 @@ import { RefreshTokenStrategy } from '@/auth/strategies/refresh-token.strategy';
     RefreshTokenService,
     LocalStrategy,
     JwtStrategy,
-    RefreshTokenStrategy,
     {
       provide: APP_GUARD,
       useClass: JwtAuthGuard,

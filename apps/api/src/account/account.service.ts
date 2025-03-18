@@ -1,27 +1,24 @@
-import { Injectable } from '@nestjs/common';
-
-import { AccountDto } from '@/account/dto/create-account.dto';
-import { UpdateAccountDto } from '@/account/dto/update-account.dto';
+import { PrismaService } from '@/prisma.service';
+import { Injectable, Logger } from '@nestjs/common';
+import { I18nService } from 'nestjs-i18n';
 
 @Injectable()
 export class AccountService {
-  create(accountDto: AccountDto) {
-    return 'This action adds a new account';
-  }
+  constructor(
+    private prisma: PrismaService,
+    private i18n: I18nService,
+    private logger: Logger,
+  ) {}
 
-  findAll() {
-    return `This action returns all account`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} account`;
-  }
-
-  update(id: number, updateAccountDto: UpdateAccountDto) {
-    return `This action updates a #${id} account`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} account`;
+  async me(id: number) {
+    return await this.prisma.account.findUniqueOrThrow({
+      where: { id },
+      omit: {
+        password: true,
+        createdAt: true,
+        updatedAt: true,
+        ownerId: true,
+      },
+    });
   }
 }

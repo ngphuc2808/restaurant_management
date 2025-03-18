@@ -4,7 +4,7 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 import { PrismaService } from '@/prisma.service';
-import { AccountDto } from '@/auth/dto/account.dto';
+import { UserDto } from '@/auth/dto/account.dto';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
@@ -19,7 +19,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     });
   }
 
-  async validate(payload: AccountDto) {
+  async validate(payload: UserDto) {
     const user = await this.prisma.account.findUnique({
       where: { id: payload.id },
     });
@@ -28,6 +28,6 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
       throw new UnauthorizedException();
     }
 
-    return { ...payload, id: Number(payload.id) };
+    return payload;
   }
 }

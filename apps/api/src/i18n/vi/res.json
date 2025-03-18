@@ -2,6 +2,12 @@
   "success": {
     "login": "Đăng nhập thành công!",
     "logout": "Đăng xuất thành công!",
-    "refresh-token": "Làm mới token thành công!"
+    "refresh-token": "Làm mới token thành công!",
+    "account": {
+      "get": "Lấy thông tin tài khoản thành công!",
+      "create": "Tạo tài khoản thành công!",
+      "update": "Cập nhật tài khoản thành công!",
+      "delete": "Xóa tài khoản thành công!"
+    }
   }
 }

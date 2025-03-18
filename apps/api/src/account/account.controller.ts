@@ -6,38 +6,26 @@ import {
   Patch,
   Param,
   Delete,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
+import { ApiOkResponse } from '@nestjs/swagger';
 
 import { AccountService } from '@/account/account.service';
-import { AccountDto } from '@/account/dto/create-account.dto';
-import { UpdateAccountDto } from '@/account/dto/update-account.dto';
+import { ResponseMessage, User } from '@/constants/type';
+import { UserDto } from '@/auth/dto/account.dto';
 
-@Controller('account')
+import { MeResDto } from '@/account/dto/res/me.res.dto';
+
+@Controller('accounts')
 export class AccountController {
   constructor(private readonly accountService: AccountService) {}
 
-  @Post()
-  create(@Body() accountDto: AccountDto) {
-    return this.accountService.create(accountDto);
-  }
-
-  @Get()
-  findAll() {
-    return this.accountService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.accountService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateAccountDto: UpdateAccountDto) {
-    return this.accountService.update(+id, updateAccountDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.accountService.remove(+id);
+  @HttpCode(HttpStatus.OK)
+  @ResponseMessage('res.success.account.get')
+  @ApiOkResponse({ type: MeResDto })
+  @Get('me')
+  create(@User() user: UserDto) {
+    return this.accountService.me(user.id);
   }
 }

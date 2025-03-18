@@ -1,4 +1,8 @@
-import { SetMetadata } from '@nestjs/common';
+import {
+  ExecutionContext,
+  SetMetadata,
+  createParamDecorator,
+} from '@nestjs/common';
 
 export const TokenType = {
   ForgotPasswordToken: 'ForgotPasswordToken',
@@ -61,3 +65,12 @@ export const RESPONSE_MESSAGE = 'response_message';
 
 export const ResponseMessage = (key: string) =>
   SetMetadata(RESPONSE_MESSAGE, key);
+
+export const User = createParamDecorator(
+  (data: unknown, ctx: ExecutionContext) => {
+    const request = ctx.switchToHttp().getRequest();
+    return request.user;
+  },
+);
+
+export const UserDto = typeof User;
