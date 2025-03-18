@@ -237,7 +237,7 @@ export const checkIsActive = (href: string, item: NavItem, mainNav = false) => {
 };
 
 export const generateSocketInstace = (accessToken: string) => {
-  return io(envConfig.NEXT_PUBLIC_API_ENDPOINT, {
+  return io(envConfig.NEXT_PUBLIC_API_ENDPOINT_SOCKET, {
     auth: {
       Authorization: `Bearer ${accessToken}`,
     },

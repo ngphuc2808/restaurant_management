@@ -7,6 +7,7 @@ import {
 import { I18nService } from 'nestjs-i18n';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
+import { Socket } from 'socket.io';
 import * as bcrypt from 'bcryptjs';
 import * as ms from 'ms';
 
@@ -15,6 +16,7 @@ import { LoginReqDto } from '@/auth/dto/req/login.req.dto';
 
 import { PrismaService } from '@/prisma.service';
 import { RefreshTokenService } from '@/refresh-token/refresh-token.service';
+import { Role } from '@/constants/type';
 
 @Injectable()
 export class AuthService {
@@ -26,6 +28,63 @@ export class AuthService {
     private i18n: I18nService,
     private logger: Logger,
   ) {}
+
+  async validateSocket(socket: Socket) {
+    const { Authorization } = socket.handshake.auth;
+
+    if (!Authorization || !Authorization.startsWith('Bearer ')) {
+      throw new UnauthorizedException(
+        this.i18n.t('errors.authorization.invalid'),
+      );
+    }
+
+    const accessToken = Authorization.split(' ')[1];
+
+    try {
+      const secret = this.configService.get('JWT_ACCESS_TOKEN_SECRET');
+
+      const decodedAccessToken = await this.jwtService.verifyAsync(
+        accessToken,
+        {
+          secret,
+        },
+      );
+
+      const { id, role } = decodedAccessToken;
+
+      if (role === Role.Guest) {
+        await this.prisma.socket.upsert({
+          where: {
+            guestId: id,
+          },
+          update: {
+            socketId: socket.id,
+          },
+          create: {
+            guestId: id,
+            socketId: socket.id,
+          },
+        });
+      } else {
+        await this.prisma.socket.upsert({
+          where: {
+            accountId: id,
+          },
+          update: {
+            socketId: socket.id,
+          },
+          create: {
+            accountId: id,
+            socketId: socket.id,
+          },
+        });
+      }
+      return decodedAccessToken;
+    } catch (error) {
+      this.logger.error(error.message);
+      throw error;
+    }
+  }
 
   async findAccountWithEmail(email: string) {
     try {
@@ -99,7 +158,7 @@ export class AuthService {
       const refreshToken = await this.getRefreshToken(payload);
 
       return {
-        ...payload,
+        account: { ...payload, avatar: account.avatar, name: account.name },
         accessToken,
         refreshToken,
       };

@@ -2,6 +2,9 @@
   "auth": {
     "invalid-account": "Tài khoản không hợp lệ"
   },
+  "authorization": {
+    "invalid": "Authorization không hợp lệ"
+  },
   "login": {
     "invalid-email": "Email không hợp lệ",
     "invalid-email-or-password": "Email hoặc mật khẩu không đúng"

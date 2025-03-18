@@ -4,9 +4,10 @@ import {
   UnprocessableEntityException,
   Logger,
 } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
+import { JsonWebTokenError, JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { I18nService } from 'nestjs-i18n';
+import { Socket } from 'socket.io';
 import * as bcrypt from 'bcryptjs';
 import * as ms from 'ms';
 
@@ -16,6 +17,7 @@ import { LoginReqDto } from '@/auth/dto/req/login.req.dto';
 import { PrismaService } from '@/prisma.service';
 import { AuthService } from '@/auth/auth.service';
 import { RefreshTokenService } from '@/refresh-token/refresh-token.service';
+import { Role } from '@/constants/type';
 
 const mockAccount: Account = {
   name: 'Test User',
@@ -23,7 +25,7 @@ const mockAccount: Account = {
   email: 'test@example.com',
   password: 'hashedPassword',
   avatar: '',
-  role: 'user',
+  role: 'Employee',
   ownerId: 1,
   createdAt: new Date(),
   updatedAt: new Date(),
@@ -37,7 +39,7 @@ const mockLoginDto: LoginReqDto = {
 const mockJwtPayload = {
   id: 1,
   email: 'test@example.com',
-  role: 'user',
+  role: 'Employee',
 };
 
 const mockAccessToken = 'mockAccessToken';
@@ -46,6 +48,9 @@ const mockRefreshToken = 'mockRefreshToken';
 const mockPrismaService = () => ({
   account: {
     findUnique: jest.fn(),
+  },
+  socket: {
+    upsert: jest.fn(),
   },
 });
 
@@ -119,6 +124,117 @@ describe('AuthService', () => {
 
   it('should be defined', () => {
     expect(service).toBeDefined();
+  });
+
+  describe('validateSocket', () => {
+    it('should validate a socket connection with a valid token (non-guest)', async () => {
+      const mockDecodedToken = { id: 1, role: Role.Employee };
+      const mockSocket = {
+        handshake: { auth: { Authorization: 'Bearer valid.jwt.token' } },
+        id: 'socket123',
+      } as unknown as Socket;
+
+      (jwtService.verifyAsync as jest.Mock).mockResolvedValueOnce(
+        mockDecodedToken,
+      );
+      (prismaService.socket.upsert as jest.Mock).mockResolvedValueOnce({});
+
+      const result = await service.validateSocket(mockSocket);
+
+      expect(jwtService.verifyAsync).toHaveBeenCalledWith('valid.jwt.token');
+      expect(prismaService.socket.upsert).toHaveBeenCalledWith({
+        where: { accountId: 1 },
+        update: { socketId: 'socket123' },
+        create: { accountId: 1, socketId: 'socket123' },
+      });
+      expect(result).toEqual(mockDecodedToken);
+    });
+
+    it('should validate a socket connection with a valid token (guest)', async () => {
+      const mockDecodedToken = { id: 'guest123', role: Role.Guest };
+      const mockSocket = {
+        handshake: { auth: { Authorization: 'Bearer valid.jwt.token' } },
+        id: 'socket123',
+      } as unknown as Socket;
+
+      (jwtService.verifyAsync as jest.Mock).mockResolvedValueOnce(
+        mockDecodedToken,
+      );
+      (prismaService.socket.upsert as jest.Mock).mockResolvedValueOnce({});
+
+      const result = await service.validateSocket(mockSocket);
+
+      expect(jwtService.verifyAsync).toHaveBeenCalledWith('valid.jwt.token');
+      expect(prismaService.socket.upsert).toHaveBeenCalledWith({
+        where: { guestId: 'guest123' },
+        update: { socketId: 'socket123' },
+        create: { guestId: 'guest123', socketId: 'socket123' },
+      });
+      expect(result).toEqual(mockDecodedToken);
+    });
+
+    it('should throw UnauthorizedException if no Authorization header', async () => {
+      const mockSocket = { handshake: { auth: {} } } as unknown as Socket;
+      await expect(service.validateSocket(mockSocket)).rejects.toThrow(
+        UnauthorizedException,
+      );
+      expect(i18nService.t).toHaveBeenCalledWith(
+        'errors.authorization.invalid',
+      );
+    });
+
+    it('should throw UnauthorizedException for invalid token (generic)', async () => {
+      const mockSocket = {
+        handshake: { auth: { Authorization: 'Bearer invalid-token' } },
+      } as unknown as Socket;
+      (jwtService.verifyAsync as jest.Mock).mockRejectedValueOnce(
+        new UnauthorizedException('Invalid token'),
+      );
+      await expect(service.validateSocket(mockSocket)).rejects.toThrow(
+        UnauthorizedException,
+      );
+      // Don't check for a specific i18n key here, as it might be handled generically
+    });
+
+    it('should re-throw JWT specific errors', async () => {
+      const mockSocket = {
+        handshake: { auth: { Authorization: 'Bearer expired-token' } },
+      } as unknown as Socket;
+      const jwtError = new JsonWebTokenError('jwt expired');
+      (jwtService.verifyAsync as jest.Mock).mockRejectedValueOnce(jwtError);
+
+      await expect(service.validateSocket(mockSocket)).rejects.toThrow(
+        jwtError,
+      );
+      expect(logger.error).toHaveBeenCalledWith(jwtError.message); // Log the error
+    });
+
+    it('should handle database errors during socket upsert', async () => {
+      const mockSocket = {
+        handshake: { auth: { Authorization: 'Bearer valid-token' } },
+        id: 'socket123',
+      } as unknown as Socket;
+      (jwtService.verifyAsync as jest.Mock).mockResolvedValueOnce(
+        mockJwtPayload,
+      ); // Resolve JWT verification
+      const dbError = new Error('DB Error');
+      (prismaService.socket.upsert as jest.Mock).mockRejectedValue(dbError);
+      await expect(service.validateSocket(mockSocket)).rejects.toThrow(dbError);
+      expect(logger.error).toHaveBeenCalledWith(dbError.message);
+    });
+
+    it('should throw UnauthorizedException if Authorization header is malformed', async () => {
+      const mockSocket = {
+        handshake: { auth: { Authorization: 'invalidformat' } },
+      } as unknown as Socket;
+      await expect(service.validateSocket(mockSocket)).rejects.toThrow(
+        UnauthorizedException,
+      );
+      expect(jwtService.verifyAsync).not.toHaveBeenCalled();
+      expect(i18nService.t).toHaveBeenCalledWith(
+        'errors.authorization.invalid',
+      );
+    });
   });
 
   describe('findAccountWithEmail', () => {
