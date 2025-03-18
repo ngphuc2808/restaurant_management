@@ -16,6 +16,8 @@ import { ResponseMessage, User } from '@/constants/type';
 import { UserDto } from '@/auth/dto/account.dto';
 
 import { MeResDto } from '@/account/dto/res/me.res.dto';
+import { CreateAccountReqDto } from '@/account/dto/req/create.req.dto';
+import { CreateAccountResDto } from '@/account/dto/res/create.res.dto';
 
 @Controller('accounts')
 export class AccountController {
@@ -25,7 +27,15 @@ export class AccountController {
   @ResponseMessage('res.success.account.get')
   @ApiOkResponse({ type: MeResDto })
   @Get('me')
-  create(@User() user: UserDto) {
+  me(@User() user: UserDto) {
     return this.accountService.me(user.id);
+  }
+
+  @HttpCode(HttpStatus.OK)
+  @ResponseMessage('res.success.account.create')
+  @ApiOkResponse({ type: CreateAccountResDto })
+  @Post()
+  create(@Body() createAccountDto: CreateAccountReqDto) {
+    return this.accountService.create(createAccountDto);
   }
 }

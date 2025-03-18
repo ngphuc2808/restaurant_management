@@ -94,11 +94,11 @@ export class AuthService {
 
       if (!account) {
         throw new UnprocessableEntityException({
-          message: this.i18n.t('errors.login.invalid-email'),
+          message: this.i18n.t('errors.auth.invalid-email'),
           errors: [
             {
               field: 'email',
-              message: this.i18n.t('errors.login.invalid-email'),
+              message: this.i18n.t('errors.auth.invalid-email'),
             },
           ],
         });
@@ -117,11 +117,11 @@ export class AuthService {
 
       if (!(await bcrypt.compare(pass, account.password))) {
         throw new UnprocessableEntityException({
-          message: this.i18n.t('errors.login.invalid-email-or-password'),
+          message: this.i18n.t('errors.auth.invalid-email-or-password'),
           errors: [
             {
               field: 'password',
-              message: this.i18n.t('errors.login.invalid-email-or-password'),
+              message: this.i18n.t('errors.auth.invalid-email-or-password'),
             },
           ],
         });

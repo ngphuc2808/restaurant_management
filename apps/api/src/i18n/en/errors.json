@@ -1,13 +1,12 @@
 {
   "auth": {
-    "invalid-account": "Invalid account"
+    "invalid-account": "Invalid account",
+    "email-already-exists": "Email already exists",
+    "invalid-email": "Invalid email",
+    "invalid-email-or-password": "Invalid email or password"
   },
   "authorization": {
     "invalid": "Invalid authorization"
-  },
-  "login": {
-    "invalid-email": "Invalid email",
-    "invalid-email-or-password": "Invalid email or password"
   },
   "token": {
     "invalid": "Invalid token"
