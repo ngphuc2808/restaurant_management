@@ -7,9 +7,10 @@ import {
   Param,
   Delete,
 } from '@nestjs/common';
-import { SocketService } from './socket.service';
-import { CreateSocketDto } from './dto/create-socket.dto';
-import { UpdateSocketDto } from './dto/update-socket.dto';
+
+import { SocketService } from '@/socket/socket.service';
+import { CreateSocketDto } from '@/socket/dto/create-socket.dto';
+import { UpdateSocketDto } from '@/socket/dto/update-socket.dto';
 
 @Controller('socket')
 export class SocketController {

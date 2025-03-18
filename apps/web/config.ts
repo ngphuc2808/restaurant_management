@@ -2,6 +2,7 @@ import { z } from "zod";
 
 const configSchema = z.object({
   NEXT_PUBLIC_API_ENDPOINT: z.string(),
+  NEXT_PUBLIC_API_ENDPOINT_SOCKET: z.string(),
   NEXT_PUBLIC_URL: z.string(),
   NEXT_PUBLIC_GOOGLE_AUTHORIZED_REDIRECT_URI: z.string(),
   NEXT_PUBLIC_GOOGLE_CLIENT_ID: z.string(),
@@ -9,6 +10,7 @@ const configSchema = z.object({
 
 const configObject = configSchema.safeParse({
   NEXT_PUBLIC_API_ENDPOINT: process.env.NEXT_PUBLIC_API_ENDPOINT,
+  NEXT_PUBLIC_API_ENDPOINT_SOCKET: process.env.NEXT_PUBLIC_API_ENDPOINT_SOCKET,
   NEXT_PUBLIC_URL: process.env.NEXT_PUBLIC_URL,
   NEXT_PUBLIC_GOOGLE_AUTHORIZED_REDIRECT_URI:
     process.env.NEXT_PUBLIC_GOOGLE_AUTHORIZED_REDIRECT_URI,

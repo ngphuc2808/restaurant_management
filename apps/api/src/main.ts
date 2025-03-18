@@ -1,8 +1,14 @@
 import { NestFactory, Reflector } from '@nestjs/core';
-import { ValidationPipe, VersioningType } from '@nestjs/common';
+import {
+  UnprocessableEntityException,
+  ValidationPipe,
+  VersioningType,
+} from '@nestjs/common';
+import { I18nService } from 'nestjs-i18n';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
+import { ValidationError } from 'class-validator';
 import * as cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 import { join } from 'path';
@@ -18,11 +24,22 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
 
   const reflector = app.get(Reflector);
+  const i18nService = app.get<I18nService>(I18nService);
+
   app.useGlobalGuards(new JwtAuthGuard(reflector));
-  app.useGlobalInterceptors(new TransformInterceptor(reflector));
+  app.useGlobalInterceptors(new TransformInterceptor(reflector, i18nService));
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
+      exceptionFactory: (validationErrors: ValidationError[] = []) => {
+        return new UnprocessableEntityException({
+          message: 'Lỗi xảy ra khi xác thực dữ liệu...',
+          errors: validationErrors.map((error) => ({
+            field: error.property,
+            message: Object.values(error.constraints).join(', '),
+          })),
+        });
+      },
     }),
   );
 
@@ -39,7 +56,7 @@ async function bootstrap() {
 
   app.use(cookieParser());
 
-  app.setGlobalPrefix('api');
+  app.setGlobalPrefix('api-server');
   app.enableVersioning({
     type: VersioningType.URI,
     defaultVersion: ['1'],

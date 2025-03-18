@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { SocketController } from './socket.controller';
-import { SocketService } from './socket.service';
+
+import { SocketController } from '@/socket/socket.controller';
+import { SocketService } from '@/socket/socket.service';
 
 describe('SocketController', () => {
   let controller: SocketController;

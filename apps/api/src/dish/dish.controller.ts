@@ -7,9 +7,10 @@ import {
   Param,
   Delete,
 } from '@nestjs/common';
-import { DishService } from './dish.service';
-import { CreateDishDto } from './dto/create-dish.dto';
-import { UpdateDishDto } from './dto/update-dish.dto';
+
+import { DishService } from '@/dish/dish.service';
+import { CreateDishDto } from '@/dish/dto/create-dish.dto';
+import { UpdateDishDto } from '@/dish/dto/update-dish.dto';
 
 @Controller('dish')
 export class DishController {

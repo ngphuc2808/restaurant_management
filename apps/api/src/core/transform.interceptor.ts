@@ -1,14 +1,17 @@
-import { Reflector } from '@nestjs/core';
 import {
   Injectable,
   NestInterceptor,
   ExecutionContext,
   CallHandler,
+  HttpException,
+  Inject,
 } from '@nestjs/common';
-import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { Reflector } from '@nestjs/core';
+import { Observable, throwError } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
 
 import { RESPONSE_MESSAGE } from '@/constants/type';
+import { I18nService } from 'nestjs-i18n';
 
 export interface Response<T> {
   statusCode: number;
@@ -20,7 +23,10 @@ export interface Response<T> {
 export class TransformInterceptor<T>
   implements NestInterceptor<T, Response<T>>
 {
-  constructor(private reflector: Reflector) {}
+  constructor(
+    private readonly reflector: Reflector,
+    private readonly i18n: I18nService,
+  ) {}
 
   intercept(
     context: ExecutionContext,
@@ -30,10 +36,24 @@ export class TransformInterceptor<T>
       map((data) => ({
         statusCode: context.switchToHttp().getResponse().statusCode,
         message:
-          this.reflector.get<string>(RESPONSE_MESSAGE, context.getHandler()) ||
-          '',
+          (this.i18n.t(
+            this.reflector.get<string>(RESPONSE_MESSAGE, context.getHandler()),
+          ) as string) || '',
         data,
       })),
+      catchError((err) => {
+        return throwError(
+          () =>
+            new HttpException(
+              {
+                statusCode: err.status || 500,
+                errors: err.response.errors || [],
+                message: err.message || 'Internal Server Error',
+              },
+              err.status || 500,
+            ),
+        );
+      }),
     );
   }
 }

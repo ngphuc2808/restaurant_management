@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { CreateDishSnapshotDto } from './dto/create-dish-snapshot.dto';
-import { UpdateDishSnapshotDto } from './dto/update-dish-snapshot.dto';
+
+import { CreateDishSnapshotDto } from '@/dish-snapshot/dto/create-dish-snapshot.dto';
+import { UpdateDishSnapshotDto } from '@/dish-snapshot/dto/update-dish-snapshot.dto';
 
 @Injectable()
 export class DishSnapshotService {

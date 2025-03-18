@@ -3,6 +3,7 @@ import "@repo/ui/globals.css";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import localFont from "next/font/local";
+
 import { NextIntlClientProvider } from "next-intl";
 import {
   getMessages,

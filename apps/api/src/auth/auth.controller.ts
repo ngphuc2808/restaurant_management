@@ -1,57 +1,52 @@
-// src/auth/auth.controller.ts
 import {
   Controller,
   Post,
   Body,
   UseGuards,
-  Request,
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
+import { ApiOkResponse } from '@nestjs/swagger';
 
-import { Account } from '@prisma/client';
 import { AuthService } from '@/auth/auth.service';
 import { Public } from '@/auth/decorators/public.decorator';
-import { LocalAuthGuard } from '@/auth/guards/local-auth.guard';
 import { RefreshTokenGuard } from '@/auth/guards/refresh-token.guard';
-import { JwtAuthGuard } from '@/auth/guards/jwt-auth.guard';
-import { LoginDto } from '@/auth/dto/login.dto';
-import { TokenDto } from '@/auth/dto/token.dto';
-import { RefreshTokenDto } from '@/auth/dto/refresh-token.dto';
-import { AccountDto } from '@/auth/dto/account.dto';
+import { ResponseMessage } from '@/constants/type';
+import { LoginReqDto } from '@/auth/dto/req/login.req.dto';
+import { LogoutReqDto } from '@/auth/dto/req/logout.req.dto';
+import { RefreshTokenReqDto } from '@/auth/dto/req/refresh-token.req.dto';
+import { LoginResDto } from '@/auth/dto/res/login.res.dto';
+import { LogoutResDto } from '@/auth/dto/res/logout.res.dto';
+import { RefreshTokenResDto } from '@/auth/dto/res/refresh-token.res.dto';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @Post('register')
-  async register(@Body() accountDto: AccountDto) {
-    return this.authService.createAccount(accountDto);
-  }
-
   @Public()
-  @UseGuards(LocalAuthGuard)
   @HttpCode(HttpStatus.OK)
+  @ResponseMessage('res.success.login')
+  @ApiOkResponse({ type: LoginResDto })
   @Post('login')
-  async login(@Request() req, @Body() loginDto: LoginDto): Promise<TokenDto> {
+  async login(@Body() loginDto: LoginReqDto) {
     return this.authService.login(loginDto);
   }
 
-  @Public()
   @UseGuards(RefreshTokenGuard)
   @HttpCode(HttpStatus.OK)
-  @Post('refresh')
-  async refresh(
-    @Request() req,
-    @Body() tokenDto: RefreshTokenDto,
-  ): Promise<TokenDto> {
-    return this.authService.refreshAccessToken(tokenDto.refreshToken);
+  @ResponseMessage('res.success.logout')
+  @ApiOkResponse({ type: LogoutResDto })
+  @Post('logout')
+  async logout(@Body() tokenDto: LogoutReqDto) {
+    await this.authService.logout(tokenDto.refreshToken);
   }
 
   @UseGuards(RefreshTokenGuard)
   @HttpCode(HttpStatus.OK)
-  @Post('logout')
-  async logout(@Body() tokenDto: RefreshTokenDto): Promise<void> {
-    await this.authService.logout(tokenDto.refreshToken);
+  @ResponseMessage('res.success.refresh-token')
+  @ApiOkResponse({ type: RefreshTokenResDto })
+  @Post('refresh-token')
+  async refresh(@Body() tokenDto: RefreshTokenReqDto) {
+    return this.authService.processNewToken(tokenDto.refreshToken);
   }
 }

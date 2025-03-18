@@ -1,0 +1,7 @@
+{
+  "success": {
+    "login": "Login successfully!",
+    "logout": "Logout successfully!",
+    "refresh-token": "Refresh token successfully!"
+  }
+}

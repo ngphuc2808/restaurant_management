@@ -7,9 +7,10 @@ import {
   Param,
   Delete,
 } from '@nestjs/common';
-import { TableService } from './table.service';
-import { CreateTableDto } from './dto/create-table.dto';
-import { UpdateTableDto } from './dto/update-table.dto';
+
+import { TableService } from '@/table/table.service';
+import { CreateTableDto } from '@/table/dto/create-table.dto';
+import { UpdateTableDto } from '@/table/dto/update-table.dto';
 
 @Controller('table')
 export class TableController {
