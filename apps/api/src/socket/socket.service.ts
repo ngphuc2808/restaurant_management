@@ -1,27 +1,52 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 
-import { CreateSocketDto } from '@/socket/dto/create-socket.dto';
-import { UpdateSocketDto } from '@/socket/dto/update-socket.dto';
+import { PrismaService } from '@/prisma.service';
+import { Role } from '@/constants/type';
 
 @Injectable()
 export class SocketService {
-  create(createSocketDto: CreateSocketDto) {
-    return 'This action adds a new socket';
+  constructor(
+    private prisma: PrismaService,
+    private logger: Logger,
+  ) {}
+
+  async findOneWithAccountId(accountId: number) {
+    try {
+      const socket = await this.prisma.socket.findUnique({
+        where: { accountId },
+      });
+
+      return socket;
+    } catch (error) {
+      this.logger.error(error.message);
+      throw error;
+    }
   }
 
-  findAll() {
-    return `This action returns all socket`;
-  }
+  async upsertSocket(userId: number, socketId: string, role: string) {
+    try {
+      const existingSocket = await this.prisma.socket.findUnique({
+        where:
+          role === Role.Guest ? { guestId: userId } : { accountId: userId },
+      });
 
-  findOne(id: number) {
-    return `This action returns a #${id} socket`;
-  }
-
-  update(id: number, updateSocketDto: UpdateSocketDto) {
-    return `This action updates a #${id} socket`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} socket`;
+      if (existingSocket) {
+        await this.prisma.socket.update({
+          where:
+            role === Role.Guest ? { guestId: userId } : { accountId: userId },
+          data: { socketId: socketId },
+        });
+      } else {
+        await this.prisma.socket.create({
+          data:
+            role === Role.Guest
+              ? { guestId: userId, socketId: socketId }
+              : { accountId: userId, socketId: socketId },
+        });
+      }
+    } catch (error) {
+      this.logger.error(error.message);
+      throw error;
+    }
   }
 }

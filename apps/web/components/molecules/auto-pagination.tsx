@@ -8,187 +8,160 @@ import {
   PaginationContent,
   PaginationEllipsis,
   PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
 } from "@repo/ui/components/pagination";
-import { cn } from "@repo/ui/lib/utils";
+import { useIsMobile } from "@repo/ui/hooks/use-mobile";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@repo/ui/components/select";
 
 type Props = {
   page: number;
+  setPage: (page: number) => void;
+  limit: number;
+  setLimit: (limit: number) => void;
   pageSize: number;
-  pathname?: string;
-  isLink?: boolean;
-  onClick?: (pageNumber: number) => void;
 };
 
-const RANGE = 2;
+const RANGE = 1;
 
 const AutoPagination = ({
   page,
+  setPage,
+  limit,
+  setLimit,
   pageSize,
-  pathname = "/",
-  isLink = true,
-  onClick = (pageNumber) => {},
 }: Props) => {
   const tAll = useTranslations("All");
+
+  const isMobile = useIsMobile();
 
   const renderPagination = () => {
     let dotAfter = false;
     let dotBefore = false;
+
     const renderDotBefore = (index: number) => {
       if (!dotBefore) {
         dotBefore = true;
         return (
-          <PaginationItem>
+          <PaginationItem key={`dot-before-${index}`}>
             <PaginationEllipsis title={tAll("more_pages")} />
           </PaginationItem>
         );
       }
       return null;
     };
+
     const renderDotAfter = (index: number) => {
       if (!dotAfter) {
         dotAfter = true;
         return (
-          <PaginationItem>
+          <PaginationItem key={`dot-after-${index}`}>
             <PaginationEllipsis title={tAll("more_pages")} />
           </PaginationItem>
         );
       }
       return null;
     };
-    return Array(pageSize)
-      .fill(0)
-      .map((_, index) => {
-        const pageNumber = index + 1;
 
-        if (
-          page <= RANGE * 2 + 1 &&
+    return Array.from({ length: pageSize }).map((_, index) => {
+      const pageNumber = index;
+
+      if (
+        page <= RANGE * 2 + 1 &&
+        pageNumber > page + RANGE &&
+        pageNumber < pageSize - RANGE + 1
+      ) {
+        return renderDotAfter(index);
+      } else if (page > RANGE * 2 + 1 && page < pageSize - RANGE * 2) {
+        if (pageNumber < page - RANGE && pageNumber > RANGE) {
+          return renderDotBefore(index);
+        } else if (
           pageNumber > page + RANGE &&
           pageNumber < pageSize - RANGE + 1
         ) {
           return renderDotAfter(index);
-        } else if (page > RANGE * 2 + 1 && page < pageSize - RANGE * 2) {
-          if (pageNumber < page - RANGE && pageNumber > RANGE) {
-            return renderDotBefore(index);
-          } else if (
-            pageNumber > page + RANGE &&
-            pageNumber < pageSize - RANGE + 1
-          ) {
-            return renderDotAfter(index);
-          }
-        } else if (
-          page >= pageSize - RANGE * 2 &&
-          pageNumber > RANGE &&
-          pageNumber < page - RANGE
-        ) {
-          return renderDotBefore(index);
         }
-        return (
-          <PaginationItem key={index}>
-            {isLink && (
-              <PaginationLink
-                href={{
-                  pathname,
-                  query: {
-                    page: pageNumber,
-                  },
-                }}
-                isActive={pageNumber === page}
-              >
-                {pageNumber}
-              </PaginationLink>
-            )}
-            {!isLink && (
-              <Button
-                onClick={() => {
-                  onClick(pageNumber);
-                }}
-                variant={pageNumber === page ? "outline" : "ghost"}
-                className="w-9 h-9 p-0"
-              >
-                {pageNumber}
-              </Button>
-            )}
-          </PaginationItem>
-        );
-      });
+      } else if (
+        page >= pageSize - RANGE * 2 &&
+        pageNumber > RANGE &&
+        pageNumber < page - RANGE
+      ) {
+        return renderDotBefore(index);
+      }
+
+      return (
+        <PaginationItem key={`page-${pageNumber}`}>
+          <Button
+            onClick={() => setPage(pageNumber)}
+            variant={pageNumber === page ? "outline" : "ghost"}
+            className="w-9 h-9 p-0"
+          >
+            {pageNumber + 1}
+          </Button>
+        </PaginationItem>
+      );
+    });
   };
 
   return (
     <Pagination>
       <PaginationContent>
         <PaginationItem>
-          {isLink && (
-            <PaginationPrevious
-              href={{
-                pathname,
-                query: {
-                  page: page - 1,
-                },
-              }}
-              className={cn({
-                "cursor-not-allowed": page === 1,
-              })}
-              onClick={(e) => {
-                if (page === 1) {
-                  e.preventDefault();
-                  e.nativeEvent.stopImmediatePropagation();
-                }
-              }}
-              title={tAll("previous")}
-            />
-          )}
-          {!isLink && (
-            <Button
-              disabled={page === 1}
-              className="h-9 p-0 px-2"
-              variant={"ghost"}
-              onClick={() => {
-                onClick(page - 1);
-              }}
-            >
-              <ChevronLeft className="w-5 h-5" /> {tAll("previous")}
-            </Button>
-          )}
+          <Button
+            disabled={page === 0}
+            className="h-9 p-0 px-2"
+            variant={"ghost"}
+            onClick={() => {
+              setPage(page - 1);
+            }}
+          >
+            <ChevronLeft className="w-5 h-5" /> {tAll("previous")}
+          </Button>
         </PaginationItem>
         {renderPagination()}
         <PaginationItem>
-          {isLink && (
-            <PaginationNext
-              href={{
-                pathname,
-                query: {
-                  page: page + 1,
-                },
-              }}
-              className={cn({
-                "cursor-not-allowed": page === pageSize,
-              })}
-              onClick={(e) => {
-                if (page === pageSize) {
-                  e.preventDefault();
-                  e.nativeEvent.stopImmediatePropagation();
-                }
-              }}
-              scroll={false}
-              title={tAll("next")}
-            />
-          )}
-          {!isLink && (
-            <Button
-              disabled={page === pageSize}
-              className="h-9 p-0 px-2"
-              variant={"ghost"}
-              onClick={() => {
-                onClick(page + 1);
-              }}
-            >
-              {tAll("next")} <ChevronRight className="w-5 h-5" />
-            </Button>
-          )}
+          <Button
+            disabled={page === pageSize - 1}
+            className="h-9 p-0 px-2"
+            variant={"ghost"}
+            onClick={() => {
+              setPage(page + 1);
+            }}
+          >
+            {tAll("next")} <ChevronRight className="w-5 h-5" />
+          </Button>
         </PaginationItem>
+        {!isMobile && (
+          <Select
+            value={limit.toString()}
+            onValueChange={(value) => {
+              setPage(0);
+              setLimit(Number(value));
+            }}
+          >
+            <SelectTrigger className="w-fit cursor-pointer">
+              <SelectValue placeholder={limit.toString()} />
+            </SelectTrigger>
+            <SelectContent className="min-w-0">
+              <SelectGroup>
+                {[12, 24, 36, 48].map((item) => (
+                  <SelectItem
+                    key={item}
+                    className="cursor-pointer"
+                    value={item.toString()}
+                  >
+                    {item}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+        )}
       </PaginationContent>
     </Pagination>
   );

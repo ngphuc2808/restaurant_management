@@ -99,6 +99,7 @@ const EditDish = ({
       if (file) {
         const formData = new FormData();
         formData.append("file", file);
+        formData.append("folder", "dishes");
         const uploadImageResult =
           await uploadMediaMutation.mutateAsync(formData);
         const imageUrl = uploadImageResult.payload.data;

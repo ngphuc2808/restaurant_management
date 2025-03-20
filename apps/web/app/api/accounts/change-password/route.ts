@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import jwt from "jsonwebtoken";
 import { ChangePasswordV2BodyType } from "@/schemaValidations/account.schema";
 import accountApiRequest from "@/apiRequests/account";
+import { HttpError } from "@/lib/http";
 
 export async function PUT(request: Request) {
   const cookieStore = await cookies();
@@ -45,14 +46,17 @@ export async function PUT(request: Request) {
     });
     return Response.json(payload);
   } catch (error: any) {
-    console.log(error);
-    return Response.json(
-      {
-        message: error.message ?? "Có lỗi xảy ra",
-      },
-      {
-        status: error.status ?? 500,
-      },
-    );
+    if (error instanceof HttpError) {
+      return Response.json(error.payload, {
+        status: error.status,
+      });
+    } else {
+      return Response.json(
+        { message: "Internal server error" },
+        {
+          status: 500,
+        },
+      );
+    }
   }
 }

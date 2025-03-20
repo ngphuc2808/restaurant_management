@@ -8,18 +8,20 @@ import { JwtService } from '@nestjs/jwt';
 import { RefreshTokenService } from '@/refresh-token/refresh-token.service';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '@/prisma.service';
+import { AccountService } from '@/account/account.service';
 
 @Module({
   controllers: [SocketController],
   providers: [
+    Logger,
+    JwtService,
+    ConfigService,
     PrismaService,
     SocketGateway,
-    SocketService,
     AuthService,
-    JwtService,
+    AccountService,
+    SocketService,
     RefreshTokenService,
-    ConfigService,
-    Logger,
   ],
 })
 export class SocketModule {}

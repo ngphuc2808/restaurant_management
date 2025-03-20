@@ -1,16 +1,8 @@
-import {
-  Controller,
-  Post,
-  Body,
-  UseGuards,
-  HttpCode,
-  HttpStatus,
-} from '@nestjs/common';
+import { Controller, Post, Body, HttpCode, HttpStatus } from '@nestjs/common';
 import { ApiOkResponse } from '@nestjs/swagger';
 
 import { AuthService } from '@/auth/auth.service';
 import { Public } from '@/auth/decorators/public.decorator';
-import { RefreshTokenGuard } from '@/auth/guards/refresh-token.guard';
 import { ResponseMessage } from '@/constants/type';
 import { LoginReqDto } from '@/auth/dto/req/login.req.dto';
 import { LogoutReqDto } from '@/auth/dto/req/logout.req.dto';
@@ -32,7 +24,6 @@ export class AuthController {
     return this.authService.login(loginDto);
   }
 
-  @UseGuards(RefreshTokenGuard)
   @HttpCode(HttpStatus.OK)
   @ResponseMessage('res.success.logout')
   @ApiOkResponse({ type: LogoutResDto })
@@ -41,7 +32,7 @@ export class AuthController {
     await this.authService.logout(tokenDto.refreshToken);
   }
 
-  @UseGuards(RefreshTokenGuard)
+  @Public()
   @HttpCode(HttpStatus.OK)
   @ResponseMessage('res.success.refresh-token')
   @ApiOkResponse({ type: RefreshTokenResDto })

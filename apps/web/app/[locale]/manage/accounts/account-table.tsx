@@ -15,11 +15,9 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { CaretSortIcon, DotsHorizontalIcon } from "@radix-ui/react-icons";
+import { LoaderCircle } from "lucide-react";
 
-import {
-  AccountListResType,
-  AccountType,
-} from "@/schemaValidations/account.schema";
+import { AccountType } from "@/schemaValidations/account.schema";
 import {
   useDeleteAccountMutation,
   useGetAccountList,
@@ -62,17 +60,14 @@ import { toast } from "@repo/ui/hooks/use-toast";
 import AddEmployee from "@/app/[locale]/manage/accounts/add-employee";
 import EditEmployee from "@/app/[locale]/manage/accounts/edit-employee";
 import AutoPagination from "@/components/molecules/auto-pagination";
-import SearchParamsLoader, {
-  useSearchParamsLoader,
-} from "@/components/atoms/search-params-loader";
 import useAccount from "@/store/account";
 
 const AlertDialogDeleteAccount = ({
   employeeDelete,
   setEmployeeDelete,
 }: {
-  employeeDelete: AccountListResType["data"][0] | undefined;
-  setEmployeeDelete: (value: AccountListResType["data"][0] | undefined) => void;
+  employeeDelete: AccountType | undefined;
+  setEmployeeDelete: (value: AccountType | undefined) => void;
 }) => {
   const t = useTranslations("ManageAccounts");
   const tAll = useTranslations("All");
@@ -123,8 +118,6 @@ const AlertDialogDeleteAccount = ({
   );
 };
 
-const PAGE_SIZE = 10;
-
 const AccountTable = () => {
   const {
     employeeIdEdit,
@@ -136,21 +129,20 @@ const AccountTable = () => {
   const t = useTranslations("ManageAccounts");
   const tAll = useTranslations("All");
 
-  const { searchParams, setSearchParams } = useSearchParamsLoader();
-  const page = searchParams?.get("page")
-    ? Number(searchParams?.get("page"))
-    : 1;
-  const pageIndex = page - 1;
+  const [page, setPage] = useState<number>(0);
+  const [limit, setLimit] = useState<number>(12);
+  const accountListQuery = useGetAccountList(page + 1, limit);
+  const data = accountListQuery.data?.payload.data.accounts ?? [];
+  const meta = accountListQuery.data?.payload.data.meta;
 
-  const accountListQuery = useGetAccountList();
-  const data = accountListQuery.data?.payload.data ?? [];
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = useState({});
+
   const [pagination, setPagination] = useState({
-    pageIndex,
-    pageSize: PAGE_SIZE,
+    pageIndex: page,
+    pageSize: limit,
   });
 
   const columns: ColumnDef<AccountType>[] = useMemo(() => {
@@ -246,7 +238,6 @@ const AccountTable = () => {
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
     onPaginationChange: setPagination,
-    autoResetPageIndex: false,
     state: {
       sorting,
       columnFilters,
@@ -258,14 +249,16 @@ const AccountTable = () => {
 
   useEffect(() => {
     table.setPagination({
-      pageIndex,
-      pageSize: PAGE_SIZE,
+      pageIndex: page,
+      pageSize: limit,
     });
-  }, [table, pageIndex]);
+  }, [table, page, limit]);
+
+  if (accountListQuery.isLoading)
+    return <LoaderCircle className="w-5 h-5 mr-2 animate-spin" />;
 
   return (
     <>
-      <SearchParamsLoader onParamsReceived={setSearchParams} />
       <div className="w-full">
         <EditEmployee
           id={employeeIdEdit}
@@ -348,9 +341,11 @@ const AccountTable = () => {
           </div>
           <div>
             <AutoPagination
-              page={table.getState().pagination.pageIndex + 1}
-              pageSize={table.getPageCount()}
-              pathname="/manage/accounts"
+              pageSize={meta?.totalPages ?? 1}
+              page={page}
+              setPage={setPage}
+              limit={limit}
+              setLimit={setLimit}
             />
           </div>
         </div>

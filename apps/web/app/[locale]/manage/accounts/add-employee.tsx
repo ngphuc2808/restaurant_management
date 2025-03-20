@@ -78,6 +78,7 @@ const AddEmployee = () => {
       if (file) {
         const formData = new FormData();
         formData.append("file", file);
+        formData.append("folder", "employees");
         const uploadImageResult =
           await uploadMediaMutation.mutateAsync(formData);
         const imageUrl = uploadImageResult.payload.data;

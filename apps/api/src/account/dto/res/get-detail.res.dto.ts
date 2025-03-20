@@ -1,6 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-export class LoginResDto {
+import { AccountType } from '@/account/dto/types';
+
+export class AccountResDto {
   @ApiProperty({ example: 200 })
   statusCode: number;
 
@@ -10,17 +12,14 @@ export class LoginResDto {
   @ApiProperty({
     example: {
       id: 1,
+      name: 'Name',
       email: 'test@example.com',
       role: 'Owner',
-      accessToken: 'access-token',
-      refreshToken: 'refresh-token',
+      avatar: '',
+      ownerId: 1,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     },
   })
-  data: {
-    id: number;
-    email: string;
-    role: string;
-    accessToken: string;
-    refreshToken: string;
-  };
+  data: AccountType;
 }

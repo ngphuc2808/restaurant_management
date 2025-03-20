@@ -10,6 +10,7 @@ import {
 } from "@/schemaValidations/account.schema";
 import { useChangePasswordMutation } from "@/queries/useAccount";
 import {
+  checkMessageFromResponse,
   handleErrorApi,
   setAccessTokenToLocalStorage,
   setRefreshTokenToLocalStorage,
@@ -34,6 +35,7 @@ import { toast } from "@repo/ui/hooks/use-toast";
 const ChangePasswordForm = () => {
   const t = useTranslations("Settings");
   const tAll = useTranslations("All");
+  const tErrorMessage = useTranslations("ErrorMessage");
 
   const changePasswordMutation = useChangePasswordMutation();
   const form = useForm<ChangePasswordBodyType>({
@@ -83,7 +85,7 @@ const ChangePasswordForm = () => {
               <FormField
                 control={form.control}
                 name="oldPassword"
-                render={({ field }) => (
+                render={({ field, formState: { errors } }) => (
                   <FormItem>
                     <div className="grid gap-3">
                       <Label htmlFor="oldPassword">
@@ -96,7 +98,14 @@ const ChangePasswordForm = () => {
                         className="w-full"
                         {...field}
                       />
-                      <FormMessage />
+                      <FormMessage>
+                        {errors.oldPassword?.message &&
+                          (checkMessageFromResponse(errors.oldPassword?.type)
+                            ? errors.oldPassword?.message
+                            : tErrorMessage(
+                                errors.oldPassword?.message as any,
+                              ))}
+                      </FormMessage>
                     </div>
                   </FormItem>
                 )}
@@ -104,7 +113,7 @@ const ChangePasswordForm = () => {
               <FormField
                 control={form.control}
                 name="password"
-                render={({ field }) => (
+                render={({ field, formState: { errors } }) => (
                   <FormItem>
                     <div className="grid gap-3">
                       <Label htmlFor="password">{t("enterNewPassword")}</Label>
@@ -115,7 +124,12 @@ const ChangePasswordForm = () => {
                         className="w-full"
                         {...field}
                       />
-                      <FormMessage />
+                      <FormMessage>
+                        {errors.password?.message &&
+                          (checkMessageFromResponse(errors.password?.type)
+                            ? errors.password?.message
+                            : tErrorMessage(errors.password?.message as any))}
+                      </FormMessage>
                     </div>
                   </FormItem>
                 )}
@@ -123,7 +137,7 @@ const ChangePasswordForm = () => {
               <FormField
                 control={form.control}
                 name="confirmPassword"
-                render={({ field }) => (
+                render={({ field, formState: { errors } }) => (
                   <FormItem>
                     <div className="grid gap-3">
                       <Label htmlFor="confirmPassword">
@@ -136,7 +150,16 @@ const ChangePasswordForm = () => {
                         className="w-full"
                         {...field}
                       />
-                      <FormMessage />
+                      <FormMessage>
+                        {errors.confirmPassword?.message &&
+                          (checkMessageFromResponse(
+                            errors.confirmPassword?.type,
+                          )
+                            ? errors.confirmPassword?.message
+                            : tErrorMessage(
+                                errors.confirmPassword?.message as any,
+                              ))}
+                      </FormMessage>
                     </div>
                   </FormItem>
                 )}

@@ -47,7 +47,7 @@ export class TransformInterceptor<T>
             new HttpException(
               {
                 statusCode: err.status || 500,
-                errors: err.response.errors || [],
+                errors: err.response.errors || null,
                 message: err.message || 'Internal Server Error',
               },
               err.status || 500,

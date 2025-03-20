@@ -26,7 +26,11 @@ import {
   FormLabel,
   FormMessage,
 } from "@repo/ui/components/form";
-import { getVietnameseOrderStatus, handleErrorApi } from "@/lib/utils";
+import {
+  checkMessageFromResponse,
+  getVietnameseOrderStatus,
+  handleErrorApi,
+} from "@/lib/utils";
 import { OrderStatus, OrderStatusValues } from "@/constants/type";
 import {
   Select,
@@ -170,7 +174,7 @@ const EditOrder = ({
               <FormField
                 control={form.control}
                 name="quantity"
-                render={({ field }) => (
+                render={({ field, formState: { errors } }) => (
                   <FormItem>
                     <div className="grid grid-cols-4 items-center justify-items-start gap-4">
                       <Label htmlFor="quantity">{t("quantity")}</Label>
@@ -191,7 +195,12 @@ const EditOrder = ({
                             field.onChange(numberValue);
                           }}
                         />
-                        <FormMessage />
+                        <FormMessage>
+                          {errors.quantity?.message &&
+                            (checkMessageFromResponse(errors.quantity?.type)
+                              ? errors.quantity?.message
+                              : tErrorMessage(errors.quantity?.message as any))}
+                        </FormMessage>
                       </div>
                     </div>
                   </FormItem>
@@ -200,7 +209,7 @@ const EditOrder = ({
               <FormField
                 control={form.control}
                 name="status"
-                render={({ field }) => (
+                render={({ field, formState: { errors } }) => (
                   <FormItem>
                     <div className="grid grid-cols-4 items-center justify-items-start gap-4">
                       <FormLabel>{tAll("status")}</FormLabel>
@@ -221,7 +230,12 @@ const EditOrder = ({
                           ))}
                         </SelectContent>
                       </Select>
-                      <FormMessage />
+                      <FormMessage>
+                        {errors.status?.message &&
+                          (checkMessageFromResponse(errors.status?.type)
+                            ? errors.status?.message
+                            : tErrorMessage(errors.status?.message as any))}
+                      </FormMessage>
                     </div>
                   </FormItem>
                 )}
