@@ -1,4 +1,6 @@
+import { I18nService } from 'nestjs-i18n';
 import { Test, TestingModule } from '@nestjs/testing';
+
 import { AuthController } from '@/auth/auth.controller';
 import { AuthService } from '@/auth/auth.service';
 import { LoginReqDto } from '@/auth/dto/req/login.req.dto';
@@ -7,6 +9,7 @@ import { RefreshTokenReqDto } from '@/auth/dto/req/refresh-token.req.dto';
 import { LoginResDto } from '@/auth/dto/res/login.res.dto';
 import { LogoutResDto } from '@/auth/dto/res/logout.res.dto';
 import { RefreshTokenResDto } from '@/auth/dto/res/refresh-token.res.dto';
+import { Role } from '@/constants/type';
 
 describe('AuthController', () => {
   let authController: AuthController;
@@ -26,6 +29,12 @@ describe('AuthController', () => {
               .mockResolvedValue(new RefreshTokenResDto()),
           },
         },
+        {
+          provide: I18nService,
+          useValue: {
+            translate: jest.fn().mockReturnValue('translated-message'),
+          },
+        },
       ],
     }).compile();
 
@@ -38,35 +47,74 @@ describe('AuthController', () => {
   });
 
   describe('login', () => {
-    it('should return login response', async () => {
+    it('should login', async () => {
       const loginDto: LoginReqDto = {
         email: 'test@example.com',
         password: 'password123',
       };
+
+      const mockResData: LoginResDto = {
+        statusCode: 200,
+        message: 'res.success.login',
+        data: {
+          id: 1,
+          email: 'test@example.com',
+          role: Role.Owner,
+          accessToken: 'access-token',
+          refreshToken: 'refresh-token',
+        },
+      };
+
+      (authService.login as jest.Mock).mockResolvedValue(mockResData);
       const result = await authController.login(loginDto);
+      const resultDto = Object.assign(new LoginResDto(), result);
       expect(authService.login).toHaveBeenCalledWith(loginDto);
-      expect(result).toBeInstanceOf(LoginResDto);
+      expect(resultDto).toBeInstanceOf(LoginResDto);
     });
   });
 
   describe('logout', () => {
     it('should call logout method', async () => {
-      const logoutDto: LogoutReqDto = { refreshToken: 'some-refresh-token' };
-      await authController.logout(logoutDto);
+      const logoutDto: LogoutReqDto = { refreshToken: 'refresh-token' };
+
+      const mockResData: LogoutResDto = {
+        statusCode: 200,
+        message: 'res.success.logout',
+      };
+
+      (authService.logout as jest.Mock).mockResolvedValue(mockResData);
+      const result = await authController.logout(logoutDto);
+      const resultDto = Object.assign(new LogoutResDto(), result);
       expect(authService.logout).toHaveBeenCalledWith(logoutDto.refreshToken);
+      expect(resultDto).toBeInstanceOf(LogoutResDto);
     });
   });
 
   describe('refresh', () => {
     it('should return new refresh token', async () => {
       const refreshDto: RefreshTokenReqDto = {
-        refreshToken: 'some-refresh-token',
+        refreshToken: 'refresh-token',
       };
+
+      const mockResData: RefreshTokenResDto = {
+        statusCode: 200,
+        message: 'res.success.login',
+        data: {
+          id: 1,
+          email: 'test@example.com',
+          role: Role.Owner,
+          accessToken: 'access-token',
+          refreshToken: 'refresh-token',
+        },
+      };
+
+      (authService.processNewToken as jest.Mock).mockResolvedValue(mockResData);
       const result = await authController.refresh(refreshDto);
+      const resultDto = Object.assign(new RefreshTokenResDto(), result);
       expect(authService.processNewToken).toHaveBeenCalledWith(
         refreshDto.refreshToken,
       );
-      expect(result).toBeInstanceOf(RefreshTokenResDto);
+      expect(resultDto).toBeInstanceOf(RefreshTokenResDto);
     });
   });
 });

@@ -1,8 +1,10 @@
 import {
+  Inject,
   Injectable,
   Logger,
   UnauthorizedException,
   UnprocessableEntityException,
+  forwardRef,
 } from '@nestjs/common';
 import { I18nService } from 'nestjs-i18n';
 import { JwtService } from '@nestjs/jwt';
@@ -14,19 +16,21 @@ import * as ms from 'ms';
 import { Account } from '@prisma/client';
 import { LoginReqDto } from '@/auth/dto/req/login.req.dto';
 
-import { PrismaService } from '@/prisma.service';
 import { RefreshTokenService } from '@/refresh-token/refresh-token.service';
-import { Role } from '@/constants/type';
+import { AccountService } from '@/account/account.service';
+import { SocketService } from '@/socket/socket.service';
 
 @Injectable()
 export class AuthService {
   constructor(
-    private prisma: PrismaService,
-    private jwtService: JwtService,
-    private refreshTokenService: RefreshTokenService,
-    private configService: ConfigService,
-    private i18n: I18nService,
     private logger: Logger,
+    private i18n: I18nService,
+    private jwtService: JwtService,
+    @Inject(forwardRef(() => AccountService))
+    private accountService: AccountService,
+    private configService: ConfigService,
+    private refreshTokenService: RefreshTokenService,
+    private socketService: SocketService,
   ) {}
 
   async validateSocket(socket: Socket) {
@@ -52,59 +56,9 @@ export class AuthService {
 
       const { id, role } = decodedAccessToken;
 
-      if (role === Role.Guest) {
-        await this.prisma.socket.upsert({
-          where: {
-            guestId: id,
-          },
-          update: {
-            socketId: socket.id,
-          },
-          create: {
-            guestId: id,
-            socketId: socket.id,
-          },
-        });
-      } else {
-        await this.prisma.socket.upsert({
-          where: {
-            accountId: id,
-          },
-          update: {
-            socketId: socket.id,
-          },
-          create: {
-            accountId: id,
-            socketId: socket.id,
-          },
-        });
-      }
+      await this.socketService.upsertSocket(id, socket.id, role);
+
       return decodedAccessToken;
-    } catch (error) {
-      this.logger.error(error.message);
-      throw error;
-    }
-  }
-
-  async findAccountWithEmail(email: string) {
-    try {
-      const account = await this.prisma.account.findUnique({
-        where: { email },
-      });
-
-      if (!account) {
-        throw new UnprocessableEntityException({
-          message: this.i18n.t('errors.auth.invalid-email'),
-          errors: [
-            {
-              field: 'email',
-              message: this.i18n.t('errors.auth.invalid-email'),
-            },
-          ],
-        });
-      }
-
-      return account;
     } catch (error) {
       this.logger.error(error.message);
       throw error;
@@ -113,7 +67,7 @@ export class AuthService {
 
   async validateAccount(email: string, pass: string) {
     try {
-      const account = await this.findAccountWithEmail(email);
+      const account = await this.accountService.findAccountWithEmail(email);
 
       if (!(await bcrypt.compare(pass, account.password))) {
         throw new UnprocessableEntityException({
@@ -242,7 +196,7 @@ export class AuthService {
       }
 
       await this.refreshTokenService.invalidate(refreshToken);
-      const account = await this.findAccountWithEmail(email);
+      const account = await this.accountService.findAccountWithEmail(email);
 
       return this.generateTokens(account);
     } catch (error) {

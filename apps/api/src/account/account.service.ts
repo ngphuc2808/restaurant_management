@@ -1,8 +1,10 @@
 import { PrismaService } from '@/prisma.service';
 import {
+  Inject,
   Injectable,
   Logger,
   UnprocessableEntityException,
+  forwardRef,
 } from '@nestjs/common';
 import { I18nService } from 'nestjs-i18n';
 import * as bcrypt from 'bcryptjs';
@@ -22,13 +24,14 @@ import { Role } from '@/constants/type';
 @Injectable()
 export class AccountService {
   constructor(
+    private logger: Logger,
+    private i18n: I18nService,
     private prisma: PrismaService,
+    @Inject(forwardRef(() => AuthService))
     private authService: AuthService,
     private refreshTokenService: RefreshTokenService,
     private socketService: SocketService,
     private socketGateway: SocketGateway,
-    private i18n: I18nService,
-    private logger: Logger,
   ) {}
 
   async me(id: number) {
@@ -241,7 +244,7 @@ export class AccountService {
       }
 
       if (body.email !== oldAccount.email) {
-        await this.authService.findAccountWithEmail(body.email);
+        await this.findAccountWithEmail(body.email);
       }
 
       const isChangeRole = oldAccount.role !== body.role;
@@ -291,6 +294,31 @@ export class AccountService {
           password: true,
         },
       });
+    } catch (error) {
+      this.logger.error(error.message);
+      throw error;
+    }
+  }
+
+  async findAccountWithEmail(email: string) {
+    try {
+      const account = await this.prisma.account.findUnique({
+        where: { email },
+      });
+
+      if (!account) {
+        throw new UnprocessableEntityException({
+          message: this.i18n.t('errors.auth.invalid-email'),
+          errors: [
+            {
+              field: 'email',
+              message: this.i18n.t('errors.auth.invalid-email'),
+            },
+          ],
+        });
+      }
+
+      return account;
     } catch (error) {
       this.logger.error(error.message);
       throw error;

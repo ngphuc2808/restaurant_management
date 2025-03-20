@@ -48,6 +48,27 @@ export class AccountController {
     return this.accountService.updateMe(user.id, updateMeDto);
   }
 
+  @HttpCode(HttpStatus.OK)
+  @ResponseMessage('res.success.account.update-password')
+  @ApiOkResponse({ type: AccountResDto })
+  @Put('change-password')
+  updatePassword(
+    @User() user: UserDto,
+    @Body() changePasswordReqDto: ChangePasswordReqDto,
+  ) {
+    return this.accountService.updatePassword(user.id, changePasswordReqDto);
+  }
+
+  @UseGuards(RoleGuard)
+  @Roles(Role.Owner)
+  @HttpCode(HttpStatus.OK)
+  @ResponseMessage('res.success.account.get-list')
+  @ApiOkResponse({ type: GetAccountListResDto })
+  @Get()
+  getAccountList(@Query() paginationDto: PaginationReqDto) {
+    return this.accountService.getAccountList(paginationDto);
+  }
+
   @UseGuards(RoleGuard)
   @Roles(Role.Owner)
   @HttpCode(HttpStatus.OK)
@@ -61,11 +82,11 @@ export class AccountController {
   @UseGuards(RoleGuard)
   @Roles(Role.Owner)
   @HttpCode(HttpStatus.OK)
-  @ResponseMessage('res.success.account.delete')
-  @ApiOkResponse({ type: DeleteAccountResDto })
-  @Delete('detail/:id')
-  deleteAccount(@Param('id') id: string) {
-    return this.accountService.deleteAccount(Number(id));
+  @ResponseMessage('res.success.account.create')
+  @ApiOkResponse({ type: AccountResDto })
+  @Post()
+  create(@Body() createAccountDto: CreateAccountReqDto) {
+    return this.accountService.create(createAccountDto);
   }
 
   @UseGuards(RoleGuard)
@@ -81,34 +102,13 @@ export class AccountController {
     return this.accountService.updateAccount(Number(id), updateMeDto);
   }
 
-  @HttpCode(HttpStatus.OK)
-  @ResponseMessage('res.success.account.update-password')
-  @ApiOkResponse({ type: AccountResDto })
-  @Put('change-password')
-  updatePassword(
-    @User() user: UserDto,
-    @Body() changePasswordReqDto: ChangePasswordReqDto,
-  ) {
-    return this.accountService.updatePassword(user.id, changePasswordReqDto);
-  }
-
   @UseGuards(RoleGuard)
   @Roles(Role.Owner)
   @HttpCode(HttpStatus.OK)
-  @ResponseMessage('res.success.account.get-all')
-  @ApiOkResponse({ type: GetAccountListResDto })
-  @Get()
-  getAccountList(@Query() paginationDto: PaginationReqDto) {
-    return this.accountService.getAccountList(paginationDto);
-  }
-
-  @UseGuards(RoleGuard)
-  @Roles(Role.Owner)
-  @HttpCode(HttpStatus.OK)
-  @ResponseMessage('res.success.account.create')
-  @ApiOkResponse({ type: AccountResDto })
-  @Post()
-  create(@Body() createAccountDto: CreateAccountReqDto) {
-    return this.accountService.create(createAccountDto);
+  @ResponseMessage('res.success.account.delete')
+  @ApiOkResponse({ type: DeleteAccountResDto })
+  @Delete('detail/:id')
+  deleteAccount(@Param('id') id: string) {
+    return this.accountService.deleteAccount(Number(id));
   }
 }

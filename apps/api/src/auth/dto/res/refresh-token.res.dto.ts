@@ -10,8 +10,8 @@ export class RefreshTokenResDto {
   @ApiProperty({
     example: {
       id: 1,
-      email: 'email@test.com',
-      role: 'Employee',
+      email: 'test@example.com',
+      role: 'Owner',
       accessToken: 'access-token',
       refreshToken: 'refresh-token',
     },

@@ -4,7 +4,7 @@
     "logout": "Đăng xuất thành công!",
     "refresh-token": "Làm mới token thành công!",
     "account": {
-      "get-all": "Lấy danh sách tài khoản thành công!",
+      "get-list": "Lấy danh sách tài khoản thành công!",
       "get": "Lấy thông tin tài khoản thành công!",
       "create": "Tạo tài khoản thành công!",
       "update": "Cập nhật tài khoản thành công!",

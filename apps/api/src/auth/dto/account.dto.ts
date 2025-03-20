@@ -1,13 +1,9 @@
 import {
-  IsString,
   IsEmail,
   IsOptional,
-  MinLength,
-  MaxLength,
   IsEnum,
   IsNumber,
   IsNotEmpty,
-  IsUrl,
 } from 'class-validator';
 
 import { Role } from '@/constants/type';

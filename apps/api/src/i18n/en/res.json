@@ -4,7 +4,7 @@
     "logout": "Logout successfully!",
     "refresh-token": "Refresh token successfully!",
     "account": {
-      "get-all": "Get all accounts successfully!",
+      "get-list": "Get all accounts successfully!",
       "get": "Get account successfully!",
       "create": "Create account successfully!",
       "update": "Update account successfully!",

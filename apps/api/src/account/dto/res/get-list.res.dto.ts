@@ -13,10 +13,10 @@ export class GetAccountListResDto {
     example: {
       accounts: [
         {
-          role: 'Employee',
           id: 1,
-          name: 'Nhan vien',
-          email: 'email@test.com',
+          name: 'Name',
+          email: 'test@example.com',
+          role: 'Owner',
           avatar: '',
           ownerId: 1,
           createdAt: new Date().toISOString(),

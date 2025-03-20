@@ -8,7 +8,7 @@ import {
   ConnectedSocket,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { Logger } from '@nestjs/common';
+import { Inject, Logger, forwardRef } from '@nestjs/common';
 
 import { AuthService } from '@/auth/auth.service';
 import { ManagerRoom } from '@/constants/type';
@@ -27,7 +27,9 @@ export class SocketGateway
   @WebSocketServer() server: Server;
   private logger: Logger = new Logger('SocketGateway');
 
-  constructor(private authService: AuthService) {}
+  constructor(
+    @Inject(forwardRef(() => AuthService)) private authService: AuthService,
+  ) {}
 
   async afterInit(server: Server) {
     this.logger.log('Initialized!');
@@ -51,12 +53,5 @@ export class SocketGateway
 
   handleDisconnect(client: Socket) {
     this.logger.log(`Client disconnected: ${client.id}`);
-  }
-
-  @SubscribeMessage('message')
-  handleMessage(@ConnectedSocket() client: Socket, payload: string): void {
-    const userId = client.handshake.auth.decodedAccessToken?.userId;
-    this.logger.log(`Received message from ${userId || client.id}: ${payload}`);
-    this.server.emit('message', payload);
   }
 }
