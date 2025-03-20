@@ -8,7 +8,8 @@
       "get": "Get account successfully!",
       "create": "Create account successfully!",
       "update": "Update account successfully!",
-      "delete": "Delete account successfully!"
+      "delete": "Delete account successfully!",
+      "update-password": "Update password successfully!"
     }
   }
 }

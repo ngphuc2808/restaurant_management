@@ -13,7 +13,11 @@ import {
   GuestLoginBodyType,
 } from "@/schemaValidations/guest.schema";
 import { useGuestLoginMutation } from "@/queries/useGuest";
-import { generateSocketInstace, handleErrorApi } from "@/lib/utils";
+import {
+  checkMessageFromResponse,
+  generateSocketInstace,
+  handleErrorApi,
+} from "@/lib/utils";
 import { Button } from "@repo/ui/components/button";
 import {
   Card,
@@ -34,6 +38,7 @@ const GuestLoginForm = () => {
   const { setRole, setSocket } = useAppStore();
 
   const t = useTranslations("LoginGuest");
+  const tErrorMessage = useTranslations("ErrorMessage");
 
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -89,12 +94,17 @@ const GuestLoginForm = () => {
               <FormField
                 control={form.control}
                 name="name"
-                render={({ field }) => (
+                render={({ field, formState: { errors } }) => (
                   <FormItem>
                     <div className="grid gap-2">
                       <Label htmlFor="name">{t("guestName")}</Label>
                       <Input id="name" type="text" required {...field} />
-                      <FormMessage />
+                      <FormMessage>
+                        {errors.name?.message &&
+                          (checkMessageFromResponse(errors.name?.type)
+                            ? errors.name?.message
+                            : tErrorMessage(errors.name?.message as any))}
+                      </FormMessage>
                     </div>
                   </FormItem>
                 )}

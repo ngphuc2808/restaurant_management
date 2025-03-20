@@ -4,6 +4,7 @@ import {
   UseQueryResult,
   UseMutationResult,
   useQueryClient,
+  keepPreviousData,
 } from "@tanstack/react-query";
 
 import accountApiRequest from "@/apiRequests/account";
@@ -53,13 +54,14 @@ export const useChangePasswordMutation = (): UseMutationResult<
   });
 };
 
-export const useGetAccountList = (): UseQueryResult<
-  QueryResponseType<AccountListResType>,
-  Error
-> => {
+export const useGetAccountList = (
+  page: number,
+  limit: number,
+): UseQueryResult<QueryResponseType<AccountListResType>, Error> => {
   return useQuery({
-    queryKey: ["accounts"],
-    queryFn: accountApiRequest.list,
+    queryKey: ["accounts", page, limit],
+    queryFn: () => accountApiRequest.list({ page, limit }),
+    placeholderData: keepPreviousData,
   });
 };
 

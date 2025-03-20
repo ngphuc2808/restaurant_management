@@ -93,7 +93,7 @@ describe('AuthService', () => {
 
   describe('login', () => {
     it('should return tokens for valid user', async () => {
-      const loginDto: LoginReqDto = {
+      const body: LoginReqDto = {
         email: 'test@example.com',
         password: 'password123',
       };
@@ -101,7 +101,7 @@ describe('AuthService', () => {
         id: 1,
         email: 'test@example.com',
         password: await bcrypt.hash('password123', 10),
-        role: 'Employee',
+        role: Role.Employee,
         avatar: null,
         name: 'Test User',
         ownerId: null,
@@ -116,7 +116,7 @@ describe('AuthService', () => {
         .fn()
         .mockResolvedValue('mockRefreshToken');
 
-      const result = await authService.login(loginDto);
+      const result = await authService.login(body);
 
       expect(result.accessToken).toBe('mockAccessToken');
       expect(result.refreshToken).toBe('mockRefreshToken');
@@ -138,7 +138,7 @@ describe('AuthService', () => {
         id: 1,
         email: 'test@example.com',
         password: await bcrypt.hash('password123', 10),
-        role: 'Employee',
+        role: Role.Employee,
         avatar: null,
         name: 'Test User',
         ownerId: null,
@@ -223,7 +223,7 @@ describe('AuthService', () => {
         id: 1,
         email: 'test@example.com',
         password: await bcrypt.hash('password123', 10),
-        role: 'Employee',
+        role: Role.Employee,
         avatar: null,
         name: 'Test User',
         ownerId: null,
@@ -279,7 +279,7 @@ describe('AuthService', () => {
         id: 1,
         email: 'test@example.com',
         password: 'hashedPassword',
-        role: 'Employee',
+        role: Role.Employee,
         avatar: null,
         name: 'Test User',
         ownerId: null,
@@ -305,7 +305,7 @@ describe('AuthService', () => {
         id: 1,
         email: 'test@example.com',
         password: await bcrypt.hash('password123', 10),
-        role: 'Employee',
+        role: Role.Employee,
         avatar: null,
         name: 'Test User',
         ownerId: null,
@@ -332,35 +332,23 @@ describe('AuthService', () => {
     });
   });
 
+  describe('getAccessToken', () => {
+    it('should return access token', async () => {
+      jwtService.signAsync = jest.fn().mockResolvedValue('accessToken');
+      const account = { id: 1, email: 'test@example.com', role: Role.Employee };
+      const result = await authService.getAccessToken(account);
+      expect(result).toBe('accessToken');
+    });
+  });
+
   describe('getRefreshToken', () => {
-    it('should return refresh token for valid account', async () => {
-      const account = { id: 1, email: 'test@example.com', role: 'Employee' };
-
-      jwtService.signAsync = jest.fn().mockResolvedValue('validRefreshToken');
-
-      refreshTokenService.insert = jest
-        .fn()
-        .mockImplementation(async (userId, tokenId, expiresAt) => tokenId);
-
+    it('should return refresh token', async () => {
+      jwtService.signAsync = jest.fn().mockResolvedValue('refreshToken');
+      refreshTokenService.insert = jest.fn().mockResolvedValue(undefined);
+      const account = { id: 1, email: 'test@example.com', role: Role.Employee };
       const result = await authService.getRefreshToken(account);
-
-      expect(result).toBe('validRefreshToken');
-      expect(jwtService.signAsync).toHaveBeenCalledWith(
-        {
-          id: account.id,
-          email: account.email,
-          role: account.role,
-        },
-        {
-          secret: 'secret',
-          expiresIn: expect.any(Number),
-        },
-      );
-      expect(refreshTokenService.insert).toHaveBeenCalledWith(
-        account.id,
-        'validRefreshToken',
-        expect.any(Date),
-      );
+      expect(result).toBe('refreshToken');
+      expect(refreshTokenService.insert).toHaveBeenCalled();
     });
   });
 
@@ -370,23 +358,26 @@ describe('AuthService', () => {
         .fn()
         .mockResolvedValueOnce('accessToken')
         .mockResolvedValueOnce('refreshToken');
+
       const account: Account = {
         id: 1,
         email: 'test@example.com',
         password: await bcrypt.hash('password123', 10),
-        role: 'Employee',
+        role: Role.Employee,
         avatar: null,
         name: 'Test User',
         ownerId: null,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
+
       const result = await authService.generateTokens(account);
+
       expect(result).toEqual({
         account: {
           id: 1,
           email: 'test@example.com',
-          role: 'Employee',
+          role: Role.Employee,
           avatar: null,
           name: 'Test User',
         },

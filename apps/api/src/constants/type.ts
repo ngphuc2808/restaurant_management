@@ -74,3 +74,5 @@ export const User = createParamDecorator(
 );
 
 export const UserDto = typeof User;
+
+export type RoleType = (typeof Role)[keyof typeof Role];

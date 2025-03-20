@@ -5,7 +5,8 @@
     "invalid-email": "Email không hợp lệ",
     "invalid-email-or-password": "Email hoặc mật khẩu không đúng",
     "no-user-found": "Không tìm thấy người dùng",
-    "you-are-not-allowed-to-do-this": "Bạn không được phép thực hiện hành động này"
+    "you-are-not-allowed-to-do-this": "Bạn không được phép thực hiện hành động này",
+    "old-password-is-incorrect": "Mật khẩu cũ không đúng"
   },
   "authorization": {
     "invalid": "Authorization không hợp lệ"

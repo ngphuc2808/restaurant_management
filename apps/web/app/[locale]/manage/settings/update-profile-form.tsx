@@ -12,7 +12,7 @@ import {
 } from "@/schemaValidations/account.schema";
 import { useAccountMe, useUpdateMeMutation } from "@/queries/useAccount";
 import { useUploadMediaMutation } from "@/queries/useMedia";
-import { handleErrorApi } from "@/lib/utils";
+import { checkMessageFromResponse, handleErrorApi } from "@/lib/utils";
 import {
   Avatar,
   AvatarFallback,
@@ -38,6 +38,7 @@ import { envConfig } from "@/config";
 
 const UpdateProfileForm = () => {
   const tAll = useTranslations("All");
+  const tErrorMessage = useTranslations("ErrorMessage");
 
   const [file, setFile] = useState<File | null>(null);
   const avatarInputRef = useRef<HTMLInputElement>(null);
@@ -69,6 +70,7 @@ const UpdateProfileForm = () => {
       if (file) {
         const formData = new FormData();
         formData.append("file", file);
+        formData.append("folder", "employees");
         const uploadImageResult =
           await uploadMediaMutation.mutateAsync(formData);
         const imageUrl = uploadImageResult.payload.data;
@@ -166,7 +168,7 @@ const UpdateProfileForm = () => {
               <FormField
                 control={form.control}
                 name="name"
-                render={({ field }) => (
+                render={({ field, formState: { errors } }) => (
                   <FormItem>
                     <div className="grid gap-3">
                       <Label htmlFor="name">{tAll("name")}</Label>
@@ -176,7 +178,13 @@ const UpdateProfileForm = () => {
                         className="w-full"
                         {...field}
                       />
-                      <FormMessage />
+
+                      <FormMessage>
+                        {errors.name?.message &&
+                          (checkMessageFromResponse(errors.name?.type)
+                            ? errors.name?.message
+                            : tErrorMessage(errors.name?.message as any))}
+                      </FormMessage>
                     </div>
                   </FormItem>
                 )}

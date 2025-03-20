@@ -6,10 +6,13 @@ import {
   MaxLength,
   IsUrl,
   IsOptional,
+  IsBoolean,
+  IsEnum,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { Role } from '@/constants/type';
 
-export class CreateAccountReqDto {
+export class UpdateAccountReqDto {
   @IsString()
   @MinLength(2)
   @MaxLength(256)
@@ -27,15 +30,24 @@ export class CreateAccountReqDto {
   @ApiProperty()
   email: string;
 
+  @IsEnum([Role.Owner, Role.Employee])
+  @ApiProperty()
+  role: string;
+
+  @IsBoolean()
+  @IsOptional()
+  @ApiProperty()
+  changePassword: boolean;
+
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   @MinLength(6)
   @MaxLength(100)
   @ApiProperty()
   password: string;
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   @MinLength(6)
   @MaxLength(100)
   @ApiProperty()

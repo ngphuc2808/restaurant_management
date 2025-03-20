@@ -1,27 +1,23 @@
-import { Injectable } from '@nestjs/common';
-
-import { CreateSocketDto } from '@/socket/dto/create-socket.dto';
-import { UpdateSocketDto } from '@/socket/dto/update-socket.dto';
+import { PrismaService } from '@/prisma.service';
+import { Injectable, Logger } from '@nestjs/common';
 
 @Injectable()
 export class SocketService {
-  create(createSocketDto: CreateSocketDto) {
-    return 'This action adds a new socket';
-  }
+  constructor(
+    private prisma: PrismaService,
+    private logger: Logger,
+  ) {}
 
-  findAll() {
-    return `This action returns all socket`;
-  }
+  async findOneWithAccountId(accountId: number) {
+    try {
+      const socket = await this.prisma.socket.findUnique({
+        where: { accountId },
+      });
 
-  findOne(id: number) {
-    return `This action returns a #${id} socket`;
-  }
-
-  update(id: number, updateSocketDto: UpdateSocketDto) {
-    return `This action updates a #${id} socket`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} socket`;
+      return socket;
+    } catch (error) {
+      this.logger.error(error.message);
+      throw error;
+    }
   }
 }

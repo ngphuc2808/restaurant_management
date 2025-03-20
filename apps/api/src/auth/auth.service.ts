@@ -134,9 +134,9 @@ export class AuthService {
     }
   }
 
-  async login(loginDto: LoginReqDto) {
+  async login(body: LoginReqDto) {
     try {
-      const { email, password } = loginDto;
+      const { email, password } = body;
 
       const account = await this.validateAccount(email, password);
       return this.generateTokens(account);
@@ -154,14 +154,41 @@ export class AuthService {
         role: account.role,
       };
 
-      const accessToken = await this.jwtService.signAsync(payload);
-      const refreshToken = await this.getRefreshToken(payload);
+      const [accessToken, refreshToken] = await Promise.all([
+        this.getAccessToken(payload),
+        this.getRefreshToken(payload),
+      ]);
 
       return {
         account: { ...payload, avatar: account.avatar, name: account.name },
         accessToken,
         refreshToken,
       };
+    } catch (error) {
+      this.logger.error(error.message);
+      throw error;
+    }
+  }
+
+  async getAccessToken(account: { id: number; email: string; role: string }) {
+    try {
+      const data = {
+        id: account.id,
+        email: account.email,
+        role: account.role,
+      };
+
+      const expiresTime =
+        (await this.configService.get('JWT_ACCESS_TOKEN_EXPIRES_IN')) || '15m';
+      const secret =
+        (await this.configService.get('JWT_ACCESS_TOKEN_SECRET')) || 'secret';
+
+      const accessToken = await this.jwtService.signAsync(data, {
+        secret,
+        expiresIn: Number(ms(expiresTime)) / 1000,
+      });
+
+      return accessToken;
     } catch (error) {
       this.logger.error(error.message);
       throw error;
@@ -184,7 +211,7 @@ export class AuthService {
       const expiresAt = new Date(Date.now() + ms(expiresTime));
 
       const refreshToken = await this.jwtService.signAsync(data, {
-        secret: secret,
+        secret,
         expiresIn: Number(ms(expiresTime)) / 1000,
       });
 

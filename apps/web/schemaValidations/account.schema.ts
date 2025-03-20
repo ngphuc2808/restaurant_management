@@ -1,6 +1,7 @@
+import z from "zod";
 import { Role } from "@/constants/type";
 import { LoginRes } from "@/schemaValidations/auth.schema";
-import z from "zod";
+import { MetaSchema } from "@/schemaValidations/metadata.schema";
 
 export const AccountSchema = z.object({
   id: z.number(),
@@ -13,8 +14,12 @@ export const AccountSchema = z.object({
 export type AccountType = z.TypeOf<typeof AccountSchema>;
 
 export const AccountListRes = z.object({
-  data: z.array(AccountSchema),
+  statusCode: z.number(),
   message: z.string(),
+  data: z.object({
+    accounts: z.array(AccountSchema),
+    meta: MetaSchema,
+  }),
 });
 
 export type AccountListResType = z.TypeOf<typeof AccountListRes>;
@@ -101,7 +106,7 @@ export type UpdateEmployeeAccountBodyType = z.TypeOf<
 
 export const UpdateMeBody = z
   .object({
-    name: z.string().trim().min(2).max(256),
+    name: z.string().trim().min(2, "minCharacter").max(256, "minCharacter"),
     avatar: z.string().url().optional(),
   })
   .strict();
@@ -110,9 +115,12 @@ export type UpdateMeBodyType = z.TypeOf<typeof UpdateMeBody>;
 
 export const ChangePasswordBody = z
   .object({
-    oldPassword: z.string().min(6).max(100),
-    password: z.string().min(6).max(100),
-    confirmPassword: z.string().min(6).max(100),
+    oldPassword: z.string().min(6, "minmaxPassword").max(100, "minmaxPassword"),
+    password: z.string().min(6, "minmaxPassword").max(100, "minmaxPassword"),
+    confirmPassword: z
+      .string()
+      .min(6, "minmaxPassword")
+      .max(100, "minmaxPassword"),
   })
   .strict()
   .superRefine(({ confirmPassword, password }, ctx) => {

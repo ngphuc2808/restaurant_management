@@ -1,57 +1,96 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 
 import { PrismaService } from '@/prisma.service';
 
 @Injectable()
 export class RefreshTokenService {
-  constructor(private prismaService: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private logger: Logger,
+  ) {}
 
   async insert(userId: number, tokenId: string, expiresAt: Date) {
-    await this.prismaService.refreshToken.create({
-      data: {
-        token: tokenId,
-        accountId: userId,
-        expiresAt,
-      },
-    });
+    try {
+      await this.prisma.refreshToken.create({
+        data: {
+          token: tokenId,
+          accountId: userId,
+          expiresAt,
+        },
+      });
 
-    return tokenId;
+      return tokenId;
+    } catch (error) {
+      this.logger.error(error.message);
+      throw error;
+    }
   }
 
   async findToken(tokenId: string) {
-    const storedToken = await this.prismaService.refreshToken.findUnique({
-      where: { token: tokenId },
-    });
+    try {
+      const storedToken = await this.prisma.refreshToken.findUnique({
+        where: { token: tokenId },
+      });
 
-    return storedToken;
+      return storedToken;
+    } catch (error) {
+      this.logger.error(error.message);
+      throw error;
+    }
   }
 
   async validate(userId: number, tokenId: string) {
-    const storedToken = await this.findToken(tokenId);
+    try {
+      const storedToken = await this.findToken(tokenId);
 
-    if (!storedToken || storedToken.accountId !== userId) {
-      return false;
+      if (!storedToken || storedToken.accountId !== userId) {
+        return false;
+      }
+
+      if (storedToken.expiresAt < new Date()) {
+        await this.invalidate(tokenId);
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      this.logger.error(error.message);
+      throw error;
     }
-
-    if (storedToken.expiresAt < new Date()) {
-      await this.invalidate(tokenId);
-      return false;
-    }
-
-    return true;
   }
 
   async invalidate(tokenId: string) {
-    await this.prismaService.refreshToken.delete({
-      where: { token: tokenId },
-    });
+    try {
+      await this.prisma.refreshToken.delete({
+        where: { token: tokenId },
+      });
+    } catch (error) {
+      this.logger.error(error.message);
+      throw error;
+    }
+  }
+
+  async invalidateAll(accountId: number) {
+    try {
+      await this.prisma.refreshToken.deleteMany({
+        where: { accountId },
+      });
+    } catch (error) {
+      this.logger.error(error.message);
+      throw error;
+    }
   }
 
   async removeToken(tokenId: string) {
-    const storedToken = await this.findToken(tokenId);
+    try {
+      const storedToken = await this.findToken(tokenId);
 
-    if (storedToken) {
-      await this.invalidate(tokenId);
+      if (storedToken) {
+        await this.invalidate(tokenId);
+      }
+    } catch (error) {
+      this.logger.error(error.message);
+      throw error;
     }
   }
 }

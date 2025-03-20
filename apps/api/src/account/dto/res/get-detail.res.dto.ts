@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 
 import { AccountType } from '@/account/dto/types';
 
-export class GetDetailAccountResDto {
+export class AccountResDto {
   @ApiProperty({ example: 200 })
   statusCode: number;
 
