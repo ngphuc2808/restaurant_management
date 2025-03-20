@@ -155,7 +155,7 @@ const EditOrder = ({
                     <div className="flex items-center col-span-2 space-x-4">
                       <Avatar className="aspect-square w-[50px] h-[50px] rounded-md object-cover">
                         <AvatarImage src={selectedDish?.image} />
-                        <AvatarFallback className="rounded-none">
+                        <AvatarFallback className="rounded-none text-center">
                           {selectedDish?.name}
                         </AvatarFallback>
                       </Avatar>

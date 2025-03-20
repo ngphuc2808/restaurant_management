@@ -19,6 +19,10 @@ import { LoginReqDto } from '@/auth/dto/req/login.req.dto';
 import { RefreshTokenService } from '@/refresh-token/refresh-token.service';
 import { AccountService } from '@/account/account.service';
 import { SocketService } from '@/socket/socket.service';
+import {
+  PrismaErrorCode,
+  isPrismaClientKnownRequestError,
+} from '@/utils/errors';
 
 @Injectable()
 export class AuthService {
@@ -207,9 +211,16 @@ export class AuthService {
 
   async logout(refreshToken: string) {
     try {
-      await this.refreshTokenService.removeToken(refreshToken);
+      await this.refreshTokenService.invalidate(refreshToken);
     } catch (error) {
       this.logger.error(error.message);
+      if (isPrismaClientKnownRequestError(error)) {
+        if (error.code === PrismaErrorCode.RecordNotFound) {
+          throw new UnprocessableEntityException(
+            this.i18n.t('errors.token.invalid'),
+          );
+        }
+      }
       throw error;
     }
   }

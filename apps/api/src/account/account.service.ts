@@ -20,6 +20,10 @@ import { UpdateMeReqDto } from '@/account/dto/req/update-me.req.dto';
 import { ChangePasswordReqDto } from '@/account/dto/req/change-password.req.dto';
 import { UpdateAccountReqDto } from '@/account/dto/req/update.req.dto';
 import { Role } from '@/constants/type';
+import {
+  PrismaErrorCode,
+  isPrismaClientKnownRequestError,
+} from '@/utils/errors';
 
 @Injectable()
 export class AccountService {
@@ -36,7 +40,7 @@ export class AccountService {
 
   async me(id: number) {
     try {
-      return await this.prisma.account.findUniqueOrThrow({
+      return await this.prisma.account.findUnique({
         where: { id },
         omit: {
           password: true,
@@ -67,7 +71,7 @@ export class AccountService {
 
   async updatePassword(id: number, body: ChangePasswordReqDto) {
     try {
-      const account = await this.prisma.account.findUniqueOrThrow({
+      const account = await this.prisma.account.findUnique({
         where: {
           id,
         },
@@ -75,11 +79,11 @@ export class AccountService {
 
       if (!(await bcrypt.compare(body.oldPassword, account.password))) {
         throw new UnprocessableEntityException({
-          message: this.i18n.t('errors.auth.old-password-is-incorrect'),
+          message: this.i18n.t('errors.auth.invalid-old-password'),
           errors: [
             {
               field: 'oldPassword',
-              message: this.i18n.t('errors.auth.old-password-is-incorrect'),
+              message: this.i18n.t('errors.auth.invalid-old-password'),
             },
           ],
         });
@@ -107,6 +111,9 @@ export class AccountService {
 
   async getAccountList({ page, limit }: PaginationReqDto) {
     try {
+      if (!page || page <= 0) page = 1;
+      if (!limit || limit <= 0) limit = 12;
+
       const skip = (page - 1) * limit;
 
       const accounts = await this.prisma.account.findMany({
@@ -137,7 +144,7 @@ export class AccountService {
 
   async create(body: CreateAccountReqDto) {
     try {
-      const { email, password, name, avatar } = body;
+      const { email, password, name, avatar, confirmPassword } = body;
 
       const existingAccount = await this.prisma.account.findUnique({
         where: { email },
@@ -180,27 +187,8 @@ export class AccountService {
 
   async deleteAccount(accountId: number) {
     try {
-      const [socketRecord, oldAccount] = await Promise.all([
-        this.socketService.findOneWithAccountId(accountId),
-        this.prisma.account.findUnique({
-          where: {
-            id: accountId,
-          },
-        }),
-      ]);
-
-      if (!oldAccount) {
-        throw new UnprocessableEntityException({
-          message: this.i18n.t('errors.auth.no-user-found'),
-          errors: [
-            {
-              field: 'oldPassword',
-              message: this.i18n.t('errors.auth.no-user-found'),
-            },
-          ],
-        });
-      }
-
+      const socketRecord =
+        await this.socketService.findOneWithAccountId(accountId);
       const account = await this.prisma.account.delete({
         where: {
           id: accountId,
@@ -216,6 +204,13 @@ export class AccountService {
       return account;
     } catch (error) {
       this.logger.error(error.message);
+      if (isPrismaClientKnownRequestError(error)) {
+        if (error.code === PrismaErrorCode.RecordNotFound) {
+          throw new UnprocessableEntityException(
+            this.i18n.t('errors.auth.no-user-found'),
+          );
+        }
+      }
       throw error;
     }
   }
@@ -225,68 +220,71 @@ export class AccountService {
       const [socketRecord, oldAccount] = await Promise.all([
         this.socketService.findOneWithAccountId(accountId),
         this.prisma.account.findUnique({
-          where: {
-            id: accountId,
-          },
+          where: { id: accountId },
         }),
       ]);
 
       if (!oldAccount) {
-        throw new UnprocessableEntityException({
-          message: this.i18n.t('errors.auth.no-user-found'),
-          errors: [
-            {
-              field: 'oldPassword',
-              message: this.i18n.t('errors.auth.no-user-found'),
-            },
-          ],
-        });
+        throw new UnprocessableEntityException(
+          this.i18n.t('errors.auth.no-user-found'),
+        );
       }
 
-      if (body.email !== oldAccount.email) {
-        await this.findAccountWithEmail(body.email);
+      let hashedPassword: string | undefined;
+      if (body.changePassword) {
+        hashedPassword = await bcrypt.hash(body.password, 10);
       }
 
-      const isChangeRole = oldAccount.role !== body.role;
-
-      let dataUpdate = {
-        ...body,
-      };
-
-      if (body.changePassword && body.password && body.confirmPassword) {
-        const hashedPassword = await bcrypt.hash(body.password, 10);
-        dataUpdate.password = hashedPassword;
+      const { changePassword, confirmPassword, ...updateData } = body;
+      if (hashedPassword) {
+        updateData.password = hashedPassword;
       }
 
-      delete dataUpdate.changePassword;
-      delete dataUpdate.confirmPassword;
-
-      const account = await this.prisma.account.update({
-        where: {
-          id: accountId,
-        },
-        data: dataUpdate,
-        omit: {
-          password: true,
+      const updatedAccount = await this.prisma.account.update({
+        where: { id: accountId },
+        data: updateData,
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          avatar: true,
+          role: true,
+          createdAt: true,
+          updatedAt: true,
         },
       });
 
-      if (isChangeRole && socketRecord?.socketId) {
+      if (oldAccount.role !== body.role && socketRecord?.socketId) {
         this.socketGateway.server
-          .to(socketRecord?.socketId)
-          .emit('refresh-token', account);
+          .to(socketRecord.socketId)
+          .emit('refresh-token', updatedAccount);
       }
 
-      return account;
+      return updatedAccount;
     } catch (error) {
       this.logger.error(error.message);
+
+      if (isPrismaClientKnownRequestError(error)) {
+        if (error.code === PrismaErrorCode.UniqueConstraintViolation) {
+          throw new UnprocessableEntityException({
+            message: this.i18n.t('errors.auth.email-already-exists'),
+            errors: [
+              {
+                field: 'email',
+                message: this.i18n.t('errors.auth.email-already-exists'),
+              },
+            ],
+          });
+        }
+      }
+
       throw error;
     }
   }
 
   async getAccountDetail(accountId: number) {
     try {
-      return await this.prisma.account.findUniqueOrThrow({
+      const account = await this.prisma.account.findUnique({
         where: {
           id: accountId,
         },
@@ -294,6 +292,14 @@ export class AccountService {
           password: true,
         },
       });
+
+      if (!account) {
+        throw new UnprocessableEntityException(
+          this.i18n.t('errors.auth.invalid-id'),
+        );
+      }
+
+      return account;
     } catch (error) {
       this.logger.error(error.message);
       throw error;

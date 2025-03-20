@@ -161,7 +161,7 @@ const DishTable = () => {
           <div>
             <Avatar className="aspect-square w-[100px] h-[100px] rounded-md object-cover">
               <AvatarImage src={row.getValue("image")} />
-              <AvatarFallback className="rounded-none">
+              <AvatarFallback className="rounded-none text-center">
                 {row.original.name}
               </AvatarFallback>
             </Avatar>

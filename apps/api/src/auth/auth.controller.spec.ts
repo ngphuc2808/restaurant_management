@@ -1,3 +1,8 @@
+import {
+  Logger,
+  UnauthorizedException,
+  UnprocessableEntityException,
+} from '@nestjs/common';
 import { I18nService } from 'nestjs-i18n';
 import { Test, TestingModule } from '@nestjs/testing';
 
@@ -12,6 +17,7 @@ import { RefreshTokenResDto } from '@/auth/dto/res/refresh-token.res.dto';
 import { Role } from '@/constants/type';
 
 describe('AuthController', () => {
+  let i18nService: I18nService;
   let authController: AuthController;
   let authService: AuthService;
 
@@ -35,9 +41,16 @@ describe('AuthController', () => {
             translate: jest.fn().mockReturnValue('translated-message'),
           },
         },
+        {
+          provide: Logger,
+          useValue: {
+            error: jest.fn(),
+          },
+        },
       ],
     }).compile();
 
+    i18nService = module.get<I18nService>(I18nService);
     authController = module.get<AuthController>(AuthController);
     authService = module.get<AuthService>(AuthService);
   });
@@ -47,15 +60,15 @@ describe('AuthController', () => {
   });
 
   describe('login', () => {
-    it('should login', async () => {
+    it('should login successfully', async () => {
       const loginDto: LoginReqDto = {
         email: 'test@example.com',
-        password: 'password123',
+        password: '123123',
       };
 
       const mockResData: LoginResDto = {
         statusCode: 200,
-        message: 'res.success.login',
+        message: i18nService.translate('res.success.login'),
         data: {
           id: 1,
           email: 'test@example.com',
@@ -71,15 +84,67 @@ describe('AuthController', () => {
       expect(authService.login).toHaveBeenCalledWith(loginDto);
       expect(resultDto).toBeInstanceOf(LoginResDto);
     });
+
+    it('should throw an error when password is incorrect', async () => {
+      const loginDto: LoginReqDto = {
+        email: 'test@example.com',
+        password: 'wrong-password',
+      };
+
+      (authService.login as jest.Mock).mockRejectedValue(
+        new UnprocessableEntityException({
+          message: i18nService.translate(
+            'errors.auth.invalid-email-or-password',
+          ),
+          errors: [
+            {
+              field: 'password',
+              message: i18nService.translate(
+                'errors.auth.invalid-email-or-password',
+              ),
+            },
+          ],
+        }),
+      );
+
+      await expect(authController.login(loginDto)).rejects.toThrow(
+        UnprocessableEntityException,
+      );
+      expect(authService.login).toHaveBeenCalledWith(loginDto);
+    });
+
+    it('should throw an error when email is not found', async () => {
+      const loginDto: LoginReqDto = {
+        email: 'notfound@example.com',
+        password: '123123',
+      };
+
+      (authService.login as jest.Mock).mockRejectedValue(
+        new UnprocessableEntityException({
+          message: i18nService.translate('errors.auth.invalid-email'),
+          errors: [
+            {
+              field: 'email',
+              message: i18nService.translate('errors.auth.invalid-email'),
+            },
+          ],
+        }),
+      );
+
+      await expect(authController.login(loginDto)).rejects.toThrow(
+        UnprocessableEntityException,
+      );
+      expect(authService.login).toHaveBeenCalledWith(loginDto);
+    });
   });
 
   describe('logout', () => {
-    it('should call logout method', async () => {
+    it('should call logout method successfully', async () => {
       const logoutDto: LogoutReqDto = { refreshToken: 'refresh-token' };
 
       const mockResData: LogoutResDto = {
         statusCode: 200,
-        message: 'res.success.logout',
+        message: i18nService.translate('res.success.logout'),
       };
 
       (authService.logout as jest.Mock).mockResolvedValue(mockResData);
@@ -87,6 +152,21 @@ describe('AuthController', () => {
       const resultDto = Object.assign(new LogoutResDto(), result);
       expect(authService.logout).toHaveBeenCalledWith(logoutDto.refreshToken);
       expect(resultDto).toBeInstanceOf(LogoutResDto);
+    });
+
+    it('should throw an error when refreshToken is invalid', async () => {
+      const logoutDto: LogoutReqDto = { refreshToken: 'invalid-refresh-token' };
+
+      (authService.logout as jest.Mock).mockRejectedValue(
+        new UnauthorizedException(
+          i18nService.translate('errors.auth.invalid-refresh-token'),
+        ),
+      );
+
+      await expect(authController.logout(logoutDto)).rejects.toThrow(
+        UnauthorizedException,
+      );
+      expect(authService.logout).toHaveBeenCalledWith(logoutDto.refreshToken);
     });
   });
 
@@ -98,7 +178,7 @@ describe('AuthController', () => {
 
       const mockResData: RefreshTokenResDto = {
         statusCode: 200,
-        message: 'res.success.login',
+        message: i18nService.translate('res.success.refresh-token'),
         data: {
           id: 1,
           email: 'test@example.com',
@@ -115,6 +195,25 @@ describe('AuthController', () => {
         refreshDto.refreshToken,
       );
       expect(resultDto).toBeInstanceOf(RefreshTokenResDto);
+    });
+
+    it('should throw an error when refreshToken is invalid', async () => {
+      const refreshDto: RefreshTokenReqDto = {
+        refreshToken: 'invalid-refresh-token',
+      };
+
+      (authService.processNewToken as jest.Mock).mockRejectedValue(
+        new UnauthorizedException(
+          i18nService.translate('errors.auth.invalid-refresh-token'),
+        ),
+      );
+
+      await expect(authController.refresh(refreshDto)).rejects.toThrow(
+        UnauthorizedException,
+      );
+      expect(authService.processNewToken).toHaveBeenCalledWith(
+        refreshDto.refreshToken,
+      );
     });
   });
 });

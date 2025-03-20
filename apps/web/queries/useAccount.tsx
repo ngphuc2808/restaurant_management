@@ -112,7 +112,6 @@ export const useUpdateAccountMutation = (): UseMutationResult<
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ["accounts"],
-        exact: true,
       });
     },
   });

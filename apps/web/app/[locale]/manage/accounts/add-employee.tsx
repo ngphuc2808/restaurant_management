@@ -146,7 +146,7 @@ const AddEmployee = () => {
                     <div className="flex gap-2 items-start justify-start">
                       <Avatar className="aspect-square w-[100px] h-[100px] rounded-md object-cover">
                         <AvatarImage src={previewAvatar} />
-                        <AvatarFallback className="rounded-none">
+                        <AvatarFallback className="rounded-none text-center">
                           {name || tAll("avatar")}
                         </AvatarFallback>
                       </Avatar>
