@@ -142,9 +142,9 @@ export class AccountService {
     }
   }
 
-  async create(body: CreateAccountReqDto) {
+  async create(ownerId: number, body: CreateAccountReqDto) {
     try {
-      const { email, password, name, avatar, confirmPassword } = body;
+      const { email, password, name, avatar } = body;
 
       const existingAccount = await this.prisma.account.findUnique({
         where: { email },
@@ -170,6 +170,7 @@ export class AccountService {
         password: hashedPassword,
         avatar,
         role: Role.Employee,
+        ownerId,
       };
 
       const account = await this.prisma.account.create({
@@ -215,7 +216,11 @@ export class AccountService {
     }
   }
 
-  async updateAccount(accountId: number, body: UpdateAccountReqDto) {
+  async updateAccount(
+    ownerId: number,
+    accountId: number,
+    body: UpdateAccountReqDto,
+  ) {
     try {
       const [socketRecord, oldAccount] = await Promise.all([
         this.socketService.findOneWithAccountId(accountId),
@@ -230,14 +235,23 @@ export class AccountService {
         );
       }
 
-      let hashedPassword: string | undefined;
-      if (body.changePassword) {
-        hashedPassword = await bcrypt.hash(body.password, 10);
-      }
+      const updateData: {
+        email: string;
+        name: string;
+        avatar: string | null;
+        role: string;
+        ownerId: number;
+        password?: string;
+      } = {
+        name: body.name,
+        avatar: body.avatar,
+        role: body.role,
+        email: body.email,
+        ownerId,
+      };
 
-      const { changePassword, confirmPassword, ...updateData } = body;
-      if (hashedPassword) {
-        updateData.password = hashedPassword;
+      if (body.changePassword && body.password) {
+        updateData.password = await bcrypt.hash(body.password, 10);
       }
 
       const updatedAccount = await this.prisma.account.update({
