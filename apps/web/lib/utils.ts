@@ -177,6 +177,7 @@ export const checkAndRefreshToken = async (param?: {
       setRefreshTokenToLocalStorage(res.payload.data.refreshToken)
       param?.onSuccess && param.onSuccess()
     } catch (error) {
+      console.log(error)
       param?.onError && param.onError()
     }
   }

@@ -135,6 +135,7 @@ const request = async <Response>(
           try {
             await clientLogoutRequest
           } catch (error) {
+            console.log(error)
             throw error
           } finally {
             removeTokensFromLocalStorage()
