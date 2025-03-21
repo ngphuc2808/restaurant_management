@@ -13,12 +13,12 @@ import * as ms from 'ms';
 import { DefaultEventsMap } from 'socket.io/dist/typed-events';
 import { PrismaErrorCode } from '@/utils/errors';
 
-import { AuthService } from './auth.service';
+import { Account } from '@prisma/client';
+import { AuthService } from '@/auth/auth.service';
 import { AccountService } from '@/account/account.service';
 import { RefreshTokenService } from '@/refresh-token/refresh-token.service';
 import { SocketService } from '@/socket/socket.service';
-import { LoginReqDto } from './dto/req/login.req.dto';
-import { Account } from '@prisma/client';
+import { LoginReqDto } from '@/auth/dto/req/login.req.dto';
 
 jest.mock('bcryptjs');
 jest.mock('ms');

@@ -2,20 +2,21 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { Logger, UnprocessableEntityException } from '@nestjs/common';
 import { I18nService } from 'nestjs-i18n';
 import * as bcrypt from 'bcryptjs';
+
+import { Account } from '@prisma/client';
 import { PrismaService } from '@/prisma.service';
 import { AuthService } from '@/auth/auth.service';
 import { RefreshTokenService } from '@/refresh-token/refresh-token.service';
 import { SocketService } from '@/socket/socket.service';
 import { SocketGateway } from '@/socket/socket-gateway';
-import { AccountService } from './account.service';
-import { CreateAccountReqDto } from './dto/req/create.req.dto';
-import { PaginationReqDto } from './dto/req/paginate.req.dto';
-import { UpdateMeReqDto } from './dto/req/update-me.req.dto';
-import { ChangePasswordReqDto } from './dto/req/change-password.req.dto';
-import { UpdateAccountReqDto } from './dto/req/update.req.dto';
-import { Account } from '@prisma/client';
-import { Role } from '@/constants/type';
+import { AccountService } from '@/account/account.service';
+import { CreateAccountReqDto } from '@/account/dto/req/create.req.dto';
+import { PaginationReqDto } from '@/account/dto/req/paginate.req.dto';
+import { UpdateMeReqDto } from '@/account/dto/req/update-me.req.dto';
+import { ChangePasswordReqDto } from '@/account/dto/req/change-password.req.dto';
+import { UpdateAccountReqDto } from '@/account/dto/req/update.req.dto';
 import { PrismaErrorCode } from '@/utils/errors';
+import { Role } from '@/constants/type';
 
 jest.mock('bcryptjs');
 jest.mock('@/utils/errors', () => ({
