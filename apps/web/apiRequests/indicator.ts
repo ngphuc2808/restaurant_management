@@ -1,12 +1,12 @@
-import queryString from "query-string";
+import queryString from 'query-string'
 
-import http from "@/lib/http";
+import http from '@/lib/http'
 import {
   DashboardIndicatorQueryParamsType,
   DashboardIndicatorResType,
-} from "@/schemaValidations/indicator.schema";
+} from '@/schemaValidations/indicator.schema'
 
-const prefix = "indicators";
+const prefix = 'indicators'
 
 const indicatorApiRequest = {
   getDashboardIndicators: (queryParams: DashboardIndicatorQueryParamsType) =>
@@ -17,6 +17,6 @@ const indicatorApiRequest = {
           toDate: queryParams.toDate?.toISOString(),
         }),
     ),
-};
+}
 
-export default indicatorApiRequest;
+export default indicatorApiRequest

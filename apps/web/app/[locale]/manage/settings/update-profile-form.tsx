@@ -1,117 +1,113 @@
-"use client";
+'use client'
 
-import { useTranslations } from "next-intl";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Upload } from "lucide-react";
+import { useTranslations } from 'next-intl'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { Upload } from 'lucide-react'
 
 import {
   UpdateMeBody,
   UpdateMeBodyType,
-} from "@/schemaValidations/account.schema";
-import { useAccountMe, useUpdateMeMutation } from "@/queries/useAccount";
-import { useUploadMediaMutation } from "@/queries/useMedia";
-import { checkMessageFromResponse, handleErrorApi } from "@/lib/utils";
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@repo/ui/components/avatar";
-import { Button } from "@repo/ui/components/button";
+} from '@/schemaValidations/account.schema'
+import { useAccountMe, useUpdateMeMutation } from '@/queries/useAccount'
+import { useUploadMediaMutation } from '@/queries/useMedia'
+import { checkMessageFromResponse, handleErrorApi } from '@/lib/utils'
+import { Avatar, AvatarFallback, AvatarImage } from '@repo/ui/components/avatar'
+import { Button } from '@repo/ui/components/button'
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from "@repo/ui/components/card";
+} from '@repo/ui/components/card'
 import {
   Form,
   FormField,
   FormItem,
   FormMessage,
-} from "@repo/ui/components/form";
-import { Input } from "@repo/ui/components/input";
-import { Label } from "@repo/ui/components/label";
-import { toast } from "@repo/ui/hooks/use-toast";
-import { envConfig } from "@/config";
+} from '@repo/ui/components/form'
+import { Input } from '@repo/ui/components/input'
+import { Label } from '@repo/ui/components/label'
+import { toast } from '@repo/ui/hooks/use-toast'
+import { envConfig } from '@/config'
 
 const UpdateProfileForm = () => {
-  const tAll = useTranslations("All");
-  const tErrorMessage = useTranslations("ErrorMessage");
+  const tAll = useTranslations('All')
+  const tErrorMessage = useTranslations('ErrorMessage')
 
-  const [file, setFile] = useState<File | null>(null);
-  const avatarInputRef = useRef<HTMLInputElement>(null);
+  const [file, setFile] = useState<File | null>(null)
+  const avatarInputRef = useRef<HTMLInputElement>(null)
 
-  const { data, refetch } = useAccountMe();
-  const updateMeMutation = useUpdateMeMutation();
-  const uploadMediaMutation = useUploadMediaMutation();
+  const { data, refetch } = useAccountMe()
+  const updateMeMutation = useUpdateMeMutation()
+  const uploadMediaMutation = useUploadMediaMutation()
 
   const form = useForm<UpdateMeBodyType>({
     resolver: zodResolver(UpdateMeBody),
     defaultValues: {
-      name: "",
+      name: '',
       avatar: undefined,
     },
-  });
+  })
 
-  const avatar = form.watch("avatar");
+  const avatar = form.watch('avatar')
 
   const previewAvatar = useMemo(
     () => (file ? URL.createObjectURL(file) : avatar || undefined),
     [file, avatar],
-  );
+  )
 
   const onSubmit = async (values: UpdateMeBodyType) => {
-    if (updateMeMutation.isPending) return;
+    if (updateMeMutation.isPending) return
 
     try {
-      let body = values;
+      let body = values
       if (file) {
-        const formData = new FormData();
-        formData.append("file", file);
-        formData.append("folder", "employees");
+        const formData = new FormData()
+        formData.append('file', file)
+        formData.append('folder', 'employees')
         const uploadImageResult =
-          await uploadMediaMutation.mutateAsync(formData);
-        const imageUrl = uploadImageResult.payload.data;
+          await uploadMediaMutation.mutateAsync(formData)
+        const imageUrl = uploadImageResult.payload.data
         body = {
           ...values,
           avatar: imageUrl,
-        };
+        }
       }
-      const result = await updateMeMutation.mutateAsync(body);
+      const result = await updateMeMutation.mutateAsync(body)
 
-      if (file && previewAvatar && previewAvatar.startsWith("blob:")) {
-        URL.revokeObjectURL(previewAvatar);
+      if (file && previewAvatar && previewAvatar.startsWith('blob:')) {
+        URL.revokeObjectURL(previewAvatar)
       }
 
       toast({
         description: result.payload.message,
-      });
-      refetch();
+      })
+      refetch()
     } catch (error) {
       handleErrorApi({
         error,
         setError: form.setError,
-      });
+      })
     }
-  };
+  }
 
   const reset = () => {
-    form.reset();
-    if (file && previewAvatar && previewAvatar.startsWith("blob:")) {
-      URL.revokeObjectURL(previewAvatar);
+    form.reset()
+    if (file && previewAvatar && previewAvatar.startsWith('blob:')) {
+      URL.revokeObjectURL(previewAvatar)
     }
-    setFile(null);
-  };
+    setFile(null)
+  }
 
   useEffect(() => {
     if (data) {
-      const { name, avatar } = data.payload.data;
+      const { name, avatar } = data.payload.data
 
-      form.reset({ name, avatar: avatar ?? undefined });
+      form.reset({ name, avatar: avatar ?? undefined })
     }
-  }, [data]);
+  }, [data])
 
   return (
     <Form {...form}>
@@ -123,7 +119,7 @@ const UpdateProfileForm = () => {
       >
         <Card x-chunk="dashboard-07-chunk-0">
           <CardHeader>
-            <CardTitle>{tAll("personalInformation")}</CardTitle>
+            <CardTitle>{tAll('personalInformation')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid gap-6">
@@ -132,11 +128,11 @@ const UpdateProfileForm = () => {
                 name="avatar"
                 render={({ field }) => (
                   <FormItem>
-                    <div className="flex gap-2 items-start justify-start">
-                      <Avatar className="aspect-square w-[100px] h-[100px] rounded-md object-cover">
+                    <div className="flex items-start justify-start gap-2">
+                      <Avatar className="aspect-square h-[100px] w-[100px] rounded-md object-cover">
                         <AvatarImage src={previewAvatar} alt="avatar" />
                         <AvatarFallback className="rounded-none text-center">
-                          {data?.payload.data.name ?? ""}
+                          {data?.payload.data.name ?? ''}
                         </AvatarFallback>
                       </Avatar>
                       <input
@@ -145,12 +141,12 @@ const UpdateProfileForm = () => {
                         accept="image/*"
                         className="hidden"
                         onChange={(e) => {
-                          const file = e.target.files?.[0];
+                          const file = e.target.files?.[0]
                           if (file) {
-                            setFile(file);
+                            setFile(file)
                             field.onChange(
                               `${envConfig.NEXT_PUBLIC_URL}/` + file.name,
-                            );
+                            )
                           }
                         }}
                       />
@@ -171,7 +167,7 @@ const UpdateProfileForm = () => {
                 render={({ field, formState: { errors } }) => (
                   <FormItem>
                     <div className="grid gap-3">
-                      <Label htmlFor="name">{tAll("name")}</Label>
+                      <Label htmlFor="name">{tAll('name')}</Label>
                       <Input
                         id="name"
                         type="text"
@@ -189,12 +185,12 @@ const UpdateProfileForm = () => {
                   </FormItem>
                 )}
               />
-              <div className=" items-center gap-2 md:ml-auto flex">
+              <div className=" flex items-center gap-2 md:ml-auto">
                 <Button variant="outline" size="sm" type="reset">
-                  {tAll("cancel")}
+                  {tAll('cancel')}
                 </Button>
                 <Button size="sm" type="submit">
-                  {tAll("save")}
+                  {tAll('save')}
                 </Button>
               </div>
             </div>
@@ -202,7 +198,7 @@ const UpdateProfileForm = () => {
         </Card>
       </form>
     </Form>
-  );
-};
+  )
+}
 
-export default UpdateProfileForm;
+export default UpdateProfileForm

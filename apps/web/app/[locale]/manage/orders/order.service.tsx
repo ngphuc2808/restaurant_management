@@ -1,14 +1,14 @@
-import { useMemo } from "react";
+import { useMemo } from 'react'
 
-import { GetOrdersResType } from "@/schemaValidations/order.schema";
+import { GetOrdersResType } from '@/schemaValidations/order.schema'
 import {
   OrderObjectByGuestID,
   ServingGuestByTableNumber,
   Statics,
-} from "@/app/[locale]/manage/orders/order-table";
-import { OrderStatus } from "@/constants/type";
+} from '@/app/[locale]/manage/orders/order-table'
+import { OrderStatus } from '@/constants/type'
 
-export const useOrderService = (orderList: GetOrdersResType["data"]) => {
+export const useOrderService = (orderList: GetOrdersResType['data']) => {
   const result = useMemo(() => {
     const statics: Statics = {
       status: {
@@ -19,15 +19,15 @@ export const useOrderService = (orderList: GetOrdersResType["data"]) => {
         Rejected: 0,
       },
       table: {},
-    };
+    }
 
-    const orderObjectByGuestId: OrderObjectByGuestID = {};
-    const guestByTableNumber: ServingGuestByTableNumber = {};
+    const orderObjectByGuestId: OrderObjectByGuestID = {}
+    const guestByTableNumber: ServingGuestByTableNumber = {}
     orderList.forEach((order) => {
-      statics.status[order.status] = statics.status[order.status] + 1;
+      statics.status[order.status] = statics.status[order.status] + 1
       if (order.tableNumber !== null && order.guestId !== null) {
         if (!statics.table[order.tableNumber]) {
-          statics.table[order.tableNumber] = {};
+          statics.table[order.tableNumber] = {}
         }
 
         statics.table[order.tableNumber]![order.guestId] = {
@@ -36,46 +36,46 @@ export const useOrderService = (orderList: GetOrdersResType["data"]) => {
             (statics.table[order.tableNumber]?.[order.guestId]?.[
               order.status
             ] ?? 0) + 1,
-        };
+        }
       }
 
       if (order.guestId) {
         if (!orderObjectByGuestId[order.guestId]) {
-          orderObjectByGuestId[order.guestId] = [];
+          orderObjectByGuestId[order.guestId] = []
         }
 
-        orderObjectByGuestId[order.guestId]!.push(order);
+        orderObjectByGuestId[order.guestId]!.push(order)
       }
 
       if (order.tableNumber && order.guestId) {
         if (!guestByTableNumber[order.tableNumber]) {
-          guestByTableNumber[order.tableNumber] = {};
+          guestByTableNumber[order.tableNumber] = {}
         }
 
         guestByTableNumber[order.tableNumber]![order.guestId] =
-          orderObjectByGuestId[order.guestId]!;
+          orderObjectByGuestId[order.guestId]!
       }
-    });
+    })
 
-    const servingGuestByTableNumber: ServingGuestByTableNumber = {};
+    const servingGuestByTableNumber: ServingGuestByTableNumber = {}
     for (const tableNumber in guestByTableNumber) {
-      const guestObject = guestByTableNumber[tableNumber]!;
-      const servingGuestObject: OrderObjectByGuestID = {};
+      const guestObject = guestByTableNumber[tableNumber]!
+      const servingGuestObject: OrderObjectByGuestID = {}
       for (const guestId in guestObject) {
-        const guestOrders = guestObject[guestId]!;
+        const guestOrders = guestObject[guestId]!
         const isServingGuest = guestOrders.some((order) =>
           [
             OrderStatus.Pending,
             OrderStatus.Processing,
             OrderStatus.Delivered,
           ].includes(order.status as any),
-        );
+        )
         if (isServingGuest) {
-          servingGuestObject[Number(guestId)] = guestOrders;
+          servingGuestObject[Number(guestId)] = guestOrders
         }
       }
       if (Object.keys(servingGuestObject).length) {
-        servingGuestByTableNumber[Number(tableNumber)] = servingGuestObject;
+        servingGuestByTableNumber[Number(tableNumber)] = servingGuestObject
       }
     }
 
@@ -83,8 +83,8 @@ export const useOrderService = (orderList: GetOrdersResType["data"]) => {
       statics,
       orderObjectByGuestId,
       servingGuestByTableNumber,
-    };
-  }, [orderList]);
+    }
+  }, [orderList])
 
-  return result;
-};
+  return result
+}

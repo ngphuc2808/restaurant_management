@@ -1,7 +1,7 @@
-import { useMutation, UseMutationResult } from "@tanstack/react-query";
+import { useMutation, UseMutationResult } from '@tanstack/react-query'
 
-import mediaApiRequest from "@/apiRequests/media";
-import { UploadImageResType } from "@/schemaValidations/media.schema";
+import mediaApiRequest from '@/apiRequests/media'
+import { UploadImageResType } from '@/schemaValidations/media.schema'
 
 export const useUploadMediaMutation = (): UseMutationResult<
   QueryResponseType<UploadImageResType>,
@@ -11,5 +11,5 @@ export const useUploadMediaMutation = (): UseMutationResult<
 > => {
   return useMutation({
     mutationFn: mediaApiRequest.upload,
-  });
-};
+  })
+}

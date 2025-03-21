@@ -4,39 +4,39 @@ import {
   useMutation,
   useQuery,
   useQueryClient,
-} from "@tanstack/react-query";
+} from '@tanstack/react-query'
 
-import dishApiRequest from "@/apiRequests/dish";
+import dishApiRequest from '@/apiRequests/dish'
 import {
   CreateDishBodyType,
   DishListResType,
   DishResType,
   UpdateDishBodyType,
-} from "@/schemaValidations/dish.schema";
+} from '@/schemaValidations/dish.schema'
 
 export const useDishListQuery = (): UseQueryResult<
   QueryResponseType<DishListResType>,
   Error
 > => {
   return useQuery({
-    queryKey: ["dishes"],
+    queryKey: ['dishes'],
     queryFn: dishApiRequest.list,
-  });
-};
+  })
+}
 
 export const useGetDishQuery = ({
   id,
   enabled,
 }: {
-  id: number;
-  enabled: boolean;
+  id: number
+  enabled: boolean
 }): UseQueryResult<QueryResponseType<DishResType>, Error> => {
   return useQuery({
-    queryKey: ["dishes", id],
+    queryKey: ['dishes', id],
     queryFn: () => dishApiRequest.getDish(id),
     enabled,
-  });
-};
+  })
+}
 
 export const useAddDishMutation = (): UseMutationResult<
   QueryResponseType<DishResType>,
@@ -44,16 +44,16 @@ export const useAddDishMutation = (): UseMutationResult<
   CreateDishBodyType,
   unknown
 > => {
-  const queryClient = useQueryClient();
+  const queryClient = useQueryClient()
   return useMutation({
     mutationFn: dishApiRequest.add,
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["dishes"],
-      });
+        queryKey: ['dishes'],
+      })
     },
-  });
-};
+  })
+}
 
 export const useUpdateDishMutation = (): UseMutationResult<
   QueryResponseType<DishResType>,
@@ -61,18 +61,18 @@ export const useUpdateDishMutation = (): UseMutationResult<
   UpdateDishBodyType & { id: number },
   unknown
 > => {
-  const queryClient = useQueryClient();
+  const queryClient = useQueryClient()
   return useMutation({
     mutationFn: ({ id, ...body }: UpdateDishBodyType & { id: number }) =>
       dishApiRequest.updateDish(id, body),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["dishes"],
+        queryKey: ['dishes'],
         exact: true,
-      });
+      })
     },
-  });
-};
+  })
+}
 
 export const useDeleteDishMutation = (): UseMutationResult<
   QueryResponseType<DishResType>,
@@ -80,14 +80,14 @@ export const useDeleteDishMutation = (): UseMutationResult<
   number,
   unknown
 > => {
-  const queryClient = useQueryClient();
+  const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: dishApiRequest.deleteDish,
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["dishes"],
-      });
+        queryKey: ['dishes'],
+      })
     },
-  });
-};
+  })
+}

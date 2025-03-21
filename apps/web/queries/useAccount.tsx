@@ -5,9 +5,9 @@ import {
   UseMutationResult,
   useQueryClient,
   keepPreviousData,
-} from "@tanstack/react-query";
+} from '@tanstack/react-query'
 
-import accountApiRequest from "@/apiRequests/account";
+import accountApiRequest from '@/apiRequests/account'
 import {
   AccountListResType,
   AccountResType,
@@ -20,17 +20,17 @@ import {
   GetListGuestsResType,
   UpdateEmployeeAccountBodyType,
   UpdateMeBodyType,
-} from "@/schemaValidations/account.schema";
+} from '@/schemaValidations/account.schema'
 
 export const useAccountMe = (): UseQueryResult<
   QueryResponseType<AccountResType>,
   Error
 > => {
   return useQuery({
-    queryKey: ["account-me"],
+    queryKey: ['account-me'],
     queryFn: accountApiRequest.me,
-  });
-};
+  })
+}
 
 export const useUpdateMeMutation = (): UseMutationResult<
   QueryResponseType<AccountResType>,
@@ -40,8 +40,8 @@ export const useUpdateMeMutation = (): UseMutationResult<
 > => {
   return useMutation({
     mutationFn: accountApiRequest.updateMe,
-  });
-};
+  })
+}
 
 export const useChangePasswordMutation = (): UseMutationResult<
   QueryResponseType<ChangePasswordV2ResType>,
@@ -51,33 +51,33 @@ export const useChangePasswordMutation = (): UseMutationResult<
 > => {
   return useMutation({
     mutationFn: accountApiRequest.changePasswordV2,
-  });
-};
+  })
+}
 
 export const useGetAccountList = (
   page: number,
   limit: number,
 ): UseQueryResult<QueryResponseType<AccountListResType>, Error> => {
   return useQuery({
-    queryKey: ["accounts", page, limit],
+    queryKey: ['accounts', page, limit],
     queryFn: () => accountApiRequest.list({ page, limit }),
     placeholderData: keepPreviousData,
-  });
-};
+  })
+}
 
 export const useGetAccount = ({
   id,
   enabled,
 }: {
-  id: number;
-  enabled: boolean;
+  id: number
+  enabled: boolean
 }): UseQueryResult<QueryResponseType<AccountResType>, Error> => {
   return useQuery({
-    queryKey: ["accounts", id],
+    queryKey: ['accounts', id],
     queryFn: () => accountApiRequest.getEmployee(id),
     enabled,
-  });
-};
+  })
+}
 
 export const useAddAccountMutation = (): UseMutationResult<
   QueryResponseType<AccountResType>,
@@ -85,16 +85,16 @@ export const useAddAccountMutation = (): UseMutationResult<
   CreateEmployeeAccountBodyType,
   unknown
 > => {
-  const queryClient = useQueryClient();
+  const queryClient = useQueryClient()
   return useMutation({
     mutationFn: accountApiRequest.addEmployee,
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["accounts"],
-      });
+        queryKey: ['accounts'],
+      })
     },
-  });
-};
+  })
+}
 
 export const useUpdateAccountMutation = (): UseMutationResult<
   QueryResponseType<AccountResType>,
@@ -102,7 +102,7 @@ export const useUpdateAccountMutation = (): UseMutationResult<
   UpdateEmployeeAccountBodyType & { id: number },
   unknown
 > => {
-  const queryClient = useQueryClient();
+  const queryClient = useQueryClient()
   return useMutation({
     mutationFn: ({
       id,
@@ -111,11 +111,11 @@ export const useUpdateAccountMutation = (): UseMutationResult<
       accountApiRequest.updateEmployee(id, body),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["accounts"],
-      });
+        queryKey: ['accounts'],
+      })
     },
-  });
-};
+  })
+}
 
 export const useDeleteAccountMutation = (): UseMutationResult<
   QueryResponseType<AccountResType>,
@@ -123,25 +123,25 @@ export const useDeleteAccountMutation = (): UseMutationResult<
   number,
   unknown
 > => {
-  const queryClient = useQueryClient();
+  const queryClient = useQueryClient()
   return useMutation({
     mutationFn: accountApiRequest.deleteEmployee,
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["accounts"],
-      });
+        queryKey: ['accounts'],
+      })
     },
-  });
-};
+  })
+}
 
 export const useGetGuestListQuery = (
   queryParams: GetGuestListQueryParamsType,
 ): UseQueryResult<QueryResponseType<GetListGuestsResType>, Error> => {
   return useQuery({
     queryFn: () => accountApiRequest.guestList(queryParams),
-    queryKey: ["guests", queryParams],
-  });
-};
+    queryKey: ['guests', queryParams],
+  })
+}
 
 export const useCreateGuestMutation = (): UseMutationResult<
   QueryResponseType<CreateGuestResType>,
@@ -151,5 +151,5 @@ export const useCreateGuestMutation = (): UseMutationResult<
 > => {
   return useMutation({
     mutationFn: accountApiRequest.createGuest,
-  });
-};
+  })
+}

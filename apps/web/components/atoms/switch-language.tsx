@@ -1,24 +1,24 @@
-"use client";
+'use client'
 
-import Image from "next/image";
-import { useLocale, useTranslations } from "next-intl";
+import Image from 'next/image'
+import { useLocale, useTranslations } from 'next-intl'
 
-import { usePathname, useRouter } from "@/i18n/routing";
-import { Locale, locales } from "@/config";
+import { usePathname, useRouter } from '@/i18n/routing'
+import { Locale, locales } from '@/config'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@repo/ui/components/dropdown-menu";
-import { Button } from "@repo/ui/components/button";
+} from '@repo/ui/components/dropdown-menu'
+import { Button } from '@repo/ui/components/button'
 
 const SwitchLanguage = () => {
-  const t = useTranslations("SwitchLanguage");
+  const t = useTranslations('SwitchLanguage')
 
-  const locale = useLocale();
-  const pathname = usePathname();
-  const router = useRouter();
+  const locale = useLocale()
+  const pathname = usePathname()
+  const router = useRouter()
 
   return (
     <DropdownMenu>
@@ -26,7 +26,7 @@ const SwitchLanguage = () => {
         <Button
           variant="outline"
           size="icon"
-          className="rounded-full w-10 h-10"
+          className="h-10 w-10 rounded-full"
         >
           <Image
             src={`/${locale}.png`}
@@ -45,8 +45,8 @@ const SwitchLanguage = () => {
             onClick={() => {
               router.replace(pathname, {
                 locale: locale as Locale,
-              });
-              router.refresh();
+              })
+              router.refresh()
             }}
             className="cursor-pointer"
           >
@@ -55,7 +55,7 @@ const SwitchLanguage = () => {
         ))}
       </DropdownMenuContent>
     </DropdownMenu>
-  );
-};
+  )
+}
 
-export default SwitchLanguage;
+export default SwitchLanguage

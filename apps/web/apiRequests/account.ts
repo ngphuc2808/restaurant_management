@@ -1,6 +1,6 @@
-import queryString from "query-string";
+import queryString from 'query-string'
 
-import http from "@/lib/http";
+import http from '@/lib/http'
 import {
   AccountListResType,
   AccountResType,
@@ -13,9 +13,9 @@ import {
   GetListGuestsResType,
   UpdateEmployeeAccountBodyType,
   UpdateMeBodyType,
-} from "@/schemaValidations/account.schema";
+} from '@/schemaValidations/account.schema'
 
-const prefix = "accounts";
+const prefix = 'accounts'
 
 const accountApiRequest = {
   me: () => http.get<AccountResType>(`/${prefix}/me`),
@@ -29,7 +29,7 @@ const accountApiRequest = {
     http.put<AccountResType>(`/${prefix}/me`, body),
   changePasswordV2: (body: ChangePasswordV2BodyType) =>
     http.put<ChangePasswordV2ResType>(`/${prefix}/change-password`, body, {
-      baseUrl: "/api",
+      baseUrl: '/api',
     }),
   sChangePasswordV2: (accessToken: string, body: ChangePasswordV2BodyType) =>
     http.put<ChangePasswordV2ResType>(`/${prefix}/change-password`, body, {
@@ -59,6 +59,6 @@ const accountApiRequest = {
     ),
   createGuest: (body: CreateGuestBodyType) =>
     http.post<CreateGuestResType>(`${prefix}/guests`, body),
-};
+}
 
-export default accountApiRequest;
+export default accountApiRequest

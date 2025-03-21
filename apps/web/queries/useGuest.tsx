@@ -3,16 +3,16 @@ import {
   UseQueryResult,
   useMutation,
   useQuery,
-} from "@tanstack/react-query";
+} from '@tanstack/react-query'
 
-import guestApiRequest from "@/apiRequests/guest";
+import guestApiRequest from '@/apiRequests/guest'
 import {
   GuestCreateOrdersBodyType,
   GuestCreateOrdersResType,
   GuestGetOrdersResType,
   GuestLoginBodyType,
   GuestLoginResType,
-} from "@/schemaValidations/guest.schema";
+} from '@/schemaValidations/guest.schema'
 
 export const useGuestLoginMutation = (): UseMutationResult<
   QueryResponseType<GuestLoginResType>,
@@ -22,8 +22,8 @@ export const useGuestLoginMutation = (): UseMutationResult<
 > => {
   return useMutation({
     mutationFn: guestApiRequest.login,
-  });
-};
+  })
+}
 
 export const useGuestLogoutMutation = (): UseMutationResult<
   QueryResponseType<unknown>,
@@ -33,8 +33,8 @@ export const useGuestLogoutMutation = (): UseMutationResult<
 > => {
   return useMutation({
     mutationFn: guestApiRequest.logout,
-  });
-};
+  })
+}
 
 export const useGuestOrderMutation = (): UseMutationResult<
   QueryResponseType<GuestCreateOrdersResType>,
@@ -44,8 +44,8 @@ export const useGuestOrderMutation = (): UseMutationResult<
 > => {
   return useMutation({
     mutationFn: guestApiRequest.order,
-  });
-};
+  })
+}
 
 export const useGuestGetOrderListQuery = (): UseQueryResult<
   QueryResponseType<GuestGetOrdersResType>,
@@ -53,6 +53,6 @@ export const useGuestGetOrderListQuery = (): UseQueryResult<
 > => {
   return useQuery({
     queryFn: guestApiRequest.getOrderList,
-    queryKey: ["guest-orders"],
-  });
-};
+    queryKey: ['guest-orders'],
+  })
+}

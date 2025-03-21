@@ -1,6 +1,6 @@
-import queryString from "query-string";
+import queryString from 'query-string'
 
-import http from "@/lib/http";
+import http from '@/lib/http'
 import {
   CreateOrdersBodyType,
   CreateOrdersResType,
@@ -11,9 +11,9 @@ import {
   PayGuestOrdersResType,
   UpdateOrderBodyType,
   UpdateOrderResType,
-} from "@/schemaValidations/order.schema";
+} from '@/schemaValidations/order.schema'
 
-const prefix = "orders";
+const prefix = 'orders'
 
 const orderApiRequest = {
   createOrders: (body: CreateOrdersBodyType) =>
@@ -32,6 +32,6 @@ const orderApiRequest = {
     http.get<GetOrderDetailResType>(`/${prefix}/${orderId}`),
   pay: (body: PayGuestOrdersBodyType) =>
     http.post<PayGuestOrdersResType>(`/${prefix}/pay`, body),
-};
+}
 
-export default orderApiRequest;
+export default orderApiRequest

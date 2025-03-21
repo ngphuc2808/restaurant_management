@@ -1,13 +1,13 @@
-import { TableStatusValues } from "@/constants/type";
-import z from "zod";
+import { TableStatusValues } from '@/constants/type'
+import z from 'zod'
 
 export const CreateTableBody = z.object({
-  number: z.coerce.number().positive({ message: "minTableNumber" }),
-  capacity: z.coerce.number().positive({ message: "minCapacity" }),
+  number: z.coerce.number().positive({ message: 'minTableNumber' }),
+  capacity: z.coerce.number().positive({ message: 'minCapacity' }),
   status: z.enum(TableStatusValues).optional(),
-});
+})
 
-export type CreateTableBodyType = z.TypeOf<typeof CreateTableBody>;
+export type CreateTableBodyType = z.TypeOf<typeof CreateTableBody>
 
 export const TableSchema = z.object({
   number: z.coerce.number(),
@@ -16,29 +16,29 @@ export const TableSchema = z.object({
   token: z.string(),
   createdAt: z.date(),
   updatedAt: z.date(),
-});
+})
 
 export const TableRes = z.object({
   data: TableSchema,
   message: z.string(),
-});
+})
 
-export type TableResType = z.TypeOf<typeof TableRes>;
+export type TableResType = z.TypeOf<typeof TableRes>
 
 export const TableListRes = z.object({
   data: z.array(TableSchema),
   message: z.string(),
-});
+})
 
-export type TableListResType = z.TypeOf<typeof TableListRes>;
+export type TableListResType = z.TypeOf<typeof TableListRes>
 
 export const UpdateTableBody = z.object({
   changeToken: z.boolean(),
-  capacity: z.coerce.number().positive({ message: "minCapacity" }),
+  capacity: z.coerce.number().positive({ message: 'minCapacity' }),
   status: z.enum(TableStatusValues).optional(),
-});
-export type UpdateTableBodyType = z.TypeOf<typeof UpdateTableBody>;
+})
+export type UpdateTableBodyType = z.TypeOf<typeof UpdateTableBody>
 export const TableParams = z.object({
   number: z.coerce.number(),
-});
-export type TableParamsType = z.TypeOf<typeof TableParams>;
+})
+export type TableParamsType = z.TypeOf<typeof TableParams>

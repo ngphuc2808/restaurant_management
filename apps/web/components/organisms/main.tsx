@@ -1,10 +1,10 @@
 type Props = {
-  children: React.ReactNode;
-  className?: string;
-};
+  children: React.ReactNode
+  className?: string
+}
 
 const Main = ({ children, className }: Props) => {
-  return <main className={className}>{children}</main>;
-};
+  return <main className={className}>{children}</main>
+}
 
-export default Main;
+export default Main

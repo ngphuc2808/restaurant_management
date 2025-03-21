@@ -1,59 +1,55 @@
-"use client";
+'use client'
 
-import { useTranslations } from "next-intl";
-import { ChevronsUpDown, LogOut } from "lucide-react";
+import { useTranslations } from 'next-intl'
+import { ChevronsUpDown, LogOut } from 'lucide-react'
 
-import { useRouter } from "@/i18n/routing";
-import useAppStore from "@/store/app";
-import { AccountResType } from "@/schemaValidations/account.schema";
-import { useLogoutMutation } from "@/queries/useAuth";
-import { handleErrorApi } from "@/lib/utils";
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@repo/ui/components/avatar";
+import { useRouter } from '@/i18n/routing'
+import useAppStore from '@/store/app'
+import { AccountResType } from '@/schemaValidations/account.schema'
+import { useLogoutMutation } from '@/queries/useAuth'
+import { handleErrorApi } from '@/lib/utils'
+import { Avatar, AvatarFallback, AvatarImage } from '@repo/ui/components/avatar'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@repo/ui/components/dropdown-menu";
+} from '@repo/ui/components/dropdown-menu'
 import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
   useSidebar,
-} from "@repo/ui/components/sidebar";
+} from '@repo/ui/components/sidebar'
 
 type Props = {
-  user: AccountResType["data"];
-};
+  user: AccountResType['data']
+}
 
 const NavUser = ({ user }: Props) => {
-  const { setRole, disconnectSocket } = useAppStore();
+  const { setRole, disconnectSocket } = useAppStore()
 
-  const t = useTranslations("Settings");
+  const t = useTranslations('Settings')
 
-  const router = useRouter();
+  const router = useRouter()
 
-  const { isMobile } = useSidebar();
+  const { isMobile } = useSidebar()
 
-  const logoutMutation = useLogoutMutation();
+  const logoutMutation = useLogoutMutation()
 
   const logout = async () => {
-    if (logoutMutation.isPending) return;
+    if (logoutMutation.isPending) return
     try {
-      await logoutMutation.mutateAsync();
-      setRole(undefined);
-      disconnectSocket();
-      router.push("/");
+      await logoutMutation.mutateAsync()
+      setRole(undefined)
+      disconnectSocket()
+      router.push('/')
     } catch (error) {
       handleErrorApi({
         error,
-      });
+      })
     }
-  };
+  }
 
   return (
     <SidebarMenu>
@@ -79,19 +75,19 @@ const NavUser = ({ user }: Props) => {
           </DropdownMenuTrigger>
           <DropdownMenuContent
             className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
-            side={isMobile ? "bottom" : "right"}
+            side={isMobile ? 'bottom' : 'right'}
             align="end"
             sideOffset={4}
           >
             <DropdownMenuItem className="cursor-pointer" onClick={logout}>
               <LogOut />
-              {t("logout")}
+              {t('logout')}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>
     </SidebarMenu>
-  );
-};
+  )
+}
 
-export default NavUser;
+export default NavUser

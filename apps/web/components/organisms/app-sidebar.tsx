@@ -1,6 +1,6 @@
-"use client";
+'use client'
 
-import Image from "next/image";
+import Image from 'next/image'
 
 import {
   Sidebar,
@@ -8,15 +8,15 @@ import {
   SidebarContent,
   SidebarRail,
   SidebarFooter,
-} from "@repo/ui/components/sidebar";
-import { menuItems } from "@/constants";
-import NavGroup from "@/components/molecules/nav-group";
-import NavUser from "@/components/molecules/nav-user";
-import { useAccountMe } from "@/queries/useAccount";
+} from '@repo/ui/components/sidebar'
+import { menuItems } from '@/constants'
+import NavGroup from '@/components/molecules/nav-group'
+import NavUser from '@/components/molecules/nav-user'
+import { useAccountMe } from '@/queries/useAccount'
 
 const AppSidebar = () => {
-  const accountProfile = useAccountMe();
-  const account = accountProfile.data?.payload.data;
+  const accountProfile = useAccountMe()
+  const account = accountProfile.data?.payload.data
 
   return (
     <Sidebar collapsible="icon">
@@ -41,7 +41,7 @@ const AppSidebar = () => {
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
-  );
-};
+  )
+}
 
-export default AppSidebar;
+export default AppSidebar

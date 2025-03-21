@@ -1,14 +1,14 @@
-import { Separator } from "@repo/ui/components/separator";
-import { SidebarTrigger } from "@repo/ui/components/sidebar";
-import SwitchLanguage from "@/components/atoms/switch-language";
-import DarkModeToggle from "@/components/atoms/switch-mode";
-import DropdownAvatar from "@/components/atoms/dropdown-avatar";
+import { Separator } from '@repo/ui/components/separator'
+import { SidebarTrigger } from '@repo/ui/components/sidebar'
+import SwitchLanguage from '@/components/atoms/switch-language'
+import DarkModeToggle from '@/components/atoms/switch-mode'
+import DropdownAvatar from '@/components/atoms/dropdown-avatar'
 
 const Header = () => {
   return (
     <header
       className={
-        "flex items-center gap-3 sm:gap-4 bg-background p-4 w-full h-16 shadow"
+        'flex h-16 w-full items-center gap-3 bg-background p-4 shadow sm:gap-4'
       }
     >
       <SidebarTrigger variant="outline" className="scale-125 sm:scale-100" />
@@ -19,7 +19,7 @@ const Header = () => {
         <DropdownAvatar />
       </div>
     </header>
-  );
-};
+  )
+}
 
-export default Header;
+export default Header

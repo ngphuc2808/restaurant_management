@@ -1,28 +1,24 @@
-"use client";
+'use client'
 
-import { useTranslations } from "next-intl";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Upload } from "lucide-react";
+import { useTranslations } from 'next-intl'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { Upload } from 'lucide-react'
 
 import {
   UpdateEmployeeAccountBody,
   UpdateEmployeeAccountBodyType,
-} from "@/schemaValidations/account.schema";
-import { useGetAccount, useUpdateAccountMutation } from "@/queries/useAccount";
-import { useUploadMediaMutation } from "@/queries/useMedia";
+} from '@/schemaValidations/account.schema'
+import { useGetAccount, useUpdateAccountMutation } from '@/queries/useAccount'
+import { useUploadMediaMutation } from '@/queries/useMedia'
 import {
   checkMessageFromResponse,
   getVietnameseRole,
   handleErrorApi,
-} from "@/lib/utils";
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@repo/ui/components/avatar";
-import { Button } from "@repo/ui/components/button";
+} from '@/lib/utils'
+import { Avatar, AvatarFallback, AvatarImage } from '@repo/ui/components/avatar'
+import { Button } from '@repo/ui/components/button'
 import {
   Dialog,
   DialogContent,
@@ -30,141 +26,141 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@repo/ui/components/dialog";
+} from '@repo/ui/components/dialog'
 import {
   Form,
   FormControl,
   FormField,
   FormItem,
   FormMessage,
-} from "@repo/ui/components/form";
-import { Input } from "@repo/ui/components/input";
-import { Label } from "@repo/ui/components/label";
+} from '@repo/ui/components/form'
+import { Input } from '@repo/ui/components/input'
+import { Label } from '@repo/ui/components/label'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@repo/ui/components/select";
-import { Switch } from "@repo/ui/components/switch";
-import { toast } from "@repo/ui/hooks/use-toast";
-import { Role, RoleValues } from "@/constants/type";
-import { envConfig } from "@/config";
+} from '@repo/ui/components/select'
+import { Switch } from '@repo/ui/components/switch'
+import { toast } from '@repo/ui/hooks/use-toast'
+import { Role, RoleValues } from '@/constants/type'
+import { envConfig } from '@/config'
 
 const EditEmployee = ({
   id,
   setId,
   onSubmitSuccess,
 }: {
-  id?: number | undefined;
-  setId: (value: number | undefined) => void;
-  onSubmitSuccess?: () => void;
+  id?: number | undefined
+  setId: (value: number | undefined) => void
+  onSubmitSuccess?: () => void
 }) => {
-  const t = useTranslations("ManageAccounts");
-  const tAll = useTranslations("All");
-  const tErrorMessage = useTranslations("ErrorMessage");
+  const t = useTranslations('ManageAccounts')
+  const tAll = useTranslations('All')
+  const tErrorMessage = useTranslations('ErrorMessage')
 
-  const [file, setFile] = useState<File | null>(null);
-  const avatarInputRef = useRef<HTMLInputElement | null>(null);
+  const [file, setFile] = useState<File | null>(null)
+  const avatarInputRef = useRef<HTMLInputElement | null>(null)
 
   const dataAccount = useGetAccount({
     id: id as number,
     enabled: Boolean(id),
-  });
+  })
 
-  const updateAccountMutation = useUpdateAccountMutation();
-  const uploadMediaMutation = useUploadMediaMutation();
+  const updateAccountMutation = useUpdateAccountMutation()
+  const uploadMediaMutation = useUploadMediaMutation()
 
   const form = useForm<UpdateEmployeeAccountBodyType>({
     resolver: zodResolver(UpdateEmployeeAccountBody),
     defaultValues: {
-      name: "",
-      email: "",
+      name: '',
+      email: '',
       avatar: undefined,
       changePassword: false,
       role: Role.Employee,
     },
-  });
-  const avatar = form.watch("avatar");
-  const name = form.watch("name");
-  const changePassword = form.watch("changePassword");
+  })
+  const avatar = form.watch('avatar')
+  const name = form.watch('name')
+  const changePassword = form.watch('changePassword')
 
   const previewAvatar = useMemo(
     () => (file ? URL.createObjectURL(file) : avatar || undefined),
     [file, avatar],
-  );
+  )
 
   const onSubmit = async (values: UpdateEmployeeAccountBodyType) => {
-    if (updateAccountMutation.isPending) return;
+    if (updateAccountMutation.isPending) return
     try {
       let body: UpdateEmployeeAccountBodyType & { id: number } = {
         id: id as number,
         ...values,
-      };
+      }
       if (file) {
-        const formData = new FormData();
-        formData.append("file", file);
-        formData.append("folder", "employees");
+        const formData = new FormData()
+        formData.append('file', file)
+        formData.append('folder', 'employees')
         const uploadImageResult =
-          await uploadMediaMutation.mutateAsync(formData);
-        const imageUrl = uploadImageResult.payload.data;
+          await uploadMediaMutation.mutateAsync(formData)
+        const imageUrl = uploadImageResult.payload.data
         body = {
           ...body,
           avatar: imageUrl,
-        };
+        }
       }
-      const result = await updateAccountMutation.mutateAsync(body);
+      const result = await updateAccountMutation.mutateAsync(body)
       toast({
         description: result.payload.message,
-      });
-      reset();
-      onSubmitSuccess && onSubmitSuccess();
+      })
+      reset()
+      onSubmitSuccess && onSubmitSuccess()
     } catch (error) {
       handleErrorApi({
         error,
         setError: form.setError,
-      });
+      })
     }
-  };
+  }
 
   const reset = () => {
-    if (file && previewAvatar && previewAvatar.startsWith("blob:")) {
-      URL.revokeObjectURL(previewAvatar);
+    if (file && previewAvatar && previewAvatar.startsWith('blob:')) {
+      URL.revokeObjectURL(previewAvatar)
     }
-    setId(undefined);
-    setFile(null);
-    form.reset();
-  };
+    setId(undefined)
+    setFile(null)
+    form.reset()
+  }
 
   useEffect(() => {
     if (dataAccount.data) {
-      const { name, avatar, email, role } = dataAccount.data.payload.data;
+      const { name, avatar, email, role } = dataAccount.data.payload.data
       form.reset({
         name,
         avatar: avatar ?? undefined,
         email,
-        changePassword: form.getValues("changePassword"),
-        password: form.getValues("password"),
-        confirmPassword: form.getValues("confirmPassword"),
+        changePassword: form.getValues('changePassword'),
+        password: form.getValues('password'),
+        confirmPassword: form.getValues('confirmPassword'),
         role,
-      });
+      })
     }
-  }, [dataAccount.data, form]);
+  }, [dataAccount.data, form])
 
   return (
     <Dialog
       open={Boolean(id)}
       onOpenChange={(value) => {
         if (!value) {
-          reset();
+          reset()
         }
       }}
     >
-      <DialogContent className="sm:max-w-[600px] max-h-screen overflow-auto">
+      <DialogContent className="max-h-screen overflow-auto sm:max-w-[600px]">
         <DialogHeader>
-          <DialogTitle>{t("updateAccount")}</DialogTitle>
-          <DialogDescription>{t("requiredDescription")}</DialogDescription>
+          <DialogTitle>{t('updateAccount')}</DialogTitle>
+          <DialogDescription>{t('requiredDescription')}</DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form
@@ -179,11 +175,11 @@ const EditEmployee = ({
                 name="avatar"
                 render={({ field }) => (
                   <FormItem>
-                    <div className="flex gap-2 items-start justify-start">
-                      <Avatar className="aspect-square w-[100px] h-[100px] rounded-md object-cover">
+                    <div className="flex items-start justify-start gap-2">
+                      <Avatar className="aspect-square h-[100px] w-[100px] rounded-md object-cover">
                         <AvatarImage src={previewAvatar} />
                         <AvatarFallback className="rounded-none text-center">
-                          {name || tAll("avatar")}
+                          {name || tAll('avatar')}
                         </AvatarFallback>
                       </Avatar>
                       <input
@@ -191,12 +187,12 @@ const EditEmployee = ({
                         accept="image/*"
                         ref={avatarInputRef}
                         onChange={(e) => {
-                          const file = e.target.files?.[0];
+                          const file = e.target.files?.[0]
                           if (file) {
-                            setFile(file);
+                            setFile(file)
                             field.onChange(
                               `${envConfig.NEXT_PUBLIC_URL}/` + file.name,
-                            );
+                            )
                           }
                         }}
                         className="hidden"
@@ -218,7 +214,7 @@ const EditEmployee = ({
                 render={({ field, formState: { errors } }) => (
                   <FormItem>
                     <div className="grid grid-cols-4 items-center justify-items-start gap-4">
-                      <Label htmlFor="name">{tAll("name")}</Label>
+                      <Label htmlFor="name">{tAll('name')}</Label>
                       <div className="col-span-3 w-full space-y-2">
                         <Input id="name" className="w-full" {...field} />
                         <FormMessage>
@@ -238,7 +234,7 @@ const EditEmployee = ({
                 render={({ field, formState: { errors } }) => (
                   <FormItem>
                     <div className="grid grid-cols-4 items-center justify-items-start gap-4">
-                      <Label htmlFor="email">{tAll("email")}</Label>
+                      <Label htmlFor="email">{tAll('email')}</Label>
                       <div className="col-span-3 w-full space-y-2">
                         <Input id="email" className="w-full" {...field} />
                         <FormMessage>
@@ -258,7 +254,7 @@ const EditEmployee = ({
                 render={({ field, formState: { errors } }) => (
                   <FormItem>
                     <div className="grid grid-cols-4 items-center justify-items-start gap-4">
-                      <Label htmlFor="role">{tAll("role")}</Label>
+                      <Label htmlFor="role">{tAll('role')}</Label>
                       <div className="col-span-3 w-full space-y-2">
                         <Select
                           onValueChange={field.onChange}
@@ -266,17 +262,17 @@ const EditEmployee = ({
                         >
                           <FormControl>
                             <SelectTrigger>
-                              <SelectValue placeholder={t("selectRole")} />
+                              <SelectValue placeholder={t('selectRole')} />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
                             {RoleValues.map((role) => {
-                              if (role === Role.Guest) return null;
+                              if (role === Role.Guest) return null
                               return (
                                 <SelectItem key={role} value={role}>
                                   {tAll(getVietnameseRole(role))}
                                 </SelectItem>
-                              );
+                              )
                             })}
                           </SelectContent>
                         </Select>
@@ -297,18 +293,18 @@ const EditEmployee = ({
                 render={({ field, formState: { errors } }) => (
                   <FormItem>
                     <div className="grid grid-cols-4 items-center justify-items-start gap-4">
-                      <Label htmlFor="email">{t("changePassword")}</Label>
+                      <Label htmlFor="email">{t('changePassword')}</Label>
                       <div className="col-span-3 w-full space-y-2">
                         <Switch
                           checked={field.value}
                           onCheckedChange={(value) => {
-                            field.onChange(value);
+                            field.onChange(value)
                             if (!value) {
-                              form.setValue("password", undefined);
-                              form.setValue("confirmPassword", undefined);
+                              form.setValue('password', undefined)
+                              form.setValue('confirmPassword', undefined)
                             } else {
-                              form.setValue("password", "");
-                              form.setValue("confirmPassword", "");
+                              form.setValue('password', '')
+                              form.setValue('confirmPassword', '')
                             }
                           }}
                         />
@@ -334,7 +330,7 @@ const EditEmployee = ({
                   render={({ field, formState: { errors } }) => (
                     <FormItem>
                       <div className="grid grid-cols-4 items-center justify-items-start gap-4">
-                        <Label htmlFor="password">{t("newPassword")}</Label>
+                        <Label htmlFor="password">{t('newPassword')}</Label>
                         <div className="col-span-3 w-full space-y-2">
                           <Input
                             id="password"
@@ -364,7 +360,7 @@ const EditEmployee = ({
                     <FormItem>
                       <div className="grid grid-cols-4 items-center justify-items-start gap-4">
                         <Label htmlFor="confirmPassword">
-                          {t("confirmNewPassword")}
+                          {t('confirmNewPassword')}
                         </Label>
                         <div className="col-span-3 w-full space-y-2">
                           <Input
@@ -394,12 +390,12 @@ const EditEmployee = ({
         </Form>
         <DialogFooter>
           <Button type="submit" form="edit-employee-form">
-            {tAll("save")}
+            {tAll('save')}
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  );
-};
+  )
+}
 
-export default EditEmployee;
+export default EditEmployee

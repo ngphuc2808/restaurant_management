@@ -1,8 +1,8 @@
-"use client";
+'use client'
 
-import Image from "next/image";
-import { useTranslations } from "next-intl";
-import { useEffect, useMemo, useState } from "react";
+import Image from 'next/image'
+import { useTranslations } from 'next-intl'
+import { useEffect, useMemo, useState } from 'react'
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -14,24 +14,24 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
-} from "@tanstack/react-table";
+} from '@tanstack/react-table'
 
-import { DishListResType } from "@/schemaValidations/dish.schema";
-import { useDishListQuery } from "@/queries/useDish";
+import { DishListResType } from '@/schemaValidations/dish.schema'
+import { useDishListQuery } from '@/queries/useDish'
 import {
   formatCurrency,
   getVietnameseDishStatus,
   simpleMatchText,
-} from "@/lib/utils";
-import { Button } from "@repo/ui/components/button";
+} from '@/lib/utils'
+import { Button } from '@repo/ui/components/button'
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@repo/ui/components/dialog";
-import { Input } from "@repo/ui/components/input";
+} from '@repo/ui/components/dialog'
+import { Input } from '@repo/ui/components/input'
 import {
   Table,
   TableBody,
@@ -39,35 +39,35 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@repo/ui/components/table";
-import AutoPagination from "@/components/molecules/auto-pagination";
-import { DishStatus } from "@/constants/type";
+} from '@repo/ui/components/table'
+import AutoPagination from '@/components/molecules/auto-pagination'
+import { DishStatus } from '@/constants/type'
 
-type DishItem = DishListResType["data"][0];
+type DishItem = DishListResType['data'][0]
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 10
 
 const DishesDialog = ({ onChoose }: { onChoose: (dish: DishItem) => void }) => {
-  const t = useTranslations("Orders");
-  const tAll = useTranslations("All");
+  const t = useTranslations('Orders')
+  const tAll = useTranslations('All')
 
-  const [open, setOpen] = useState(false);
-  const dishListQuery = useDishListQuery();
-  const data = dishListQuery.data?.payload.data ?? [];
-  const [sorting, setSorting] = useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
-  const [rowSelection, setRowSelection] = useState({});
+  const [open, setOpen] = useState(false)
+  const dishListQuery = useDishListQuery()
+  const data = dishListQuery.data?.payload.data ?? []
+  const [sorting, setSorting] = useState<SortingState>([])
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
+  const [rowSelection, setRowSelection] = useState({})
   const [pagination, setPagination] = useState({
     pageIndex: 0,
     pageSize: PAGE_SIZE,
-  });
+  })
 
   const columns: ColumnDef<DishItem>[] = useMemo(() => {
     return [
       {
-        id: "dishName",
-        header: t("dishesDialog.dish"),
+        id: 'dishName',
+        header: t('dishesDialog.dish'),
         cell: ({ row }) => (
           <div className="flex items-center space-x-4">
             <Image
@@ -75,37 +75,34 @@ const DishesDialog = ({ onChoose }: { onChoose: (dish: DishItem) => void }) => {
               alt={row.original.name}
               width={50}
               height={50}
-              className="rounded-md object-cover w-[50px] h-[50px]"
+              className="h-[50px] w-[50px] rounded-md object-cover"
             />
             <span>{row.original.name}</span>
           </div>
         ),
         filterFn: (row, _, filterValue: string) => {
-          if (filterValue === undefined) return true;
-          return simpleMatchText(
-            String(row.original.name),
-            String(filterValue),
-          );
+          if (filterValue === undefined) return true
+          return simpleMatchText(String(row.original.name), String(filterValue))
         },
       },
       {
-        accessorKey: "price",
-        header: t("dishesDialog.price"),
+        accessorKey: 'price',
+        header: t('dishesDialog.price'),
         cell: ({ row }) => (
           <div className="capitalize">
-            {formatCurrency(row.getValue("price"))}
+            {formatCurrency(row.getValue('price'))}
           </div>
         ),
       },
       {
-        accessorKey: "status",
-        header: t("dishesDialog.status"),
+        accessorKey: 'status',
+        header: t('dishesDialog.status'),
         cell: ({ row }) => (
-          <div>{tAll(getVietnameseDishStatus(row.getValue("status")))}</div>
+          <div>{tAll(getVietnameseDishStatus(row.getValue('status')))}</div>
         ),
       },
-    ];
-  }, []);
+    ]
+  }, [])
 
   const table = useReactTable({
     data,
@@ -127,43 +124,43 @@ const DishesDialog = ({ onChoose }: { onChoose: (dish: DishItem) => void }) => {
       rowSelection,
       pagination,
     },
-  });
+  })
 
   const choose = (dish: DishItem) => {
-    onChoose(dish);
-    setOpen(false);
-  };
+    onChoose(dish)
+    setOpen(false)
+  }
 
   useEffect(() => {
     table.setPagination({
       pageIndex: 0,
       pageSize: PAGE_SIZE,
-    });
-  }, [table]);
+    })
+  }, [table])
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline">{tAll("change")}</Button>
+        <Button variant="outline">{tAll('change')}</Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[600px] max-h-full overflow-auto">
+      <DialogContent className="max-h-full overflow-auto sm:max-w-[600px]">
         <DialogHeader>
-          <DialogTitle>{t("selectDish")}</DialogTitle>
+          <DialogTitle>{t('selectDish')}</DialogTitle>
         </DialogHeader>
         <div>
           <div className="w-full">
-            <div className="flex items-center py-4 gap-2">
+            <div className="flex items-center gap-2 py-4">
               <Input
-                placeholder={tAll("searchValue", {
-                  value: tAll("name"),
+                placeholder={tAll('searchValue', {
+                  value: tAll('name'),
                 })}
                 value={
-                  (table.getColumn("dishName")?.getFilterValue() as string) ??
-                  ""
+                  (table.getColumn('dishName')?.getFilterValue() as string) ??
+                  ''
                 }
                 onChange={(event) =>
                   table
-                    .getColumn("dishName")
+                    .getColumn('dishName')
                     ?.setFilterValue(event.target.value)
                 }
                 className="max-w-sm"
@@ -184,7 +181,7 @@ const DishesDialog = ({ onChoose }: { onChoose: (dish: DishItem) => void }) => {
                                   header.getContext(),
                                 )}
                           </TableHead>
-                        );
+                        )
                       })}
                     </TableRow>
                   ))}
@@ -194,7 +191,7 @@ const DishesDialog = ({ onChoose }: { onChoose: (dish: DishItem) => void }) => {
                     table.getRowModel().rows.map((row) => (
                       <TableRow
                         key={row.id}
-                        data-state={row.getIsSelected() && "selected"}
+                        data-state={row.getIsSelected() && 'selected'}
                         onClick={() =>
                           row.original.status === DishStatus.Available &&
                           choose(row.original)
@@ -217,7 +214,7 @@ const DishesDialog = ({ onChoose }: { onChoose: (dish: DishItem) => void }) => {
                         colSpan={columns.length}
                         className="h-24 text-center"
                       >
-                        {tAll("noData")}
+                        {tAll('noData')}
                       </TableCell>
                     </TableRow>
                   )}
@@ -225,8 +222,8 @@ const DishesDialog = ({ onChoose }: { onChoose: (dish: DishItem) => void }) => {
               </Table>
             </div>
             <div className="flex items-center justify-end space-x-2 py-4">
-              <div className="text-xs text-muted-foreground py-4 flex-1 ">
-                {tAll("showResultPagination", {
+              <div className="flex-1 py-4 text-xs text-muted-foreground ">
+                {tAll('showResultPagination', {
                   result: table.getPaginationRowModel().rows.length,
                   total: data.length,
                 })}
@@ -249,7 +246,7 @@ const DishesDialog = ({ onChoose }: { onChoose: (dish: DishItem) => void }) => {
         </div>
       </DialogContent>
     </Dialog>
-  );
-};
+  )
+}
 
-export default DishesDialog;
+export default DishesDialog
