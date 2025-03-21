@@ -1,67 +1,67 @@
-"use client";
+'use client'
 
-import { useTranslations } from "next-intl";
-import { useMemo } from "react";
-import { Bar, BarChart, XAxis, YAxis } from "recharts";
+import { useTranslations } from 'next-intl'
+import { useMemo } from 'react'
+import { Bar, BarChart, XAxis, YAxis } from 'recharts'
 
-import { DashboardIndicatorResType } from "@/schemaValidations/indicator.schema";
+import { DashboardIndicatorResType } from '@/schemaValidations/indicator.schema'
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@repo/ui/components/card";
+} from '@repo/ui/components/card'
 import {
   ChartConfig,
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-} from "@repo/ui/components/chart";
+} from '@repo/ui/components/chart'
 
 const colors = [
-  "var(--color-chrome)",
-  "var(--color-safari)",
-  "var(--color-firefox)",
-  "var(--color-edge)",
-  "var(--color-other)",
-];
+  'var(--color-chrome)',
+  'var(--color-safari)',
+  'var(--color-firefox)',
+  'var(--color-edge)',
+  'var(--color-other)',
+]
 
 const chartConfig = {
   visitors: {
-    label: "Visitors",
+    label: 'Visitors',
   },
   chrome: {
-    label: "Chrome",
-    color: "hsl(var(--chart-1))",
+    label: 'Chrome',
+    color: 'hsl(var(--chart-1))',
   },
   safari: {
-    label: "Safari",
-    color: "hsl(var(--chart-2))",
+    label: 'Safari',
+    color: 'hsl(var(--chart-2))',
   },
   firefox: {
-    label: "Firefox",
-    color: "hsl(var(--chart-3))",
+    label: 'Firefox',
+    color: 'hsl(var(--chart-3))',
   },
   edge: {
-    label: "Edge",
-    color: "hsl(var(--chart-4))",
+    label: 'Edge',
+    color: 'hsl(var(--chart-4))',
   },
   other: {
-    label: "Other",
-    color: "hsl(var(--chart-5))",
+    label: 'Other',
+    color: 'hsl(var(--chart-5))',
   },
-} satisfies ChartConfig;
+} satisfies ChartConfig
 
 const DishBarChart = ({
   chartData,
 }: {
   chartData: Pick<
-    DashboardIndicatorResType["data"]["dishIndicator"][0],
-    "name" | "successOrders"
-  >[];
+    DashboardIndicatorResType['data']['dishIndicator'][0],
+    'name' | 'successOrders'
+  >[]
 }) => {
-  const t = useTranslations("Dashboard");
+  const t = useTranslations('Dashboard')
 
   const chartDateColors = useMemo(
     () =>
@@ -69,16 +69,16 @@ const DishBarChart = ({
         return {
           ...data,
           fill: colors[index] ?? colors[colors.length - 1],
-        };
+        }
       }),
     [chartData],
-  );
+  )
 
   return (
     <Card className="h-full">
       <CardHeader>
-        <CardTitle>{t("rankingDishes")}</CardTitle>
-        <CardDescription>{t("theMostCalledDish")}</CardDescription>
+        <CardTitle>{t('rankingDishes')}</CardTitle>
+        <CardDescription>{t('theMostCalledDish')}</CardDescription>
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig}>
@@ -94,7 +94,7 @@ const DishBarChart = ({
             <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
             <Bar
               dataKey="successOrders"
-              name={`${t("orderPaid")}: `}
+              name={`${t('orderPaid')}: `}
               layout="vertical"
               radius={5}
             />
@@ -102,7 +102,7 @@ const DishBarChart = ({
         </ChartContainer>
       </CardContent>
     </Card>
-  );
-};
+  )
+}
 
-export default DishBarChart;
+export default DishBarChart

@@ -1,8 +1,8 @@
-"use client";
+'use client'
 
-import Image from "next/image";
-import { useTranslations } from "next-intl";
-import { useEffect, useState } from "react";
+import Image from 'next/image'
+import { useTranslations } from 'next-intl'
+import { useEffect, useState } from 'react'
 import {
   ColumnFiltersState,
   SortingState,
@@ -13,40 +13,40 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
-} from "@tanstack/react-table";
-import { Check, ChevronsUpDown } from "lucide-react";
-import { endOfDay, format, startOfDay } from "date-fns";
-import { ColumnDef } from "@tanstack/react-table";
-import { DotsHorizontalIcon } from "@radix-ui/react-icons";
+} from '@tanstack/react-table'
+import { Check, ChevronsUpDown } from 'lucide-react'
+import { endOfDay, format, startOfDay } from 'date-fns'
+import { ColumnDef } from '@tanstack/react-table'
+import { DotsHorizontalIcon } from '@radix-ui/react-icons'
 
-import useAppStore from "@/store/app";
+import useAppStore from '@/store/app'
 import {
   GetOrdersResType,
   PayGuestOrdersResType,
   UpdateOrderResType,
-} from "@/schemaValidations/order.schema";
-import { GuestCreateOrdersResType } from "@/schemaValidations/guest.schema";
-import { useTableListQuery } from "@/queries/useTable";
+} from '@/schemaValidations/order.schema'
+import { GuestCreateOrdersResType } from '@/schemaValidations/guest.schema'
+import { useTableListQuery } from '@/queries/useTable'
 import {
   useGetOrderListQuery,
   useUpdateOrderMutation,
-} from "@/queries/useOrder";
+} from '@/queries/useOrder'
 import {
   formatCurrency,
   formatDateTimeToLocaleString,
   getVietnameseOrderStatus,
   handleErrorApi,
   simpleMatchText,
-} from "@/lib/utils";
-import { cn } from "@repo/ui/lib/utils";
-import { Badge } from "@repo/ui/components/badge";
-import { Button } from "@repo/ui/components/button";
+} from '@/lib/utils'
+import { cn } from '@repo/ui/lib/utils'
+import { Badge } from '@repo/ui/components/badge'
+import { Button } from '@repo/ui/components/button'
 import {
   Command,
   CommandGroup,
   CommandItem,
   CommandList,
-} from "@repo/ui/components/command";
+} from '@repo/ui/components/command'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -54,20 +54,20 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@repo/ui/components/dropdown-menu";
-import { Input } from "@repo/ui/components/input";
+} from '@repo/ui/components/dropdown-menu'
+import { Input } from '@repo/ui/components/input'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@repo/ui/components/popover";
+} from '@repo/ui/components/popover'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@repo/ui/components/select";
+} from '@repo/ui/components/select'
 import {
   Table,
   TableBody,
@@ -75,114 +75,112 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@repo/ui/components/table";
-import { toast } from "@repo/ui/hooks/use-toast";
-import { OrderStatusValues } from "@/constants/type";
-import TableSkeleton from "@/app/[locale]/manage/orders/table-skeleton";
-import OrderStatics from "@/app/[locale]/manage/orders/order-statics";
-import { useOrderService } from "@/app/[locale]/manage/orders/order.service";
-import AddOrder from "@/app/[locale]/manage/orders/add-order";
-import EditOrder from "@/app/[locale]/manage/orders/edit-order";
-import OrderGuestDetail from "@/app/[locale]/manage/orders/order-guest-detail";
-import AutoPagination from "@/components/molecules/auto-pagination";
+} from '@repo/ui/components/table'
+import { toast } from '@repo/ui/hooks/use-toast'
+import { OrderStatusValues } from '@/constants/type'
+import TableSkeleton from '@/app/[locale]/manage/orders/table-skeleton'
+import OrderStatics from '@/app/[locale]/manage/orders/order-statics'
+import { useOrderService } from '@/app/[locale]/manage/orders/order.service'
+import AddOrder from '@/app/[locale]/manage/orders/add-order'
+import EditOrder from '@/app/[locale]/manage/orders/edit-order'
+import OrderGuestDetail from '@/app/[locale]/manage/orders/order-guest-detail'
+import AutoPagination from '@/components/molecules/auto-pagination'
 import SearchParamsLoader, {
   useSearchParamsLoader,
-} from "@/components/atoms/search-params-loader";
-import useOrderTable from "@/store/order";
-import { OrderStatus } from "@/constants/type";
+} from '@/components/atoms/search-params-loader'
+import useOrderTable from '@/store/order'
+import { OrderStatus } from '@/constants/type'
 
-export type OrderItem = GetOrdersResType["data"][0];
+export type OrderItem = GetOrdersResType['data'][0]
 export type StatusCountObject = Record<
   (typeof OrderStatusValues)[number],
   number
->;
+>
 export type Statics = {
-  status: StatusCountObject;
-  table: Record<number, Record<number, StatusCountObject>>;
-};
-export type OrderObjectByGuestID = Record<number, GetOrdersResType["data"]>;
-export type ServingGuestByTableNumber = Record<number, OrderObjectByGuestID>;
+  status: StatusCountObject
+  table: Record<number, Record<number, StatusCountObject>>
+}
+export type OrderObjectByGuestID = Record<number, GetOrdersResType['data']>
+export type ServingGuestByTableNumber = Record<number, OrderObjectByGuestID>
 
-const PAGE_SIZE = 10;
-const initFromDate = startOfDay(new Date());
-const initToDate = endOfDay(new Date());
+const PAGE_SIZE = 10
+const initFromDate = startOfDay(new Date())
+const initToDate = endOfDay(new Date())
 
 const OrderTable = () => {
-  const { socket } = useAppStore();
+  const { socket } = useAppStore()
 
-  const t = useTranslations("Orders");
-  const tAll = useTranslations("All");
+  const t = useTranslations('Orders')
+  const tAll = useTranslations('All')
 
-  const { orderIdEdit, setOrderIdEdit } = useOrderTable();
+  const { orderIdEdit, setOrderIdEdit } = useOrderTable()
 
-  const { searchParams, setSearchParams } = useSearchParamsLoader();
-  const page = searchParams?.get("page")
-    ? Number(searchParams?.get("page"))
-    : 1;
-  const [openStatusFilter, setOpenStatusFilter] = useState(false);
-  const [fromDate, setFromDate] = useState(initFromDate);
-  const [toDate, setToDate] = useState(initToDate);
-  const pageIndex = page - 1;
+  const { searchParams, setSearchParams } = useSearchParamsLoader()
+  const page = searchParams?.get('page') ? Number(searchParams?.get('page')) : 1
+  const [openStatusFilter, setOpenStatusFilter] = useState(false)
+  const [fromDate, setFromDate] = useState(initFromDate)
+  const [toDate, setToDate] = useState(initToDate)
+  const pageIndex = page - 1
   const orderListQuery = useGetOrderListQuery({
     fromDate,
     toDate,
-  });
-  const refetchOrderList = orderListQuery.refetch;
-  const orderList = orderListQuery.data?.payload.data ?? [];
-  const tableListQuery = useTableListQuery();
-  const tableList = tableListQuery.data?.payload.data ?? [];
-  const tableListSortedByNumber = tableList.sort((a, b) => a.number - b.number);
-  const updateOrderMutation = useUpdateOrderMutation();
-  const [sorting, setSorting] = useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
-  const [rowSelection, setRowSelection] = useState({});
+  })
+  const refetchOrderList = orderListQuery.refetch
+  const orderList = orderListQuery.data?.payload.data ?? []
+  const tableListQuery = useTableListQuery()
+  const tableList = tableListQuery.data?.payload.data ?? []
+  const tableListSortedByNumber = tableList.sort((a, b) => a.number - b.number)
+  const updateOrderMutation = useUpdateOrderMutation()
+  const [sorting, setSorting] = useState<SortingState>([])
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
+  const [rowSelection, setRowSelection] = useState({})
   const [pagination, setPagination] = useState({
     pageIndex,
     pageSize: PAGE_SIZE,
-  });
+  })
 
   const { statics, orderObjectByGuestId, servingGuestByTableNumber } =
-    useOrderService(orderList);
+    useOrderService(orderList)
 
   const changeStatus = async (body: {
-    orderId: number;
-    dishId: number;
-    status: (typeof OrderStatusValues)[number];
-    quantity: number;
+    orderId: number
+    dishId: number
+    status: (typeof OrderStatusValues)[number]
+    quantity: number
   }) => {
     try {
-      await updateOrderMutation.mutateAsync(body);
+      await updateOrderMutation.mutateAsync(body)
     } catch (error) {
       handleErrorApi({
         error,
-      });
+      })
     }
-  };
+  }
 
   const columns: ColumnDef<OrderItem>[] = [
     {
-      accessorKey: "tableNumber",
-      header: t("table.tableNumber"),
-      cell: ({ row }) => <div>{row.getValue("tableNumber")}</div>,
+      accessorKey: 'tableNumber',
+      header: t('table.tableNumber'),
+      cell: ({ row }) => <div>{row.getValue('tableNumber')}</div>,
       filterFn: (row, columnId, filterValue: string) => {
-        if (filterValue === undefined) return true;
+        if (filterValue === undefined) return true
         return simpleMatchText(
           String(row.getValue(columnId)),
           String(filterValue),
-        );
+        )
       },
     },
     {
-      id: "guestName",
-      header: t("table.guest"),
+      id: 'guestName',
+      header: t('table.guest'),
       cell: function Cell({ row }) {
-        const guest = row.original.guest;
+        const guest = row.original.guest
         return (
           <div>
             {!guest && (
               <div>
-                <span>{tAll("deleted")}</span>
+                <span>{tAll('deleted')}</span>
               </div>
             )}
             {guest && (
@@ -202,19 +200,19 @@ const OrderTable = () => {
               </Popover>
             )}
           </div>
-        );
+        )
       },
       filterFn: (row, _, filterValue: string) => {
-        if (filterValue === undefined) return true;
+        if (filterValue === undefined) return true
         return simpleMatchText(
-          row.original.guest?.name ?? tAll("deleted"),
+          row.original.guest?.name ?? tAll('deleted'),
           String(filterValue),
-        );
+        )
       },
     },
     {
-      id: "dishName",
-      header: t("table.dish"),
+      id: 'dishName',
+      header: t('table.dish'),
       cell: ({ row }) => (
         <div className="flex items-center gap-2">
           <Popover>
@@ -224,7 +222,7 @@ const OrderTable = () => {
                 alt={row.original.dishSnapshot.name}
                 width={50}
                 height={50}
-                className="rounded-md object-cover w-[50px] h-[50px] cursor-pointer"
+                className="h-[50px] w-[50px] cursor-pointer rounded-md object-cover"
               />
             </PopoverTrigger>
             <PopoverContent>
@@ -234,7 +232,7 @@ const OrderTable = () => {
                   alt={row.original.dishSnapshot.name}
                   width={100}
                   height={100}
-                  className="rounded-md object-cover w-[100px] h-[100px]"
+                  className="h-[100px] w-[100px] rounded-md object-cover"
                 />
                 <div className="space-y-1 text-sm">
                   <h3 className="font-semibold">
@@ -251,7 +249,7 @@ const OrderTable = () => {
           <div className="space-y-2">
             <div className="flex items-center gap-2">
               <span>{row.original.dishSnapshot.name}</span>
-              <Badge className="px-1" variant={"secondary"}>
+              <Badge className="px-1" variant={'secondary'}>
                 x{row.original.quantity}
               </Badge>
             </div>
@@ -265,8 +263,8 @@ const OrderTable = () => {
       ),
     },
     {
-      accessorKey: "status",
-      header: t("table.status"),
+      accessorKey: 'status',
+      header: t('table.status'),
       cell: function Cell({ row }) {
         const changeOrderStatus = async (
           status: (typeof OrderStatusValues)[number],
@@ -276,15 +274,15 @@ const OrderTable = () => {
             dishId: row.original.dishSnapshot.dishId!,
             status: status,
             quantity: row.original.quantity,
-          });
-        };
+          })
+        }
         return (
           <Select
             onValueChange={(value: (typeof OrderStatusValues)[number]) => {
-              changeOrderStatus(value);
+              changeOrderStatus(value)
             }}
             defaultValue={OrderStatus.Pending}
-            value={row.getValue("status")}
+            value={row.getValue('status')}
           >
             <SelectTrigger className="w-[140px]">
               <SelectValue placeholder="Theme" />
@@ -297,21 +295,21 @@ const OrderTable = () => {
               ))}
             </SelectContent>
           </Select>
-        );
+        )
       },
     },
     {
-      id: "orderHandlerName",
-      header: t("table.processor"),
-      cell: ({ row }) => <div>{row.original.orderHandler?.name ?? ""}</div>,
+      id: 'orderHandlerName',
+      header: t('table.processor'),
+      cell: ({ row }) => <div>{row.original.orderHandler?.name ?? ''}</div>,
     },
     {
-      accessorKey: "createdAt",
-      header: t("table.createUpdate"),
+      accessorKey: 'createdAt',
+      header: t('table.createUpdate'),
       cell: ({ row }) => (
         <div className="space-y-2 text-sm">
           <div className="flex items-center space-x-4">
-            {formatDateTimeToLocaleString(row.getValue("createdAt"))}
+            {formatDateTimeToLocaleString(row.getValue('createdAt'))}
           </div>
           <div className="flex items-center space-x-4">
             {formatDateTimeToLocaleString(
@@ -322,13 +320,13 @@ const OrderTable = () => {
       ),
     },
     {
-      id: "actions",
+      id: 'actions',
       enableHiding: false,
       cell: function Actions({ row }) {
-        const { setOrderIdEdit } = useOrderTable();
+        const { setOrderIdEdit } = useOrderTable()
         const openEditOrder = () => {
-          setOrderIdEdit(row.original.id);
-        };
+          setOrderIdEdit(row.original.id)
+        }
 
         return (
           <DropdownMenu>
@@ -338,17 +336,17 @@ const OrderTable = () => {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuLabel>{t("table.actions")}</DropdownMenuLabel>
+              <DropdownMenuLabel>{t('table.actions')}</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={openEditOrder}>
-                {tAll("edit")}
+                {tAll('edit')}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-        );
+        )
       },
     },
-  ];
+  ]
 
   const table = useReactTable({
     data: orderList,
@@ -370,78 +368,78 @@ const OrderTable = () => {
       rowSelection,
       pagination,
     },
-  });
+  })
 
   const resetDateFilter = () => {
-    setFromDate(initFromDate);
-    setToDate(initToDate);
-  };
+    setFromDate(initFromDate)
+    setToDate(initToDate)
+  }
 
   useEffect(() => {
     table.setPagination({
       pageIndex,
       pageSize: PAGE_SIZE,
-    });
-  }, [table, pageIndex]);
+    })
+  }, [table, pageIndex])
 
   useEffect(() => {
     function refetch() {
-      const now = new Date();
+      const now = new Date()
       if (now >= fromDate && now <= toDate) {
-        refetchOrderList();
+        refetchOrderList()
       }
     }
 
-    function onNewOrder(data: GuestCreateOrdersResType["data"]) {
-      const { guest } = data[0]!;
+    function onNewOrder(data: GuestCreateOrdersResType['data']) {
+      const { guest } = data[0]!
       toast({
-        description: t("createSocket", {
+        description: t('createSocket', {
           name: guest?.name,
           table: guest?.tableNumber,
           quantity: data.length,
         }),
-      });
-      refetch();
+      })
+      refetch()
     }
 
-    function onUpdateOrder(data: UpdateOrderResType["data"]) {
+    function onUpdateOrder(data: UpdateOrderResType['data']) {
       const {
         dishSnapshot: { name },
         quantity,
         status,
-      } = data;
+      } = data
       toast({
-        description: t("updateSocket", {
+        description: t('updateSocket', {
           name,
           quantity,
           status: tAll(getVietnameseOrderStatus(status)),
         }),
-      });
-      refetch();
+      })
+      refetch()
     }
 
-    function onPayment(data: PayGuestOrdersResType["data"]) {
-      const { guest } = data[0]!;
+    function onPayment(data: PayGuestOrdersResType['data']) {
+      const { guest } = data[0]!
       toast({
-        description: t("paymentSocket", {
+        description: t('paymentSocket', {
           name: guest?.name,
           table: guest?.tableNumber,
           quantity: data.length,
         }),
-      });
-      refetch();
+      })
+      refetch()
     }
 
-    socket?.on("new-order", onNewOrder);
-    socket?.on("update-order", onUpdateOrder);
-    socket?.on("payment", onPayment);
+    socket?.on('new-order', onNewOrder)
+    socket?.on('update-order', onUpdateOrder)
+    socket?.on('payment', onPayment)
 
     return () => {
-      socket?.off("new-order", onNewOrder);
-      socket?.off("update-order", onUpdateOrder);
-      socket?.off("payment", onPayment);
-    };
-  }, [socket, refetchOrderList, fromDate, toDate]);
+      socket?.off('new-order', onNewOrder)
+      socket?.off('update-order', onUpdateOrder)
+      socket?.off('payment', onPayment)
+    }
+  }, [socket, refetchOrderList, fromDate, toDate])
 
   return (
     <>
@@ -455,12 +453,12 @@ const OrderTable = () => {
         <div className=" flex items-center">
           <div className="flex flex-wrap gap-2">
             <div className="flex items-center">
-              <span className="mr-2">{tAll("from")}</span>
+              <span className="mr-2">{tAll('from')}</span>
               <Input
                 type="datetime-local"
-                placeholder={tAll("fromDate")}
+                placeholder={tAll('fromDate')}
                 className="text-sm"
-                value={format(fromDate, "yyyy-MM-dd HH:mm").replace(" ", "T")}
+                value={format(fromDate, 'yyyy-MM-dd HH:mm').replace(' ', 'T')}
                 onChange={(event) =>
                   event.target.value &&
                   setFromDate(new Date(event.target.value))
@@ -468,19 +466,19 @@ const OrderTable = () => {
               />
             </div>
             <div className="flex items-center">
-              <span className="mr-2">{tAll("to")}</span>
+              <span className="mr-2">{tAll('to')}</span>
               <Input
                 type="datetime-local"
-                placeholder={tAll("toDate")}
+                placeholder={tAll('toDate')}
                 className="text-sm"
-                value={format(toDate, "yyyy-MM-dd HH:mm").replace(" ", "T")}
+                value={format(toDate, 'yyyy-MM-dd HH:mm').replace(' ', 'T')}
                 onChange={(event) =>
                   event.target.value && setToDate(new Date(event.target.value))
                 }
               />
             </div>
-            <Button className="" variant={"outline"} onClick={resetDateFilter}>
-              {tAll("reset")}
+            <Button className="" variant={'outline'} onClick={resetDateFilter}>
+              {tAll('reset')}
             </Button>
           </div>
           <div className="ml-auto">
@@ -489,22 +487,22 @@ const OrderTable = () => {
         </div>
         <div className="flex flex-wrap items-center gap-4 py-4">
           <Input
-            placeholder={t("guestName")}
+            placeholder={t('guestName')}
             value={
-              (table.getColumn("guestName")?.getFilterValue() as string) ?? ""
+              (table.getColumn('guestName')?.getFilterValue() as string) ?? ''
             }
             onChange={(event) =>
-              table.getColumn("guestName")?.setFilterValue(event.target.value)
+              table.getColumn('guestName')?.setFilterValue(event.target.value)
             }
             className="max-w-[150px]"
           />
           <Input
-            placeholder={t("tableNumber")}
+            placeholder={t('tableNumber')}
             value={
-              (table.getColumn("tableNumber")?.getFilterValue() as string) ?? ""
+              (table.getColumn('tableNumber')?.getFilterValue() as string) ?? ''
             }
             onChange={(event) =>
-              table.getColumn("tableNumber")?.setFilterValue(event.target.value)
+              table.getColumn('tableNumber')?.setFilterValue(event.target.value)
             }
             className="max-w-[150px]"
           />
@@ -514,17 +512,17 @@ const OrderTable = () => {
                 variant="outline"
                 role="combobox"
                 aria-expanded={openStatusFilter}
-                className="w-[150px] text-sm justify-between"
+                className="w-[150px] justify-between text-sm"
               >
-                {table.getColumn("status")?.getFilterValue()
+                {table.getColumn('status')?.getFilterValue()
                   ? tAll(
                       getVietnameseOrderStatus(
                         table
-                          .getColumn("status")
+                          .getColumn('status')
                           ?.getFilterValue() as (typeof OrderStatusValues)[number],
                       ),
                     )
-                  : tAll("status")}
+                  : tAll('status')}
                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
               </Button>
             </PopoverTrigger>
@@ -539,23 +537,23 @@ const OrderTable = () => {
                         value={status}
                         onSelect={(currentValue) => {
                           table
-                            .getColumn("status")
+                            .getColumn('status')
                             ?.setFilterValue(
                               currentValue ===
-                                table.getColumn("status")?.getFilterValue()
-                                ? ""
+                                table.getColumn('status')?.getFilterValue()
+                                ? ''
                                 : currentValue,
-                            );
-                          setOpenStatusFilter(false);
+                            )
+                          setOpenStatusFilter(false)
                         }}
                       >
                         <Check
                           className={cn(
-                            "mr-2 h-4 w-4",
-                            table.getColumn("status")?.getFilterValue() ===
+                            'mr-2 h-4 w-4',
+                            table.getColumn('status')?.getFilterValue() ===
                               status
-                              ? "opacity-100"
-                              : "opacity-0",
+                              ? 'opacity-100'
+                              : 'opacity-0',
                           )}
                         />
                         {tAll(getVietnameseOrderStatus(status))}
@@ -589,7 +587,7 @@ const OrderTable = () => {
                                 header.getContext(),
                               )}
                         </TableHead>
-                      );
+                      )
                     })}
                   </TableRow>
                 ))}
@@ -599,7 +597,7 @@ const OrderTable = () => {
                   table.getRowModel().rows.map((row) => (
                     <TableRow
                       key={row.id}
-                      data-state={row.getIsSelected() && "selected"}
+                      data-state={row.getIsSelected() && 'selected'}
                     >
                       {row.getVisibleCells().map((cell) => (
                         <TableCell key={cell.id}>
@@ -617,7 +615,7 @@ const OrderTable = () => {
                       colSpan={columns.length}
                       className="h-24 text-center"
                     >
-                      {tAll("noData")}
+                      {tAll('noData')}
                     </TableCell>
                   </TableRow>
                 )}
@@ -626,8 +624,8 @@ const OrderTable = () => {
           </div>
         )}
         <div className="flex items-center justify-end space-x-2 py-4">
-          <div className="text-xs text-muted-foreground py-4 flex-1 ">
-            {tAll("showResultPagination", {
+          <div className="flex-1 py-4 text-xs text-muted-foreground ">
+            {tAll('showResultPagination', {
               result: table.getPaginationRowModel().rows.length,
               total: orderList.length,
             })}
@@ -642,7 +640,7 @@ const OrderTable = () => {
         </div>
       </div>
     </>
-  );
-};
+  )
+}
 
-export default OrderTable;
+export default OrderTable

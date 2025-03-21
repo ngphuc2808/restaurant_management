@@ -1,41 +1,41 @@
-"use client";
+'use client'
 
-import { useTranslations } from "next-intl";
-import { CartesianGrid, Line, LineChart, XAxis } from "recharts";
-import { format, parse } from "date-fns";
+import { useTranslations } from 'next-intl'
+import { CartesianGrid, Line, LineChart, XAxis } from 'recharts'
+import { format, parse } from 'date-fns'
 
-import { DashboardIndicatorResType } from "@/schemaValidations/indicator.schema";
+import { DashboardIndicatorResType } from '@/schemaValidations/indicator.schema'
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from "@repo/ui/components/card";
+} from '@repo/ui/components/card'
 import {
   ChartConfig,
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-} from "@repo/ui/components/chart";
+} from '@repo/ui/components/chart'
 
 const chartConfig = {
   desktop: {
-    label: "Desktop",
-    color: "hsl(var(--chart-1))",
+    label: 'Desktop',
+    color: 'hsl(var(--chart-1))',
   },
-} satisfies ChartConfig;
+} satisfies ChartConfig
 
 const RevenueLineChart = ({
   chartData,
 }: {
-  chartData: DashboardIndicatorResType["data"]["revenueByDate"];
+  chartData: DashboardIndicatorResType['data']['revenueByDate']
 }) => {
-  const t = useTranslations("Dashboard");
+  const t = useTranslations('Dashboard')
 
   return (
     <Card className="h-full">
       <CardHeader>
-        <CardTitle>{t("revenue")}</CardTitle>
+        <CardTitle>{t('revenue')}</CardTitle>
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig}>
@@ -47,13 +47,13 @@ const RevenueLineChart = ({
               axisLine={false}
               tickFormatter={(value) => {
                 if (chartData.length < 8) {
-                  return value;
+                  return value
                 }
                 if (chartData.length < 33) {
-                  const date = parse(value, "dd/MM/yyyy", new Date());
-                  return format(date, "dd");
+                  const date = parse(value, 'dd/MM/yyyy', new Date())
+                  return format(date, 'dd')
                 }
-                return "";
+                return ''
               }}
             />
             <ChartTooltip
@@ -62,7 +62,7 @@ const RevenueLineChart = ({
             />
             <Line
               dataKey="revenue"
-              name={t("revenue")}
+              name={t('revenue')}
               type="linear"
               stroke="var(--color-desktop)"
               strokeWidth={2}
@@ -72,7 +72,7 @@ const RevenueLineChart = ({
         </ChartContainer>
       </CardContent>
     </Card>
-  );
-};
+  )
+}
 
-export default RevenueLineChart;
+export default RevenueLineChart

@@ -1,12 +1,12 @@
-"use client";
+'use client'
 
-import { useTranslations } from "next-intl";
-import { useEffect, useMemo, useState } from "react";
+import { useTranslations } from 'next-intl'
+import { useEffect, useMemo, useState } from 'react'
 
-import { TableListResType } from "@/schemaValidations/table.schema";
-import { useTableListQuery } from "@/queries/useTable";
-import { getVietnameseTableStatus, simpleMatchText } from "@/lib/utils";
-import { cn } from "@repo/ui/lib/utils";
+import { TableListResType } from '@/schemaValidations/table.schema'
+import { useTableListQuery } from '@/queries/useTable'
+import { getVietnameseTableStatus, simpleMatchText } from '@/lib/utils'
+import { cn } from '@repo/ui/lib/utils'
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -18,16 +18,16 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
-} from "@tanstack/react-table";
-import { Button } from "@repo/ui/components/button";
+} from '@tanstack/react-table'
+import { Button } from '@repo/ui/components/button'
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@repo/ui/components/dialog";
-import { Input } from "@repo/ui/components/input";
+} from '@repo/ui/components/dialog'
+import { Input } from '@repo/ui/components/input'
 import {
   Table,
   TableBody,
@@ -35,66 +35,66 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@repo/ui/components/table";
-import { TableStatus } from "@/constants/type";
-import AutoPagination from "@/components/molecules/auto-pagination";
+} from '@repo/ui/components/table'
+import { TableStatus } from '@/constants/type'
+import AutoPagination from '@/components/molecules/auto-pagination'
 
-type TableItem = TableListResType["data"][0];
+type TableItem = TableListResType['data'][0]
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 10
 
 const TablesDialog = ({
   onChoose,
 }: {
-  onChoose: (table: TableItem) => void;
+  onChoose: (table: TableItem) => void
 }) => {
-  const t = useTranslations("Orders");
-  const tAll = useTranslations("All");
+  const t = useTranslations('Orders')
+  const tAll = useTranslations('All')
 
-  const [open, setOpen] = useState(false);
-  const tableListQuery = useTableListQuery();
-  const data = tableListQuery.data?.payload.data ?? [];
-  const [sorting, setSorting] = useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
-  const [rowSelection, setRowSelection] = useState({});
+  const [open, setOpen] = useState(false)
+  const tableListQuery = useTableListQuery()
+  const data = tableListQuery.data?.payload.data ?? []
+  const [sorting, setSorting] = useState<SortingState>([])
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
+  const [rowSelection, setRowSelection] = useState({})
   const [pagination, setPagination] = useState({
     pageIndex: 0,
     pageSize: PAGE_SIZE,
-  });
+  })
 
   const columns: ColumnDef<TableItem>[] = useMemo(() => {
     return [
       {
-        accessorKey: "number",
-        header: t("tableDialog.tableNumber"),
+        accessorKey: 'number',
+        header: t('tableDialog.tableNumber'),
         cell: ({ row }) => (
-          <div className="capitalize">{row.getValue("number")}</div>
+          <div className="capitalize">{row.getValue('number')}</div>
         ),
         filterFn: (row, columnId, filterValue: string) => {
-          if (filterValue === undefined) return true;
+          if (filterValue === undefined) return true
           return simpleMatchText(
             String(row.original.number),
             String(filterValue),
-          );
+          )
         },
       },
       {
-        accessorKey: "capacity",
-        header: t("tableDialog.capacity"),
+        accessorKey: 'capacity',
+        header: t('tableDialog.capacity'),
         cell: ({ row }) => (
-          <div className="capitalize">{row.getValue("capacity")}</div>
+          <div className="capitalize">{row.getValue('capacity')}</div>
         ),
       },
       {
-        accessorKey: "status",
-        header: t("tableDialog.status"),
+        accessorKey: 'status',
+        header: t('tableDialog.status'),
         cell: ({ row }) => (
-          <div>{tAll(getVietnameseTableStatus(row.getValue("status")))}</div>
+          <div>{tAll(getVietnameseTableStatus(row.getValue('status')))}</div>
         ),
       },
-    ];
-  }, []);
+    ]
+  }, [])
 
   const table = useReactTable({
     data,
@@ -116,39 +116,39 @@ const TablesDialog = ({
       rowSelection,
       pagination,
     },
-  });
+  })
 
   const choose = (table: TableItem) => {
-    onChoose(table);
-    setOpen(false);
-  };
+    onChoose(table)
+    setOpen(false)
+  }
 
   useEffect(() => {
     table.setPagination({
       pageIndex: 0,
       pageSize: PAGE_SIZE,
-    });
-  }, [table]);
+    })
+  }, [table])
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline">{tAll("change")}</Button>
+        <Button variant="outline">{tAll('change')}</Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[600px] max-h-full overflow-auto">
+      <DialogContent className="max-h-full overflow-auto sm:max-w-[600px]">
         <DialogHeader>
-          <DialogTitle>{t("selectTable")}</DialogTitle>
+          <DialogTitle>{t('selectTable')}</DialogTitle>
         </DialogHeader>
         <div>
           <div className="w-full">
-            <div className="flex items-center py-4 gap-2">
+            <div className="flex items-center gap-2 py-4">
               <Input
-                placeholder={t("tableNumber")}
+                placeholder={t('tableNumber')}
                 value={
-                  (table.getColumn("number")?.getFilterValue() as string) ?? ""
+                  (table.getColumn('number')?.getFilterValue() as string) ?? ''
                 }
                 onChange={(event) =>
-                  table.getColumn("number")?.setFilterValue(event.target.value)
+                  table.getColumn('number')?.setFilterValue(event.target.value)
                 }
                 className="w-[150px]"
               />
@@ -168,7 +168,7 @@ const TablesDialog = ({
                                   header.getContext(),
                                 )}
                           </TableHead>
-                        );
+                        )
                       })}
                     </TableRow>
                   ))}
@@ -178,20 +178,20 @@ const TablesDialog = ({
                     table.getRowModel().rows.map((row) => (
                       <TableRow
                         key={row.id}
-                        data-state={row.getIsSelected() && "selected"}
+                        data-state={row.getIsSelected() && 'selected'}
                         onClick={() => {
                           if (
                             row.original.status === TableStatus.Available ||
                             row.original.status === TableStatus.Reserved
                           ) {
-                            choose(row.original);
+                            choose(row.original)
                           }
                         }}
                         className={cn({
-                          "cursor-pointer":
+                          'cursor-pointer':
                             row.original.status === TableStatus.Available ||
                             row.original.status === TableStatus.Reserved,
-                          "cursor-not-allowed":
+                          'cursor-not-allowed':
                             row.original.status === TableStatus.Hidden,
                         })}
                       >
@@ -211,7 +211,7 @@ const TablesDialog = ({
                         colSpan={columns.length}
                         className="h-24 text-center"
                       >
-                        {tAll("noData")}
+                        {tAll('noData')}
                       </TableCell>
                     </TableRow>
                   )}
@@ -219,8 +219,8 @@ const TablesDialog = ({
               </Table>
             </div>
             <div className="flex items-center justify-end space-x-2 py-4">
-              <div className="text-xs text-muted-foreground py-4 flex-1 ">
-                {tAll("showResultPagination", {
+              <div className="flex-1 py-4 text-xs text-muted-foreground ">
+                {tAll('showResultPagination', {
                   result: table.getPaginationRowModel().rows.length,
                   total: data.length,
                 })}
@@ -243,7 +243,7 @@ const TablesDialog = ({
         </div>
       </DialogContent>
     </Dialog>
-  );
-};
+  )
+}
 
-export default TablesDialog;
+export default TablesDialog

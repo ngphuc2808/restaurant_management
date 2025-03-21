@@ -72,6 +72,12 @@
     "title": "Error",
     "description": "There is a problem with the system, please try again later"
   },
+  "ErrorPage": {
+    "title": "Error",
+    "description": "The system is having problems, please check the data or contact the administrator",
+    "infoTitle": "Error information",
+    "reload": "Reload"
+  },
   "OAuth": {
     "title": "Google Login Redirect"
   },

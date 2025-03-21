@@ -1,7 +1,7 @@
-import { useMutation, UseMutationResult } from "@tanstack/react-query";
+import { useMutation, UseMutationResult } from '@tanstack/react-query'
 
-import authApiRequests from "@/apiRequests/auth";
-import { LoginBodyType, LoginResType } from "@/schemaValidations/auth.schema";
+import authApiRequests from '@/apiRequests/auth'
+import { LoginBodyType, LoginResType } from '@/schemaValidations/auth.schema'
 
 export const useLoginMutation = (): UseMutationResult<
   QueryResponseType<LoginResType>,
@@ -11,8 +11,8 @@ export const useLoginMutation = (): UseMutationResult<
 > => {
   return useMutation({
     mutationFn: authApiRequests.login,
-  });
-};
+  })
+}
 
 export const useLogoutMutation = (): UseMutationResult<
   QueryResponseType<unknown>,
@@ -22,8 +22,8 @@ export const useLogoutMutation = (): UseMutationResult<
 > => {
   return useMutation({
     mutationFn: authApiRequests.logout,
-  });
-};
+  })
+}
 
 export const useSetTokenToCookieMutation = (): UseMutationResult<
   QueryResponseType<unknown>,
@@ -33,5 +33,5 @@ export const useSetTokenToCookieMutation = (): UseMutationResult<
 > => {
   return useMutation({
     mutationFn: authApiRequests.setTokenToCookie,
-  });
-};
+  })
+}

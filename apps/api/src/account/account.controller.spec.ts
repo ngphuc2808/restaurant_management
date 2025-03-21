@@ -1,22 +1,57 @@
-import { I18nService } from 'nestjs-i18n';
+import { Logger, UnprocessableEntityException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
+import { Account } from '@prisma/client';
+import { Reflector } from '@nestjs/core';
+import { I18nService } from 'nestjs-i18n';
 
 import { AccountController } from '@/account/account.controller';
 import { AccountService } from '@/account/account.service';
+import { CreateAccountReqDto } from '@/account/dto/req/create.req.dto';
+import { PaginationReqDto } from '@/account/dto/req/paginate.req.dto';
 import { UpdateMeReqDto } from '@/account/dto/req/update-me.req.dto';
 import { ChangePasswordReqDto } from '@/account/dto/req/change-password.req.dto';
-import { CreateAccountReqDto } from '@/account/dto/req/create.req.dto';
 import { UpdateAccountReqDto } from '@/account/dto/req/update.req.dto';
-import { GetAccountListResDto } from '@/account/dto/res/get-list.res.dto';
-import { AccountResDto } from '@/account/dto/res/get-detail.res.dto';
-import { DeleteAccountResDto } from '@/account/dto/res/delete.res.dto';
-import { PaginationReqDto } from '@/account/dto/req/paginate.req.dto';
-import { UserDto } from '@/auth/dto/account.dto';
 import { Role } from '@/constants/type';
+
+interface UserDto {
+  id: number;
+  email: string;
+  role: string;
+}
 
 describe('AccountController', () => {
   let accountController: AccountController;
   let accountService: AccountService;
+
+  const mockUser: UserDto = {
+    id: 1,
+    email: 'test@example.com',
+    role: Role.Employee,
+  };
+
+  const mockAccount: Account = {
+    id: 1,
+    email: 'test@example.com',
+    password: 'hashedPassword',
+    name: 'Test User',
+    role: Role.Employee,
+    avatar: 'avatar.jpg',
+    ownerId: 1,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
+
+  const mockAuthResponse = {
+    account: {
+      id: mockAccount.id,
+      email: mockAccount.email,
+      role: mockAccount.role,
+      avatar: mockAccount.avatar,
+      name: mockAccount.name,
+    },
+    accessToken: 'mock-access-token',
+    refreshToken: 'mock-refresh-token',
+  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -25,24 +60,32 @@ describe('AccountController', () => {
         {
           provide: AccountService,
           useValue: {
-            me: jest.fn().mockResolvedValue(new UserDto()),
-            updateMe: jest.fn().mockResolvedValue(new AccountResDto()),
-            updatePassword: jest.fn().mockResolvedValue(new AccountResDto()),
-            getAccountList: jest
-              .fn()
-              .mockResolvedValue(new GetAccountListResDto()),
-            getAccountDetail: jest.fn().mockResolvedValue(new AccountResDto()),
-            create: jest.fn().mockResolvedValue(new AccountResDto()),
-            updateAccount: jest.fn().mockResolvedValue(new AccountResDto()),
-            deleteAccount: jest
-              .fn()
-              .mockResolvedValue(new DeleteAccountResDto()),
+            me: jest.fn(),
+            updateMe: jest.fn(),
+            updatePassword: jest.fn(),
+            getAccountList: jest.fn(),
+            create: jest.fn(),
+            deleteAccount: jest.fn(),
+            updateAccount: jest.fn(),
+            getAccountDetail: jest.fn(),
+          },
+        },
+        {
+          provide: Logger,
+          useValue: {
+            error: jest.fn(),
+          },
+        },
+        {
+          provide: Reflector,
+          useValue: {
+            get: jest.fn().mockReturnValue([]),
           },
         },
         {
           provide: I18nService,
           useValue: {
-            translate: jest.fn().mockReturnValue('translated-message'),
+            t: jest.fn().mockReturnValue('translated text'),
           },
         },
       ],
@@ -50,273 +93,260 @@ describe('AccountController', () => {
 
     accountController = module.get<AccountController>(AccountController);
     accountService = module.get<AccountService>(AccountService);
+
+    jest.clearAllMocks();
   });
 
   it('should be defined', () => {
     expect(accountController).toBeDefined();
+    expect(accountService).toBeDefined();
   });
 
   describe('me', () => {
-    it('should get me', async () => {
-      const userDto: UserDto = {
-        id: 1,
-        email: 'test@example.com',
-        role: Role.Owner,
-      };
+    it('should return current account details', async () => {
+      const accountWithoutPassword = { ...mockAccount };
+      delete accountWithoutPassword.password;
+      jest
+        .spyOn(accountService, 'me')
+        .mockResolvedValue(accountWithoutPassword);
 
-      const mockResData: AccountResDto = {
-        statusCode: 200,
-        message: 'res.success.account.get',
-        data: {
-          role: Role.Owner,
-          id: 1,
-          name: 'Name',
-          email: 'test@example.com',
-          avatar: '',
-          ownerId: 1,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-      };
+      const result = await accountController.me(mockUser);
 
-      (accountService.me as jest.Mock).mockResolvedValue(mockResData);
-      const result = await accountController.me(userDto);
-      const resultDto = Object.assign(new AccountResDto(), result);
-      expect(accountService.me).toHaveBeenCalledWith(userDto.id);
-      expect(resultDto).toBeInstanceOf(AccountResDto);
+      expect(result).toEqual(accountWithoutPassword);
+      expect(accountService.me).toHaveBeenCalledWith(mockUser.id);
+    });
+
+    it('should throw error when service fails', async () => {
+      jest.spyOn(accountService, 'me').mockRejectedValue(new Error());
+
+      await expect(accountController.me(mockUser)).rejects.toThrow();
     });
   });
 
   describe('updateMe', () => {
-    it('should update me', async () => {
-      const userDto: UserDto = {
-        id: 1,
-        email: 'test@example.com',
-        role: Role.Owner,
-      };
+    const updateDto: UpdateMeReqDto = {
+      name: 'Updated Name',
+      avatar: 'new-avatar.jpg',
+    };
 
-      const updateMeDto: UpdateMeReqDto = {
-        name: 'Name',
-        avatar: 'https://example.com/avatar.jpg',
-      };
+    it('should update current account successfully', async () => {
+      const updatedAccount = { ...mockAccount, ...updateDto };
+      delete updatedAccount.password;
+      jest.spyOn(accountService, 'updateMe').mockResolvedValue(updatedAccount);
 
-      const mockResData: AccountResDto = {
-        statusCode: 200,
-        message: 'res.success.account.update',
-        data: {
-          role: Role.Owner,
-          id: 1,
-          name: 'Name',
-          email: 'test@example.com',
-          avatar: 'https://example.com/avatar.jpg',
-          ownerId: 1,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-      };
+      const result = await accountController.updateMe(mockUser, updateDto);
 
-      (accountService.updateMe as jest.Mock).mockResolvedValue(mockResData);
-      const result = await accountController.updateMe(userDto, updateMeDto);
-      const resultDto = Object.assign(new AccountResDto(), result);
+      expect(result).toEqual(updatedAccount);
       expect(accountService.updateMe).toHaveBeenCalledWith(
-        userDto.id,
-        updateMeDto,
+        mockUser.id,
+        updateDto,
       );
-      expect(resultDto).toBeInstanceOf(AccountResDto);
+    });
+
+    it('should throw error when update fails', async () => {
+      jest.spyOn(accountService, 'updateMe').mockRejectedValue(new Error());
+
+      await expect(
+        accountController.updateMe(mockUser, updateDto),
+      ).rejects.toThrow();
     });
   });
 
   describe('updatePassword', () => {
-    it('should update password', async () => {
-      const userDto: UserDto = {
-        id: 1,
-        email: 'test@example.com',
-        role: Role.Owner,
-      };
+    const changePasswordDto: ChangePasswordReqDto = {
+      oldPassword: 'oldPassword',
+      password: 'newPassword',
+      confirmPassword: 'newPassword',
+    };
 
-      const updateDto: ChangePasswordReqDto = {
-        oldPassword: '123123',
-        password: '123456',
-        confirmPassword: '123456',
-      };
+    it('should update password successfully', async () => {
+      jest
+        .spyOn(accountService, 'updatePassword')
+        .mockResolvedValue(mockAuthResponse);
 
-      const mockResData: AccountResDto = {
-        statusCode: 200,
-        message: 'res.success.account.update-password',
-        data: {
-          role: Role.Owner,
-          id: 1,
-          name: 'Name',
-          email: 'test@example.com',
-          avatar: 'https://example.com/avatar.jpg',
-          ownerId: 1,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-      };
-
-      (accountService.updatePassword as jest.Mock).mockResolvedValue(
-        mockResData,
+      const result = await accountController.updatePassword(
+        mockUser,
+        changePasswordDto,
       );
-      const result = await accountController.updatePassword(userDto, updateDto);
-      const resultDto = Object.assign(new AccountResDto(), result);
+
+      expect(result).toEqual(mockAuthResponse);
       expect(accountService.updatePassword).toHaveBeenCalledWith(
-        userDto.id,
-        updateDto,
+        mockUser.id,
+        changePasswordDto,
       );
-      expect(resultDto).toBeInstanceOf(AccountResDto);
+    });
+
+    it('should throw UnprocessableEntityException when old password is invalid', async () => {
+      jest
+        .spyOn(accountService, 'updatePassword')
+        .mockRejectedValue(new UnprocessableEntityException());
+
+      await expect(
+        accountController.updatePassword(mockUser, changePasswordDto),
+      ).rejects.toThrow(UnprocessableEntityException);
     });
   });
 
   describe('getAccountList', () => {
-    it('should return a paginated list of accounts', async () => {
-      const mockResData: GetAccountListResDto = {
-        statusCode: 200,
-        message: 'res.success.account.get-list',
-        data: {
-          accounts: [
-            {
-              role: 'Employee',
-              id: 1,
-              name: 'Name',
-              email: 'test@example.com',
-              avatar: '',
-              ownerId: 1,
-              createdAt: new Date(),
-              updatedAt: new Date(),
-            },
-          ],
-          meta: {
-            total: 1,
-            page: 1,
-            limit: 10,
-            totalPages: 1,
-          },
+    const paginationDto: PaginationReqDto = {
+      page: 1,
+      limit: 10,
+    };
+
+    it('should return paginated account list', async () => {
+      const accounts = [mockAccount].map((account) => {
+        const accountWithoutPassword = { ...account };
+        delete accountWithoutPassword.password;
+        return accountWithoutPassword;
+      });
+      const response = {
+        accounts,
+        meta: {
+          total: 1,
+          page: 1,
+          limit: 10,
+          totalPages: 1,
         },
       };
+      jest.spyOn(accountService, 'getAccountList').mockResolvedValue(response);
 
-      (accountService.getAccountList as jest.Mock).mockResolvedValue(
-        mockResData,
-      );
-      const paginationDto: PaginationReqDto = { page: 1, limit: 10 };
       const result = await accountController.getAccountList(paginationDto);
-      const resultDto = Object.assign(new GetAccountListResDto(), result);
+
+      expect(result).toEqual(response);
       expect(accountService.getAccountList).toHaveBeenCalledWith(paginationDto);
-      expect(resultDto).toBeInstanceOf(GetAccountListResDto);
     });
-  });
 
-  describe('getAccountDetail', () => {
-    it('should get account', async () => {
-      const mockResData: AccountResDto = {
-        statusCode: 200,
-        message: 'res.success.account.get',
-        data: {
-          role: Role.Owner,
-          id: 1,
-          name: 'Name',
-          email: 'test@example.com',
-          avatar: '',
-          ownerId: 1,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-      };
+    it('should throw error when service fails', async () => {
+      jest
+        .spyOn(accountService, 'getAccountList')
+        .mockRejectedValue(new Error());
 
-      (accountService.getAccountDetail as jest.Mock).mockResolvedValue(
-        mockResData,
-      );
-      const result = await accountController.getAccountDetail('1');
-      const resultDto = Object.assign(new AccountResDto(), result);
-      expect(accountService.getAccountDetail).toHaveBeenCalledWith(1);
-      expect(resultDto).toBeInstanceOf(AccountResDto);
+      await expect(
+        accountController.getAccountList(paginationDto),
+      ).rejects.toThrow();
     });
   });
 
   describe('create', () => {
-    it('should create a new account', async () => {
-      const createDto: CreateAccountReqDto = {
-        name: 'Name',
-        avatar: '',
-        email: 'test@example.com',
-        password: 'password123',
-        confirmPassword: 'password123',
-      };
+    const createDto: CreateAccountReqDto = {
+      email: 'new@example.com',
+      password: 'password',
+      name: 'New User',
+      avatar: 'avatar.jpg',
+      confirmPassword: 'password',
+    };
 
-      const mockResData: AccountResDto = {
-        statusCode: 200,
-        message: 'res.success.account.create',
-        data: {
-          role: Role.Owner,
-          id: 1,
-          name: 'Name',
-          email: 'test@example.com',
-          avatar: 'https://example.com/avatar.jpg',
-          ownerId: 1,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-      };
+    it('should create account successfully', async () => {
+      const accountWithoutPassword = { ...mockAccount };
+      delete accountWithoutPassword.password;
+      jest
+        .spyOn(accountService, 'create')
+        .mockResolvedValue(accountWithoutPassword);
 
-      (accountService.create as jest.Mock).mockResolvedValue(mockResData);
-      const result = await accountController.create(createDto);
-      const resultDto = Object.assign(new AccountResDto(), result);
-      expect(accountService.create).toHaveBeenCalledWith(createDto);
-      expect(resultDto).toBeInstanceOf(AccountResDto);
-    });
-  });
+      const result = await accountController.create(mockUser, createDto);
 
-  describe('updateAccount', () => {
-    it('should update an account', async () => {
-      const updateDto: UpdateAccountReqDto = {
-        name: 'Name',
-        avatar: '',
-        email: 'test@example.com',
-        role: Role.Employee,
-        changePassword: false,
-        password: '',
-        confirmPassword: '',
-      };
-
-      const mockResData: AccountResDto = {
-        statusCode: 200,
-        message: 'res.success.account.update',
-        data: {
-          role: Role.Owner,
-          id: 1,
-          name: 'Name',
-          email: 'test@example.com',
-          avatar: 'https://example.com/avatar.jpg',
-          ownerId: 1,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-      };
-
-      (accountService.updateAccount as jest.Mock).mockResolvedValue(
-        mockResData,
+      expect(result).toEqual(accountWithoutPassword);
+      expect(accountService.create).toHaveBeenCalledWith(
+        mockUser.id,
+        createDto,
       );
-      const result = await accountController.updateAccount('1', updateDto);
-      const resultDto = Object.assign(new AccountResDto(), result);
-      expect(accountService.updateAccount).toHaveBeenCalledWith(1, updateDto);
-      expect(resultDto).toBeInstanceOf(AccountResDto);
+    });
+
+    it('should throw error when service fails', async () => {
+      jest.spyOn(accountService, 'create').mockRejectedValue(new Error());
+
+      await expect(
+        accountController.create(mockUser, createDto),
+      ).rejects.toThrow();
     });
   });
 
   describe('deleteAccount', () => {
-    it('should delete an account', async () => {
-      const mockResData: DeleteAccountResDto = {
-        statusCode: 200,
-        message: 'res.success.account.delete',
-      };
+    it('should delete account successfully', async () => {
+      jest
+        .spyOn(accountService, 'deleteAccount')
+        .mockResolvedValue(mockAccount);
 
-      (accountService.deleteAccount as jest.Mock).mockResolvedValue(
-        mockResData,
-      );
       const result = await accountController.deleteAccount('1');
-      const resultDto = Object.assign(new DeleteAccountResDto(), result);
+
+      expect(result).toEqual(mockAccount);
       expect(accountService.deleteAccount).toHaveBeenCalledWith(1);
-      expect(resultDto).toBeInstanceOf(DeleteAccountResDto);
+    });
+
+    it('should throw UnprocessableEntityException when account not found', async () => {
+      jest
+        .spyOn(accountService, 'deleteAccount')
+        .mockRejectedValue(new UnprocessableEntityException());
+
+      await expect(accountController.deleteAccount('1')).rejects.toThrow(
+        UnprocessableEntityException,
+      );
+    });
+  });
+
+  describe('updateAccount', () => {
+    const updateDto: UpdateAccountReqDto = {
+      email: 'updated@example.com',
+      name: 'Updated Name',
+      avatar: 'new-avatar.jpg',
+      role: Role.Employee,
+      changePassword: false,
+      password: 'newPassword',
+      confirmPassword: 'newPassword',
+    };
+
+    it('should update account successfully', async () => {
+      const updatedAccount = { ...mockAccount, ...updateDto };
+      delete updatedAccount.password;
+      jest
+        .spyOn(accountService, 'updateAccount')
+        .mockResolvedValue(updatedAccount);
+
+      const result = await accountController.updateAccount(
+        mockUser,
+        '1',
+        updateDto,
+      );
+
+      expect(result).toEqual(updatedAccount);
+      expect(accountService.updateAccount).toHaveBeenCalledWith(
+        mockUser.id,
+        1,
+        updateDto,
+      );
+    });
+
+    it('should throw error when update fails', async () => {
+      jest
+        .spyOn(accountService, 'updateAccount')
+        .mockRejectedValue(new Error());
+
+      await expect(
+        accountController.updateAccount(mockUser, '1', updateDto),
+      ).rejects.toThrow();
+    });
+  });
+
+  describe('getAccountDetail', () => {
+    it('should return account details', async () => {
+      const accountWithoutPassword = { ...mockAccount };
+      delete accountWithoutPassword.password;
+      jest
+        .spyOn(accountService, 'getAccountDetail')
+        .mockResolvedValue(accountWithoutPassword);
+
+      const result = await accountController.getAccountDetail('1');
+
+      expect(result).toEqual(accountWithoutPassword);
+      expect(accountService.getAccountDetail).toHaveBeenCalledWith(1);
+    });
+
+    it('should throw error when account not found', async () => {
+      jest
+        .spyOn(accountService, 'getAccountDetail')
+        .mockRejectedValue(new Error());
+
+      await expect(accountController.getAccountDetail('1')).rejects.toThrow();
     });
   });
 });

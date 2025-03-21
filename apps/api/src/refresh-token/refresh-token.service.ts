@@ -26,22 +26,11 @@ export class RefreshTokenService {
     }
   }
 
-  async findToken(tokenId: string) {
+  async validate(userId: number, tokenId: string) {
     try {
       const storedToken = await this.prisma.refreshToken.findUnique({
         where: { token: tokenId },
       });
-
-      return storedToken;
-    } catch (error) {
-      this.logger.error(error.message);
-      throw error;
-    }
-  }
-
-  async validate(userId: number, tokenId: string) {
-    try {
-      const storedToken = await this.findToken(tokenId);
 
       if (!storedToken || storedToken.accountId !== userId) {
         return false;
@@ -75,19 +64,6 @@ export class RefreshTokenService {
       await this.prisma.refreshToken.deleteMany({
         where: { accountId },
       });
-    } catch (error) {
-      this.logger.error(error.message);
-      throw error;
-    }
-  }
-
-  async removeToken(tokenId: string) {
-    try {
-      const storedToken = await this.findToken(tokenId);
-
-      if (storedToken) {
-        await this.invalidate(tokenId);
-      }
     } catch (error) {
       this.logger.error(error.message);
       throw error;

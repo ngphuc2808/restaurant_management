@@ -1,6 +1,6 @@
-"use client";
+'use client'
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from 'react'
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -12,17 +12,17 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
-} from "@tanstack/react-table";
-import { DotsHorizontalIcon } from "@radix-ui/react-icons";
-import DOMPurify from "dompurify";
+} from '@tanstack/react-table'
+import { DotsHorizontalIcon } from '@radix-ui/react-icons'
+import DOMPurify from 'dompurify'
 
-import { DishListResType } from "@/schemaValidations/dish.schema";
-import { useDeleteDishMutation, useDishListQuery } from "@/queries/useDish";
+import { DishListResType } from '@/schemaValidations/dish.schema'
+import { useDeleteDishMutation, useDishListQuery } from '@/queries/useDish'
 import {
   formatCurrency,
   getVietnameseDishStatus,
   handleErrorApi,
-} from "@/lib/utils";
+} from '@/lib/utils'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -32,13 +32,9 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@repo/ui/components/alert-dialog";
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@repo/ui/components/avatar";
-import { Button } from "@repo/ui/components/button";
+} from '@repo/ui/components/alert-dialog'
+import { Avatar, AvatarFallback, AvatarImage } from '@repo/ui/components/avatar'
+import { Button } from '@repo/ui/components/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -46,8 +42,8 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@repo/ui/components/dropdown-menu";
-import { Input } from "@repo/ui/components/input";
+} from '@repo/ui/components/dropdown-menu'
+import { Input } from '@repo/ui/components/input'
 import {
   Table,
   TableBody,
@@ -55,113 +51,111 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@repo/ui/components/table";
-import { toast } from "@repo/ui/hooks/use-toast";
-import AddDish from "@/app/[locale]/manage/dishes/add-dish";
-import EditDish from "@/app/[locale]/manage/dishes/edit-dish";
-import AutoPagination from "@/components/molecules/auto-pagination";
+} from '@repo/ui/components/table'
+import { toast } from '@repo/ui/hooks/use-toast'
+import AddDish from '@/app/[locale]/manage/dishes/add-dish'
+import EditDish from '@/app/[locale]/manage/dishes/edit-dish'
+import AutoPagination from '@/components/molecules/auto-pagination'
 import SearchParamsLoader, {
   useSearchParamsLoader,
-} from "@/components/atoms/search-params-loader";
-import useDish from "@/store/dish";
-import { useTranslations } from "next-intl";
+} from '@/components/atoms/search-params-loader'
+import useDish from '@/store/dish'
+import { useTranslations } from 'next-intl'
 
-type DishItem = DishListResType["data"][0];
+type DishItem = DishListResType['data'][0]
 
 const AlertDialogDeleteDish = ({
   dishDelete,
   setDishDelete,
 }: {
-  dishDelete: DishItem | undefined;
-  setDishDelete: (value: DishItem | undefined) => void;
+  dishDelete: DishItem | undefined
+  setDishDelete: (value: DishItem | undefined) => void
 }) => {
-  const t = useTranslations("Dishes");
-  const tAll = useTranslations("All");
+  const t = useTranslations('Dishes')
+  const tAll = useTranslations('All')
 
-  const { mutateAsync } = useDeleteDishMutation();
+  const { mutateAsync } = useDeleteDishMutation()
   const deleteDish = async () => {
     if (dishDelete) {
       try {
-        const result = await mutateAsync(dishDelete.id);
-        setDishDelete(undefined);
+        const result = await mutateAsync(dishDelete.id)
+        setDishDelete(undefined)
         toast({
           title: result.payload.message,
-        });
+        })
       } catch (error) {
         handleErrorApi({
           error,
-        });
+        })
       }
     }
-  };
+  }
   return (
     <AlertDialog
       open={Boolean(dishDelete)}
       onOpenChange={(value) => {
         if (!value) {
-          setDishDelete(undefined);
+          setDishDelete(undefined)
         }
       }}
     >
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>{t("deleteDish")}</AlertDialogTitle>
+          <AlertDialogTitle>{t('deleteDish')}</AlertDialogTitle>
           <AlertDialogDescription>
-            {t("deleteDescription", {
+            {t('deleteDescription', {
               name: dishDelete?.name,
             })}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>{tAll("cancel")}</AlertDialogCancel>
+          <AlertDialogCancel>{tAll('cancel')}</AlertDialogCancel>
           <AlertDialogAction onClick={deleteDish}>
-            {tAll("continue")}
+            {tAll('continue')}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
-  );
-};
+  )
+}
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 10
 
 const DishTable = () => {
-  const t = useTranslations("Dishes");
-  const tAll = useTranslations("All");
+  const t = useTranslations('Dishes')
+  const tAll = useTranslations('All')
 
-  const { searchParams, setSearchParams } = useSearchParamsLoader();
-  const page = searchParams?.get("page")
-    ? Number(searchParams?.get("page"))
-    : 1;
-  const pageIndex = page - 1;
+  const { searchParams, setSearchParams } = useSearchParamsLoader()
+  const page = searchParams?.get('page') ? Number(searchParams?.get('page')) : 1
+  const pageIndex = page - 1
 
-  const { dishIdEdit, setDishIdEdit, dishDelete, setDishDelete } = useDish();
+  const { dishIdEdit, setDishIdEdit, dishDelete, setDishDelete } = useDish()
 
-  const dishListQuery = useDishListQuery();
-  const data = dishListQuery.data?.payload.data ?? [];
-  const [sorting, setSorting] = useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
-  const [rowSelection, setRowSelection] = useState({});
+  const dishListQuery = useDishListQuery()
+  const data = dishListQuery.data?.payload.data ?? []
+  const [sorting, setSorting] = useState<SortingState>([])
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
+  const [rowSelection, setRowSelection] = useState({})
   const [pagination, setPagination] = useState({
     pageIndex,
     pageSize: PAGE_SIZE,
-  });
+  })
 
   const columns: ColumnDef<DishItem>[] = useMemo(() => {
     return [
       {
-        accessorKey: "id",
-        header: "ID",
+        accessorKey: 'id',
+        header: 'ID',
       },
       {
-        accessorKey: "image",
-        header: t("table.photo"),
+        accessorKey: 'image',
+        header: t('table.photo'),
         cell: ({ row }) => (
           <div>
-            <Avatar className="aspect-square w-[100px] h-[100px] rounded-md object-cover">
-              <AvatarImage src={row.getValue("image")} />
-              <AvatarFallback className="rounded-none">
+            <Avatar className="aspect-square h-[100px] w-[100px] rounded-md object-cover">
+              <AvatarImage src={row.getValue('image')} />
+              <AvatarFallback className="rounded-none text-center">
                 {row.original.name}
               </AvatarFallback>
             </Avatar>
@@ -169,53 +163,53 @@ const DishTable = () => {
         ),
       },
       {
-        accessorKey: "name",
-        header: t("table.dishName"),
+        accessorKey: 'name',
+        header: t('table.dishName'),
         cell: ({ row }) => (
-          <div className="capitalize">{row.getValue("name")}</div>
+          <div className="capitalize">{row.getValue('name')}</div>
         ),
       },
       {
-        accessorKey: "price",
-        header: t("table.price"),
+        accessorKey: 'price',
+        header: t('table.price'),
         cell: ({ row }) => (
           <div className="capitalize">
-            {formatCurrency(row.getValue("price"))}
+            {formatCurrency(row.getValue('price'))}
           </div>
         ),
       },
       {
-        accessorKey: "description",
-        header: t("table.description"),
+        accessorKey: 'description',
+        header: t('table.description'),
         cell: ({ row }) => (
           <div
             dangerouslySetInnerHTML={{
-              __html: DOMPurify.sanitize(row.getValue("description")),
+              __html: DOMPurify.sanitize(row.getValue('description')),
             }}
             className="whitespace-pre-line"
           />
         ),
       },
       {
-        accessorKey: "status",
-        header: t("table.status"),
+        accessorKey: 'status',
+        header: t('table.status'),
         cell: ({ row }) => (
-          <div>{tAll(getVietnameseDishStatus(row.getValue("status")))}</div>
+          <div>{tAll(getVietnameseDishStatus(row.getValue('status')))}</div>
         ),
       },
       {
-        id: "actions",
+        id: 'actions',
         enableHiding: false,
         cell: function Actions({ row }) {
-          const { setDishIdEdit, setDishDelete } = useDish();
+          const { setDishIdEdit, setDishDelete } = useDish()
 
           const openEditDish = () => {
-            setDishIdEdit(row.original.id);
-          };
+            setDishIdEdit(row.original.id)
+          }
 
           const openDeleteDish = () => {
-            setDishDelete(row.original);
-          };
+            setDishDelete(row.original)
+          }
           return (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -224,21 +218,21 @@ const DishTable = () => {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuLabel>{t("table.actions")}</DropdownMenuLabel>
+                <DropdownMenuLabel>{t('table.actions')}</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={openEditDish}>
-                  {tAll("edit")}
+                  {tAll('edit')}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={openDeleteDish}>
-                  {tAll("delete")}
+                  {tAll('delete')}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-          );
+          )
         },
       },
-    ];
-  }, []);
+    ]
+  }, [])
 
   const table = useReactTable({
     data,
@@ -260,14 +254,14 @@ const DishTable = () => {
       rowSelection,
       pagination,
     },
-  });
+  })
 
   useEffect(() => {
     table.setPagination({
       pageIndex,
       pageSize: PAGE_SIZE,
-    });
-  }, [table, pageIndex]);
+    })
+  }, [table, pageIndex])
 
   return (
     <>
@@ -278,12 +272,12 @@ const DishTable = () => {
           dishDelete={dishDelete}
           setDishDelete={setDishDelete}
         />
-        <div className="flex items-center py-4 gap-2">
+        <div className="flex items-center gap-2 py-4">
           <Input
-            placeholder={tAll("searchValue", { value: t("table.dishName") })}
-            value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
+            placeholder={tAll('searchValue', { value: t('table.dishName') })}
+            value={(table.getColumn('name')?.getFilterValue() as string) ?? ''}
             onChange={(event) =>
-              table.getColumn("name")?.setFilterValue(event.target.value)
+              table.getColumn('name')?.setFilterValue(event.target.value)
             }
             className="max-w-sm"
           />
@@ -306,7 +300,7 @@ const DishTable = () => {
                               header.getContext(),
                             )}
                       </TableHead>
-                    );
+                    )
                   })}
                 </TableRow>
               ))}
@@ -316,7 +310,7 @@ const DishTable = () => {
                 table.getRowModel().rows.map((row) => (
                   <TableRow
                     key={row.id}
-                    data-state={row.getIsSelected() && "selected"}
+                    data-state={row.getIsSelected() && 'selected'}
                   >
                     {row.getVisibleCells().map((cell) => (
                       <TableCell key={cell.id}>
@@ -334,7 +328,7 @@ const DishTable = () => {
                     colSpan={columns.length}
                     className="h-24 text-center"
                   >
-                    {tAll("noData")}
+                    {tAll('noData')}
                   </TableCell>
                 </TableRow>
               )}
@@ -342,8 +336,8 @@ const DishTable = () => {
           </Table>
         </div>
         <div className="flex items-center justify-end space-x-2 py-4">
-          <div className="text-xs text-muted-foreground py-4 flex-1 ">
-            {tAll("showResultPagination", {
+          <div className="flex-1 py-4 text-xs text-muted-foreground ">
+            {tAll('showResultPagination', {
               result: table.getPaginationRowModel().rows.length,
               total: data.length,
             })}
@@ -358,7 +352,7 @@ const DishTable = () => {
         </div>
       </div>
     </>
-  );
-};
+  )
+}
 
-export default DishTable;
+export default DishTable

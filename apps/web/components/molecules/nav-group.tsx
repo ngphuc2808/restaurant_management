@@ -1,18 +1,18 @@
-"use client";
+'use client'
 
-import { useTranslations } from "next-intl";
-import { ReactNode } from "react";
-import { ChevronRight } from "lucide-react";
+import { useTranslations } from 'next-intl'
+import { ReactNode } from 'react'
+import { ChevronRight } from 'lucide-react'
 
-import { Link, usePathname } from "@/i18n/routing";
-import useAppStore from "@/store/app";
-import { checkIsActive } from "@/lib/utils";
-import { Badge } from "@repo/ui/components/badge";
+import { Link, usePathname } from '@/i18n/routing'
+import useAppStore from '@/store/app'
+import { checkIsActive } from '@/lib/utils'
+import { Badge } from '@repo/ui/components/badge'
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from "@repo/ui/components/collapsible";
+} from '@repo/ui/components/collapsible'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,7 +20,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@repo/ui/components/dropdown-menu";
+} from '@repo/ui/components/dropdown-menu'
 import {
   SidebarGroup,
   SidebarGroupLabel,
@@ -31,15 +31,15 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
   useSidebar,
-} from "@repo/ui/components/sidebar";
+} from '@repo/ui/components/sidebar'
 
 const NavBadge = ({ children }: { children: ReactNode }) => (
-  <Badge className="text-xs rounded-full px-1 py-0">{children}</Badge>
-);
+  <Badge className="rounded-full px-1 py-0 text-xs">{children}</Badge>
+)
 
 const SidebarMenuLink = ({ item, href }: { item: NavLink; href: string }) => {
-  const t = useTranslations("SidebarItems");
-  const { setOpenMobile } = useSidebar();
+  const t = useTranslations('SidebarItems')
+  const { setOpenMobile } = useSidebar()
 
   return (
     <SidebarMenuItem>
@@ -55,18 +55,18 @@ const SidebarMenuLink = ({ item, href }: { item: NavLink; href: string }) => {
         </Link>
       </SidebarMenuButton>
     </SidebarMenuItem>
-  );
-};
+  )
+}
 
 const SidebarMenuCollapsible = ({
   item,
   href,
 }: {
-  item: NavCollapsible;
-  href: string;
+  item: NavCollapsible
+  href: string
 }) => {
-  const t = useTranslations("SidebarItems");
-  const { setOpenMobile } = useSidebar();
+  const t = useTranslations('SidebarItems')
+  const { setOpenMobile } = useSidebar()
 
   return (
     <Collapsible
@@ -103,17 +103,17 @@ const SidebarMenuCollapsible = ({
         </CollapsibleContent>
       </SidebarMenuItem>
     </Collapsible>
-  );
-};
+  )
+}
 
 const SidebarMenuCollapsedDropdown = ({
   item,
   href,
 }: {
-  item: NavCollapsible;
-  href: string;
+  item: NavCollapsible
+  href: string
 }) => {
-  const t = useTranslations("SidebarItems");
+  const t = useTranslations('SidebarItems')
 
   return (
     <SidebarMenuItem>
@@ -131,14 +131,14 @@ const SidebarMenuCollapsedDropdown = ({
         </DropdownMenuTrigger>
         <DropdownMenuContent side="right" align="start" sideOffset={4}>
           <DropdownMenuLabel>
-            {t(item.title as any)} {item.badge ? `(${item.badge})` : ""}
+            {t(item.title as any)} {item.badge ? `(${item.badge})` : ''}
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           {item.items.map((sub) => (
             <DropdownMenuItem key={`${sub.title}-${sub.url}`} asChild>
               <Link
                 href={sub.url}
-                className={`${checkIsActive(href, sub) ? "bg-secondary" : ""}`}
+                className={`${checkIsActive(href, sub) ? 'bg-secondary' : ''}`}
               >
                 {sub.icon && <sub.icon />}
                 <span className="max-w-52 text-wrap">
@@ -153,45 +153,45 @@ const SidebarMenuCollapsedDropdown = ({
         </DropdownMenuContent>
       </DropdownMenu>
     </SidebarMenuItem>
-  );
-};
+  )
+}
 
 const NavGroup = ({ title, items }: NavGroupType) => {
-  const { role } = useAppStore();
+  const { role } = useAppStore()
 
-  const t = useTranslations("SidebarItems");
+  const t = useTranslations('SidebarItems')
 
-  const pathname = usePathname();
-  const { state } = useSidebar();
+  const pathname = usePathname()
+  const { state } = useSidebar()
 
   return (
     <SidebarGroup>
       <SidebarGroupLabel>{t(title as any)}</SidebarGroupLabel>
       <SidebarMenu>
         {items.map((item) => {
-          const key = `${item.title}-${item.url}`;
+          const key = `${item.title}-${item.url}`
 
-          if (item.roles && !item.roles.includes(role!)) return null;
+          if (item.roles && !item.roles.includes(role!)) return null
 
           if (!item.items)
-            return <SidebarMenuLink key={key} item={item} href={pathname} />;
+            return <SidebarMenuLink key={key} item={item} href={pathname} />
 
-          if (state === "collapsed")
+          if (state === 'collapsed')
             return (
               <SidebarMenuCollapsedDropdown
                 key={key}
                 item={item}
                 href={pathname}
               />
-            );
+            )
 
           return (
             <SidebarMenuCollapsible key={key} item={item} href={pathname} />
-          );
+          )
         })}
       </SidebarMenu>
     </SidebarGroup>
-  );
-};
+  )
+}
 
-export default NavGroup;
+export default NavGroup

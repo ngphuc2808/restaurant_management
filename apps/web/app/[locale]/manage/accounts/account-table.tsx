@@ -1,7 +1,7 @@
-"use client";
+'use client'
 
-import { useTranslations } from "next-intl";
-import { useEffect, useMemo, useState } from "react";
+import { useTranslations } from 'next-intl'
+import { useEffect, useMemo, useState } from 'react'
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -13,16 +13,16 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
-} from "@tanstack/react-table";
-import { CaretSortIcon, DotsHorizontalIcon } from "@radix-ui/react-icons";
-import { LoaderCircle } from "lucide-react";
+} from '@tanstack/react-table'
+import { CaretSortIcon, DotsHorizontalIcon } from '@radix-ui/react-icons'
+import { LoaderCircle } from 'lucide-react'
 
-import { AccountType } from "@/schemaValidations/account.schema";
+import { AccountType } from '@/schemaValidations/account.schema'
 import {
   useDeleteAccountMutation,
   useGetAccountList,
-} from "@/queries/useAccount";
-import { handleErrorApi } from "@/lib/utils";
+} from '@/queries/useAccount'
+import { handleErrorApi } from '@/lib/utils'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -32,13 +32,9 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@repo/ui/components/alert-dialog";
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@repo/ui/components/avatar";
-import { Button } from "@repo/ui/components/button";
+} from '@repo/ui/components/alert-dialog'
+import { Avatar, AvatarFallback, AvatarImage } from '@repo/ui/components/avatar'
+import { Button } from '@repo/ui/components/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -46,8 +42,8 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@repo/ui/components/dropdown-menu";
-import { Input } from "@repo/ui/components/input";
+} from '@repo/ui/components/dropdown-menu'
+import { Input } from '@repo/ui/components/input'
 import {
   Table,
   TableBody,
@@ -55,68 +51,68 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@repo/ui/components/table";
-import { toast } from "@repo/ui/hooks/use-toast";
-import AddEmployee from "@/app/[locale]/manage/accounts/add-employee";
-import EditEmployee from "@/app/[locale]/manage/accounts/edit-employee";
-import AutoPagination from "@/components/molecules/auto-pagination";
-import useAccount from "@/store/account";
+} from '@repo/ui/components/table'
+import { toast } from '@repo/ui/hooks/use-toast'
+import AddEmployee from '@/app/[locale]/manage/accounts/add-employee'
+import EditEmployee from '@/app/[locale]/manage/accounts/edit-employee'
+import AutoPagination from '@/components/molecules/auto-pagination'
+import useAccount from '@/store/account'
 
 const AlertDialogDeleteAccount = ({
   employeeDelete,
   setEmployeeDelete,
 }: {
-  employeeDelete: AccountType | undefined;
-  setEmployeeDelete: (value: AccountType | undefined) => void;
+  employeeDelete: AccountType | undefined
+  setEmployeeDelete: (value: AccountType | undefined) => void
 }) => {
-  const t = useTranslations("ManageAccounts");
-  const tAll = useTranslations("All");
+  const t = useTranslations('ManageAccounts')
+  const tAll = useTranslations('All')
 
-  const { mutateAsync } = useDeleteAccountMutation();
+  const { mutateAsync } = useDeleteAccountMutation()
 
   const deleteAccount = async () => {
     if (employeeDelete) {
       try {
-        const result = await mutateAsync(employeeDelete.id);
-        setEmployeeDelete(undefined);
+        const result = await mutateAsync(employeeDelete.id)
+        setEmployeeDelete(undefined)
         toast({
           title: result.payload.message,
-        });
+        })
       } catch (error) {
         handleErrorApi({
           error,
-        });
+        })
       }
     }
-  };
+  }
   return (
     <AlertDialog
       open={Boolean(employeeDelete)}
       onOpenChange={(value) => {
         if (!value) {
-          setEmployeeDelete(undefined);
+          setEmployeeDelete(undefined)
         }
       }}
     >
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>{t("deleteAccount")}</AlertDialogTitle>
+          <AlertDialogTitle>{t('deleteAccount')}</AlertDialogTitle>
           <AlertDialogDescription>
-            {t("deleteDescription", {
+            {t('deleteDescription', {
               account: employeeDelete?.name,
             })}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>{tAll("cancel")}</AlertDialogCancel>
+          <AlertDialogCancel>{tAll('cancel')}</AlertDialogCancel>
           <AlertDialogAction onClick={deleteAccount}>
-            {tAll("continue")}
+            {tAll('continue')}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
-  );
-};
+  )
+}
 
 const AccountTable = () => {
   const {
@@ -124,41 +120,41 @@ const AccountTable = () => {
     setEmployeeIdEdit,
     employeeDelete,
     setEmployeeDelete,
-  } = useAccount();
+  } = useAccount()
 
-  const t = useTranslations("ManageAccounts");
-  const tAll = useTranslations("All");
+  const t = useTranslations('ManageAccounts')
+  const tAll = useTranslations('All')
 
-  const [page, setPage] = useState<number>(0);
-  const [limit, setLimit] = useState<number>(12);
-  const accountListQuery = useGetAccountList(page + 1, limit);
-  const data = accountListQuery.data?.payload.data.accounts ?? [];
-  const meta = accountListQuery.data?.payload.data.meta;
+  const [page, setPage] = useState<number>(0)
+  const [limit, setLimit] = useState<number>(12)
+  const accountListQuery = useGetAccountList(page + 1, limit)
+  const data = accountListQuery.data?.payload.data.accounts ?? []
+  const meta = accountListQuery.data?.payload.data.meta
 
-  const [sorting, setSorting] = useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
-  const [rowSelection, setRowSelection] = useState({});
+  const [sorting, setSorting] = useState<SortingState>([])
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
+  const [rowSelection, setRowSelection] = useState({})
 
   const [pagination, setPagination] = useState({
     pageIndex: page,
     pageSize: limit,
-  });
+  })
 
   const columns: ColumnDef<AccountType>[] = useMemo(() => {
     return [
       {
-        accessorKey: "id",
-        header: "ID",
+        accessorKey: 'id',
+        header: 'ID',
       },
       {
-        accessorKey: "avatar",
-        header: t("table.avatar"),
+        accessorKey: 'avatar',
+        header: t('table.avatar'),
         cell: ({ row }) => (
           <div>
-            <Avatar className="aspect-square w-[100px] h-[100px] rounded-md object-cover">
-              <AvatarImage src={row.getValue("avatar")} />
-              <AvatarFallback className="rounded-none">
+            <Avatar className="aspect-square h-[100px] w-[100px] rounded-md object-cover">
+              <AvatarImage src={row.getValue('avatar')} />
+              <AvatarFallback className="rounded-none text-center">
                 {row.original.name}
               </AvatarFallback>
             </Avatar>
@@ -166,41 +162,41 @@ const AccountTable = () => {
         ),
       },
       {
-        accessorKey: "name",
-        header: t("table.name"),
+        accessorKey: 'name',
+        header: t('table.name'),
         cell: ({ row }) => (
-          <div className="capitalize">{row.getValue("name")}</div>
+          <div className="capitalize">{row.getValue('name')}</div>
         ),
       },
       {
-        accessorKey: "email",
+        accessorKey: 'email',
         header: ({ column }) => {
           return (
             <Button
               variant="ghost"
               onClick={() =>
-                column.toggleSorting(column.getIsSorted() === "asc")
+                column.toggleSorting(column.getIsSorted() === 'asc')
               }
             >
-              {t("table.email")}
+              {t('table.email')}
               <CaretSortIcon className="ml-2 h-4 w-4" />
             </Button>
-          );
+          )
         },
       },
       {
-        id: "actions",
+        id: 'actions',
         enableHiding: false,
         cell: function Actions({ row }) {
-          const { setEmployeeIdEdit, setEmployeeDelete } = useAccount();
+          const { setEmployeeIdEdit, setEmployeeDelete } = useAccount()
 
           const openEditEmployee = () => {
-            setEmployeeIdEdit(row.original.id);
-          };
+            setEmployeeIdEdit(row.original.id)
+          }
 
           const openDeleteEmployee = () => {
-            setEmployeeDelete(row.original);
-          };
+            setEmployeeDelete(row.original)
+          }
 
           return (
             <DropdownMenu>
@@ -210,21 +206,21 @@ const AccountTable = () => {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuLabel>{t("table.actions")}</DropdownMenuLabel>
+                <DropdownMenuLabel>{t('table.actions')}</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={openEditEmployee}>
-                  {tAll("edit")}
+                  {tAll('edit')}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={openDeleteEmployee}>
-                  {tAll("delete")}
+                  {tAll('delete')}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-          );
+          )
         },
       },
-    ];
-  }, []);
+    ]
+  }, [])
 
   const table = useReactTable({
     data,
@@ -245,17 +241,17 @@ const AccountTable = () => {
       rowSelection,
       pagination,
     },
-  });
+  })
 
   useEffect(() => {
     table.setPagination({
       pageIndex: page,
       pageSize: limit,
-    });
-  }, [table, page, limit]);
+    })
+  }, [table, page, limit])
 
   if (accountListQuery.isLoading)
-    return <LoaderCircle className="w-5 h-5 mr-2 animate-spin" />;
+    return <LoaderCircle className="mr-2 h-5 w-5 animate-spin" />
 
   return (
     <>
@@ -269,12 +265,12 @@ const AccountTable = () => {
           employeeDelete={employeeDelete}
           setEmployeeDelete={setEmployeeDelete}
         />
-        <div className="flex items-center py-4 gap-2">
+        <div className="flex items-center gap-2 py-4">
           <Input
-            placeholder={tAll("searchValue", { value: t("table.email") })}
-            value={(table.getColumn("email")?.getFilterValue() as string) ?? ""}
+            placeholder={tAll('searchValue', { value: t('table.email') })}
+            value={(table.getColumn('email')?.getFilterValue() as string) ?? ''}
             onChange={(event) =>
-              table.getColumn("email")?.setFilterValue(event.target.value)
+              table.getColumn('email')?.setFilterValue(event.target.value)
             }
             className="max-w-sm"
           />
@@ -297,7 +293,7 @@ const AccountTable = () => {
                               header.getContext(),
                             )}
                       </TableHead>
-                    );
+                    )
                   })}
                 </TableRow>
               ))}
@@ -307,7 +303,7 @@ const AccountTable = () => {
                 table.getRowModel().rows.map((row) => (
                   <TableRow
                     key={row.id}
-                    data-state={row.getIsSelected() && "selected"}
+                    data-state={row.getIsSelected() && 'selected'}
                   >
                     {row.getVisibleCells().map((cell) => (
                       <TableCell key={cell.id}>
@@ -325,7 +321,7 @@ const AccountTable = () => {
                     colSpan={columns.length}
                     className="h-24 text-center"
                   >
-                    {tAll("noData")}
+                    {tAll('noData')}
                   </TableCell>
                 </TableRow>
               )}
@@ -333,8 +329,8 @@ const AccountTable = () => {
           </Table>
         </div>
         <div className="flex items-center justify-end space-x-2 py-4">
-          <div className="text-xs text-muted-foreground py-4 flex-1 ">
-            {tAll("showResultPagination", {
+          <div className="flex-1 py-4 text-xs text-muted-foreground ">
+            {tAll('showResultPagination', {
               result: table.getPaginationRowModel().rows.length,
               total: data.length,
             })}
@@ -351,7 +347,7 @@ const AccountTable = () => {
         </div>
       </div>
     </>
-  );
-};
+  )
+}
 
-export default AccountTable;
+export default AccountTable

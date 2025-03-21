@@ -1,29 +1,25 @@
-"use client";
+'use client'
 
-import { useTranslations } from "next-intl";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Upload } from "lucide-react";
+import { useTranslations } from 'next-intl'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { Upload } from 'lucide-react'
 
 import {
   UpdateDishBody,
   UpdateDishBodyType,
-} from "@/schemaValidations/dish.schema";
-import { useUploadMediaMutation } from "@/queries/useMedia";
-import { useGetDishQuery, useUpdateDishMutation } from "@/queries/useDish";
-import revalidateApiRequest from "@/apiRequests/revalidate";
+} from '@/schemaValidations/dish.schema'
+import { useUploadMediaMutation } from '@/queries/useMedia'
+import { useGetDishQuery, useUpdateDishMutation } from '@/queries/useDish'
+import revalidateApiRequest from '@/apiRequests/revalidate'
 import {
   checkMessageFromResponse,
   getVietnameseDishStatus,
   handleErrorApi,
-} from "@/lib/utils";
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@repo/ui/components/avatar";
-import { Button } from "@repo/ui/components/button";
+} from '@/lib/utils'
+import { Avatar, AvatarFallback, AvatarImage } from '@repo/ui/components/avatar'
+import { Button } from '@repo/ui/components/button'
 import {
   Dialog,
   DialogContent,
@@ -31,133 +27,133 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@repo/ui/components/dialog";
+} from '@repo/ui/components/dialog'
 import {
   Form,
   FormControl,
   FormField,
   FormItem,
   FormMessage,
-} from "@repo/ui/components/form";
-import { Input } from "@repo/ui/components/input";
-import { Label } from "@repo/ui/components/label";
+} from '@repo/ui/components/form'
+import { Input } from '@repo/ui/components/input'
+import { Label } from '@repo/ui/components/label'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@repo/ui/components/select";
-import { Textarea } from "@repo/ui/components/textarea";
-import { toast } from "@repo/ui/hooks/use-toast";
-import { DishStatus, DishStatusValues } from "@/constants/type";
-import { envConfig } from "@/config";
+} from '@repo/ui/components/select'
+import { Textarea } from '@repo/ui/components/textarea'
+import { toast } from '@repo/ui/hooks/use-toast'
+import { DishStatus, DishStatusValues } from '@/constants/type'
+import { envConfig } from '@/config'
 
 const EditDish = ({
   id,
   setId,
   onSubmitSuccess,
 }: {
-  id?: number | undefined;
-  setId: (value: number | undefined) => void;
-  onSubmitSuccess?: () => void;
+  id?: number | undefined
+  setId: (value: number | undefined) => void
+  onSubmitSuccess?: () => void
 }) => {
-  const t = useTranslations("Dishes");
-  const tAll = useTranslations("All");
-  const tErrorMessage = useTranslations("ErrorMessage");
+  const t = useTranslations('Dishes')
+  const tAll = useTranslations('All')
+  const tErrorMessage = useTranslations('ErrorMessage')
 
-  const [file, setFile] = useState<File | null>(null);
-  const imageInputRef = useRef<HTMLInputElement | null>(null);
-  const uploadMediaMutation = useUploadMediaMutation();
-  const updateDishMutation = useUpdateDishMutation();
-  const { data } = useGetDishQuery({ enabled: Boolean(id), id: id as number });
+  const [file, setFile] = useState<File | null>(null)
+  const imageInputRef = useRef<HTMLInputElement | null>(null)
+  const uploadMediaMutation = useUploadMediaMutation()
+  const updateDishMutation = useUpdateDishMutation()
+  const { data } = useGetDishQuery({ enabled: Boolean(id), id: id as number })
   const form = useForm<UpdateDishBodyType>({
     resolver: zodResolver(UpdateDishBody),
     defaultValues: {
-      name: "",
-      description: "",
+      name: '',
+      description: '',
       price: 0,
       image: undefined,
       status: DishStatus.Unavailable,
     },
-  });
-  const image = form.watch("image");
-  const name = form.watch("name");
+  })
+  const image = form.watch('image')
+  const name = form.watch('name')
 
   const previewImage = useMemo(
     () => (file ? URL.createObjectURL(file) : image || undefined),
     [file, image],
-  );
+  )
 
   const onSubmit = async (values: UpdateDishBodyType) => {
-    if (updateDishMutation.isPending) return;
+    if (updateDishMutation.isPending) return
     try {
       let body: UpdateDishBodyType & { id: number } = {
         id: id as number,
         ...values,
-      };
+      }
       if (file) {
-        const formData = new FormData();
-        formData.append("file", file);
-        formData.append("folder", "dishes");
+        const formData = new FormData()
+        formData.append('file', file)
+        formData.append('folder', 'dishes')
         const uploadImageResult =
-          await uploadMediaMutation.mutateAsync(formData);
-        const imageUrl = uploadImageResult.payload.data;
+          await uploadMediaMutation.mutateAsync(formData)
+        const imageUrl = uploadImageResult.payload.data
         body = {
           ...body,
           image: imageUrl,
-        };
+        }
       }
-      const result = await updateDishMutation.mutateAsync(body);
-      await revalidateApiRequest("dishes");
+      const result = await updateDishMutation.mutateAsync(body)
+      await revalidateApiRequest('dishes')
       toast({
         description: result.payload.message,
-      });
-      reset();
-      onSubmitSuccess && onSubmitSuccess();
+      })
+      reset()
+      onSubmitSuccess && onSubmitSuccess()
     } catch (error) {
       handleErrorApi({
         error,
         setError: form.setError,
-      });
+      })
     }
-  };
+  }
 
   const reset = () => {
-    if (file && previewImage && previewImage.startsWith("blob:")) {
-      URL.revokeObjectURL(previewImage);
+    if (file && previewImage && previewImage.startsWith('blob:')) {
+      URL.revokeObjectURL(previewImage)
     }
-    setId(undefined);
-    setFile(null);
-    form.reset();
-  };
+    setId(undefined)
+    setFile(null)
+    form.reset()
+  }
 
   useEffect(() => {
     if (data) {
-      const { name, image, description, price, status } = data.payload.data;
+      const { name, image, description, price, status } = data.payload.data
       form.reset({
         name,
         image: image ?? undefined,
         description,
         price,
         status,
-      });
+      })
     }
-  }, [data, form]);
+  }, [data, form])
 
   return (
     <Dialog
       open={Boolean(id)}
       onOpenChange={(value) => {
         if (!value) {
-          reset();
+          reset()
         }
       }}
     >
-      <DialogContent className="sm:max-w-[600px] max-h-screen overflow-auto">
+      <DialogContent className="max-h-screen overflow-auto sm:max-w-[600px]">
         <DialogHeader>
-          <DialogTitle>{t("updateDish")}</DialogTitle>
-          <DialogDescription>{t("requiredDescription")}</DialogDescription>
+          <DialogTitle>{t('updateDish')}</DialogTitle>
+          <DialogDescription>{t('requiredDescription')}</DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form
@@ -172,11 +168,11 @@ const EditDish = ({
                 name="image"
                 render={({ field, formState: { errors } }) => (
                   <FormItem>
-                    <div className="flex gap-2 items-start justify-start">
-                      <Avatar className="aspect-square w-[100px] h-[100px] rounded-md object-cover">
+                    <div className="flex items-start justify-start gap-2">
+                      <Avatar className="aspect-square h-[100px] w-[100px] rounded-md object-cover">
                         <AvatarImage src={previewImage} />
-                        <AvatarFallback className="rounded-none">
-                          {name || t("table.photo")}
+                        <AvatarFallback className="rounded-none text-center">
+                          {name || t('table.photo')}
                         </AvatarFallback>
                       </Avatar>
                       <input
@@ -184,12 +180,12 @@ const EditDish = ({
                         accept="image/*"
                         ref={imageInputRef}
                         onChange={(e) => {
-                          const file = e.target.files?.[0];
+                          const file = e.target.files?.[0]
                           if (file) {
-                            setFile(file);
+                            setFile(file)
                             field.onChange(
                               `${envConfig.NEXT_PUBLIC_URL}/` + file.name,
-                            );
+                            )
                           }
                         }}
                         className="hidden"
@@ -217,7 +213,7 @@ const EditDish = ({
                 render={({ field, formState: { errors } }) => (
                   <FormItem>
                     <div className="grid grid-cols-4 items-center justify-items-start gap-4">
-                      <Label htmlFor="name">{t("table.dishName")}</Label>
+                      <Label htmlFor="name">{t('table.dishName')}</Label>
                       <div className="col-span-3 w-full space-y-2">
                         <Input id="name" className="w-full" {...field} />
                         <FormMessage>
@@ -237,7 +233,7 @@ const EditDish = ({
                 render={({ field, formState: { errors } }) => (
                   <FormItem>
                     <div className="grid grid-cols-4 items-center justify-items-start gap-4">
-                      <Label htmlFor="price">{t("table.price")}</Label>
+                      <Label htmlFor="price">{t('table.price')}</Label>
                       <div className="col-span-3 w-full space-y-2">
                         <Input
                           id="price"
@@ -263,7 +259,7 @@ const EditDish = ({
                   <FormItem>
                     <div className="grid grid-cols-4 items-center justify-items-start gap-4">
                       <Label htmlFor="description">
-                        {t("table.description")}
+                        {t('table.description')}
                       </Label>
                       <div className="col-span-3 w-full space-y-2">
                         <Textarea
@@ -290,7 +286,7 @@ const EditDish = ({
                 render={({ field, formState: { errors } }) => (
                   <FormItem>
                     <div className="grid grid-cols-4 items-center justify-items-start gap-4">
-                      <Label htmlFor="description">{t("table.status")}</Label>
+                      <Label htmlFor="description">{t('table.status')}</Label>
                       <div className="col-span-3 w-full space-y-2">
                         <Select
                           onValueChange={field.onChange}
@@ -298,7 +294,7 @@ const EditDish = ({
                         >
                           <FormControl>
                             <SelectTrigger>
-                              <SelectValue placeholder={t("selectStatus")} />
+                              <SelectValue placeholder={t('selectStatus')} />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
@@ -325,12 +321,12 @@ const EditDish = ({
         </Form>
         <DialogFooter>
           <Button type="submit" form="edit-dish-form">
-            {tAll("save")}
+            {tAll('save')}
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  );
-};
+  )
+}
 
-export default EditDish;
+export default EditDish

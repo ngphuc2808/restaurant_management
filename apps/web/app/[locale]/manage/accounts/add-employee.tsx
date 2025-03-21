@@ -1,24 +1,20 @@
-"use client";
+'use client'
 
-import { useTranslations } from "next-intl";
-import { useMemo, useRef, useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { PlusCircle, Upload } from "lucide-react";
+import { useTranslations } from 'next-intl'
+import { useMemo, useRef, useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { PlusCircle, Upload } from 'lucide-react'
 
 import {
   CreateEmployeeAccountBody,
   CreateEmployeeAccountBodyType,
-} from "@/schemaValidations/account.schema";
-import { useAddAccountMutation } from "@/queries/useAccount";
-import { useUploadMediaMutation } from "@/queries/useMedia";
-import { checkMessageFromResponse, handleErrorApi } from "@/lib/utils";
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@repo/ui/components/avatar";
-import { Button } from "@repo/ui/components/button";
+} from '@/schemaValidations/account.schema'
+import { useAddAccountMutation } from '@/queries/useAccount'
+import { useUploadMediaMutation } from '@/queries/useMedia'
+import { checkMessageFromResponse, handleErrorApi } from '@/lib/utils'
+import { Avatar, AvatarFallback, AvatarImage } from '@repo/ui/components/avatar'
+import { Button } from '@repo/ui/components/button'
 import {
   Dialog,
   DialogContent,
@@ -27,92 +23,92 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@repo/ui/components/dialog";
+} from '@repo/ui/components/dialog'
 import {
   Form,
   FormField,
   FormItem,
   FormMessage,
-} from "@repo/ui/components/form";
-import { Input } from "@repo/ui/components/input";
-import { Label } from "@repo/ui/components/label";
-import { toast } from "@repo/ui/hooks/use-toast";
-import { envConfig } from "@/config";
+} from '@repo/ui/components/form'
+import { Input } from '@repo/ui/components/input'
+import { Label } from '@repo/ui/components/label'
+import { toast } from '@repo/ui/hooks/use-toast'
+import { envConfig } from '@/config'
 
 const AddEmployee = () => {
-  const t = useTranslations("ManageAccounts");
-  const tAll = useTranslations("All");
-  const tErrorMessage = useTranslations("ErrorMessage");
+  const t = useTranslations('ManageAccounts')
+  const tAll = useTranslations('All')
+  const tErrorMessage = useTranslations('ErrorMessage')
 
-  const [file, setFile] = useState<File | null>(null);
-  const [open, setOpen] = useState(false);
-  const avatarInputRef = useRef<HTMLInputElement | null>(null);
+  const [file, setFile] = useState<File | null>(null)
+  const [open, setOpen] = useState(false)
+  const avatarInputRef = useRef<HTMLInputElement | null>(null)
 
-  const addAccountMutation = useAddAccountMutation();
-  const uploadMediaMutation = useUploadMediaMutation();
+  const addAccountMutation = useAddAccountMutation()
+  const uploadMediaMutation = useUploadMediaMutation()
 
   const form = useForm<CreateEmployeeAccountBodyType>({
     resolver: zodResolver(CreateEmployeeAccountBody),
     defaultValues: {
-      name: "",
-      email: "",
+      name: '',
+      email: '',
       avatar: undefined,
-      password: "",
-      confirmPassword: "",
+      password: '',
+      confirmPassword: '',
     },
-  });
+  })
 
-  const name = form.watch("name");
-  const avatar = form.watch("avatar");
+  const name = form.watch('name')
+  const avatar = form.watch('avatar')
 
   const previewAvatar = useMemo(
     () => (file ? URL.createObjectURL(file) : avatar || undefined),
     [file, avatar],
-  );
+  )
 
   const onSubmit = async (values: CreateEmployeeAccountBodyType) => {
-    if (addAccountMutation.isPending) return;
+    if (addAccountMutation.isPending) return
 
     try {
-      let body = values;
+      let body = values
       if (file) {
-        const formData = new FormData();
-        formData.append("file", file);
-        formData.append("folder", "employees");
+        const formData = new FormData()
+        formData.append('file', file)
+        formData.append('folder', 'employees')
         const uploadImageResult =
-          await uploadMediaMutation.mutateAsync(formData);
-        const imageUrl = uploadImageResult.payload.data;
+          await uploadMediaMutation.mutateAsync(formData)
+        const imageUrl = uploadImageResult.payload.data
         body = {
           ...values,
           avatar: imageUrl,
-        };
+        }
       }
-      const result = await addAccountMutation.mutateAsync(body);
+      const result = await addAccountMutation.mutateAsync(body)
 
-      if (file && previewAvatar && previewAvatar.startsWith("blob:")) {
-        URL.revokeObjectURL(previewAvatar);
+      if (file && previewAvatar && previewAvatar.startsWith('blob:')) {
+        URL.revokeObjectURL(previewAvatar)
       }
 
       toast({
         description: result.payload.message,
-      });
-      reset();
+      })
+      reset()
     } catch (error) {
       handleErrorApi({
         error,
         setError: form.setError,
-      });
+      })
     }
-  };
+  }
 
   const reset = () => {
-    form.reset();
-    if (file && previewAvatar && previewAvatar.startsWith("blob:")) {
-      URL.revokeObjectURL(previewAvatar);
+    form.reset()
+    if (file && previewAvatar && previewAvatar.startsWith('blob:')) {
+      URL.revokeObjectURL(previewAvatar)
     }
-    setFile(null);
-    setOpen(false);
-  };
+    setFile(null)
+    setOpen(false)
+  }
 
   return (
     <Dialog onOpenChange={setOpen} open={open}>
@@ -120,14 +116,14 @@ const AddEmployee = () => {
         <Button size="sm" className="h-7 gap-1">
           <PlusCircle className="h-3.5 w-3.5" />
           <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-            {t("createAccount")}
+            {t('createAccount')}
           </span>
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[600px] max-h-screen overflow-auto">
+      <DialogContent className="max-h-screen overflow-auto sm:max-w-[600px]">
         <DialogHeader>
-          <DialogTitle>{t("createAccount")}</DialogTitle>
-          <DialogDescription>{t("requiredDescription")}</DialogDescription>
+          <DialogTitle>{t('createAccount')}</DialogTitle>
+          <DialogDescription>{t('requiredDescription')}</DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form
@@ -143,11 +139,11 @@ const AddEmployee = () => {
                 name="avatar"
                 render={({ field }) => (
                   <FormItem>
-                    <div className="flex gap-2 items-start justify-start">
-                      <Avatar className="aspect-square w-[100px] h-[100px] rounded-md object-cover">
+                    <div className="flex items-start justify-start gap-2">
+                      <Avatar className="aspect-square h-[100px] w-[100px] rounded-md object-cover">
                         <AvatarImage src={previewAvatar} />
-                        <AvatarFallback className="rounded-none">
-                          {name || tAll("avatar")}
+                        <AvatarFallback className="rounded-none text-center">
+                          {name || tAll('avatar')}
                         </AvatarFallback>
                       </Avatar>
                       <input
@@ -155,12 +151,12 @@ const AddEmployee = () => {
                         accept="image/*"
                         ref={avatarInputRef}
                         onChange={(e) => {
-                          const file = e.target.files?.[0];
+                          const file = e.target.files?.[0]
                           if (file) {
-                            setFile(file);
+                            setFile(file)
                             field.onChange(
                               `${envConfig.NEXT_PUBLIC_URL}/` + file.name,
-                            );
+                            )
                           }
                         }}
                         className="hidden"
@@ -182,7 +178,7 @@ const AddEmployee = () => {
                 render={({ field, formState: { errors } }) => (
                   <FormItem>
                     <div className="grid grid-cols-4 items-center justify-items-start gap-4">
-                      <Label htmlFor="name">{tAll("name")}</Label>
+                      <Label htmlFor="name">{tAll('name')}</Label>
                       <div className="col-span-3 w-full space-y-2">
                         <Input id="name" className="w-full" {...field} />
                         <FormMessage>
@@ -202,7 +198,7 @@ const AddEmployee = () => {
                 render={({ field, formState: { errors } }) => (
                   <FormItem>
                     <div className="grid grid-cols-4 items-center justify-items-start gap-4">
-                      <Label htmlFor="email">{tAll("email")}</Label>
+                      <Label htmlFor="email">{tAll('email')}</Label>
                       <div className="col-span-3 w-full space-y-2">
                         <Input id="email" className="w-full" {...field} />
                         <FormMessage>
@@ -222,7 +218,7 @@ const AddEmployee = () => {
                 render={({ field, formState: { errors } }) => (
                   <FormItem>
                     <div className="grid grid-cols-4 items-center justify-items-start gap-4">
-                      <Label htmlFor="password">{tAll("password")}</Label>
+                      <Label htmlFor="password">{tAll('password')}</Label>
                       <div className="col-span-3 w-full space-y-2">
                         <Input
                           id="password"
@@ -248,7 +244,7 @@ const AddEmployee = () => {
                   <FormItem>
                     <div className="grid grid-cols-4 items-center justify-items-start gap-4">
                       <Label htmlFor="confirmPassword">
-                        {tAll("confirmPassword")}
+                        {tAll('confirmPassword')}
                       </Label>
                       <div className="col-span-3 w-full space-y-2">
                         <Input
@@ -277,12 +273,12 @@ const AddEmployee = () => {
         </Form>
         <DialogFooter>
           <Button type="submit" form="add-employee-form">
-            {tAll("add")}
+            {tAll('add')}
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  );
-};
+  )
+}
 
-export default AddEmployee;
+export default AddEmployee

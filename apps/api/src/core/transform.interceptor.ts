@@ -4,7 +4,6 @@ import {
   ExecutionContext,
   CallHandler,
   HttpException,
-  Inject,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Observable, throwError } from 'rxjs';
@@ -16,7 +15,7 @@ import { I18nService } from 'nestjs-i18n';
 export interface Response<T> {
   statusCode: number;
   message?: string;
-  data: any;
+  data: T;
 }
 
 @Injectable()

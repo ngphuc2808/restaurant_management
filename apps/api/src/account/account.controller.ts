@@ -85,8 +85,8 @@ export class AccountController {
   @ResponseMessage('res.success.account.create')
   @ApiOkResponse({ type: AccountResDto })
   @Post()
-  create(@Body() createAccountDto: CreateAccountReqDto) {
-    return this.accountService.create(createAccountDto);
+  create(@User() user: UserDto, @Body() createAccountDto: CreateAccountReqDto) {
+    return this.accountService.create(user.id, createAccountDto);
   }
 
   @UseGuards(RoleGuard)
@@ -96,10 +96,11 @@ export class AccountController {
   @ApiOkResponse({ type: AccountResDto })
   @Put('detail/:id')
   updateAccount(
+    @User() user: UserDto,
     @Param('id') id: string,
     @Body() updateMeDto: UpdateAccountReqDto,
   ) {
-    return this.accountService.updateAccount(Number(id), updateMeDto);
+    return this.accountService.updateAccount(user.id, Number(id), updateMeDto);
   }
 
   @UseGuards(RoleGuard)

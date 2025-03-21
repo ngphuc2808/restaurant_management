@@ -1,21 +1,21 @@
-"use client";
+'use client'
 
-import { ReactNode, useEffect, useRef } from "react";
+import { ReactNode, useEffect, useRef } from 'react'
 import {
   isServer,
   QueryClient,
   QueryClientProvider,
-} from "@tanstack/react-query";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+} from '@tanstack/react-query'
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 
-import useAppStore from "@/store/app";
-import RefreshToken from "@/components/atoms/refresh-token";
-import ListenLogoutSocket from "@/components/atoms/listen-logout-socket";
+import useAppStore from '@/store/app'
+import RefreshToken from '@/components/atoms/refresh-token'
+import ListenLogoutSocket from '@/components/atoms/listen-logout-socket'
 import {
   decodeToken,
   generateSocketInstace,
   getAccessTokenFromLocalStorage,
-} from "@/lib/utils";
+} from '@/lib/utils'
 
 const makeQueryClient = () => {
   return new QueryClient({
@@ -24,41 +24,41 @@ const makeQueryClient = () => {
         refetchOnWindowFocus: false,
       },
     },
-  });
-};
+  })
+}
 
-let browserQueryClient: QueryClient | undefined = undefined;
+let browserQueryClient: QueryClient | undefined = undefined
 
 const getQueryClient = () => {
   if (isServer) {
-    return makeQueryClient();
+    return makeQueryClient()
   } else {
-    if (!browserQueryClient) browserQueryClient = makeQueryClient();
-    return browserQueryClient;
+    if (!browserQueryClient) browserQueryClient = makeQueryClient()
+    return browserQueryClient
   }
-};
+}
 
 type Props = {
-  children: ReactNode;
-};
+  children: ReactNode
+}
 
 const AppProvider = ({ children }: Props) => {
-  const queryClient = getQueryClient();
-  const { setRole, setSocket } = useAppStore();
+  const queryClient = getQueryClient()
+  const { setRole, setSocket } = useAppStore()
 
-  const count = useRef(0);
+  const count = useRef(0)
 
   useEffect(() => {
     if (count.current === 0) {
-      const accessToken = getAccessTokenFromLocalStorage();
+      const accessToken = getAccessTokenFromLocalStorage()
       if (accessToken) {
-        const { role } = decodeToken(accessToken);
-        setRole(role);
-        setSocket(generateSocketInstace(accessToken));
+        const { role } = decodeToken(accessToken)
+        setRole(role)
+        setSocket(generateSocketInstace(accessToken))
       }
-      count.current++;
+      count.current++
     }
-  }, [setRole, setSocket]);
+  }, [setRole, setSocket])
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -67,7 +67,7 @@ const AppProvider = ({ children }: Props) => {
       <ListenLogoutSocket />
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
-  );
-};
+  )
+}
 
-export default AppProvider;
+export default AppProvider

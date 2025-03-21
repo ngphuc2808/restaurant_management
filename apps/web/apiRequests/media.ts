@@ -1,13 +1,13 @@
-import http from "@/lib/http";
-import { UploadImageResType } from "@/schemaValidations/media.schema";
+import http from '@/lib/http'
+import { UploadImageResType } from '@/schemaValidations/media.schema'
 
-const prefix = "upload";
+const prefix = 'upload'
 
 const mediaApiRequest = {
   upload: (formData: FormData) =>
     http.post<UploadImageResType>(prefix, formData, {
-      baseUrl: "/api",
+      baseUrl: '/api',
     }),
-};
+}
 
-export default mediaApiRequest;
+export default mediaApiRequest

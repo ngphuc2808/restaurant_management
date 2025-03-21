@@ -7,7 +7,8 @@
     "build": "next build",
     "export": "next export -o ../mobile/dist",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "format": "prettier --write \"**/*.{ts,tsx,md,mdx,css,scss}\""
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.758.0",
@@ -57,6 +58,8 @@
     "eslint": "^9",
     "eslint-config-next": "15.1.5",
     "postcss": "^8.5.1",
+    "prettier": "^3.5.3",
+    "prettier-plugin-tailwindcss": "0.4.1",
     "tailwindcss": "^3.4.17",
     "typescript": "^5"
   }

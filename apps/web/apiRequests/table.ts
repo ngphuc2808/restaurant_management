@@ -1,12 +1,12 @@
-import http from "@/lib/http";
+import http from '@/lib/http'
 import {
   CreateTableBodyType,
   TableListResType,
   TableResType,
   UpdateTableBodyType,
-} from "@/schemaValidations/table.schema";
+} from '@/schemaValidations/table.schema'
 
-const prefix = "tables";
+const prefix = 'tables'
 
 const tableApiRequest = {
   list: () => http.get<TableListResType>(prefix),
@@ -15,6 +15,6 @@ const tableApiRequest = {
   updateTable: (id: number, body: UpdateTableBodyType) =>
     http.put<TableResType>(`${prefix}/${id}`, body),
   deleteTable: (id: number) => http.delete<TableResType>(`${prefix}/${id}`),
-};
+}
 
-export default tableApiRequest;
+export default tableApiRequest

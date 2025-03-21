@@ -19,9 +19,9 @@ export class UpdateAccountReqDto {
   @ApiProperty()
   name: string;
 
+  @IsOptional()
   @IsString()
   @IsUrl()
-  @IsOptional()
   @ApiProperty()
   avatar: string;
 

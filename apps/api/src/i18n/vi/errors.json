@@ -1,12 +1,21 @@
 {
   "auth": {
+    "invalid-refresh-token": "Refresh token không hợp lệ",
     "invalid-account": "Tài khoản không hợp lệ",
     "email-already-exists": "Email đã được sử dụng",
     "invalid-email": "Email không hợp lệ",
     "invalid-email-or-password": "Email hoặc mật khẩu không đúng",
     "no-user-found": "Không tìm thấy người dùng",
     "you-are-not-allowed-to-do-this": "Bạn không được phép thực hiện hành động này",
-    "old-password-is-incorrect": "Mật khẩu cũ không đúng"
+    "invalid-old-password": "Mật khẩu cũ không hợp lệ",
+    "password-mismatch": "Mật khẩu không khớp",
+    "not-found": "Không tìm thấy tài khoản",
+    "invalid": "Tài khoản không hợp lệ",
+    "invalid-id": "ID tài khoản không hợp lệ",
+    "invalid-data": "Dữ liệu không hợp lệ"
+  },
+  "pagination": {
+    "invalid": "Trang không hợp lệ"
   },
   "authorization": {
     "invalid": "Authorization không hợp lệ"

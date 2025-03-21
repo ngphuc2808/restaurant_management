@@ -1,72 +1,72 @@
-"use client";
+'use client'
 
-import { useTranslations } from "next-intl";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { useTranslations } from 'next-intl'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
 
 import {
   ChangePasswordBody,
   ChangePasswordBodyType,
-} from "@/schemaValidations/account.schema";
-import { useChangePasswordMutation } from "@/queries/useAccount";
+} from '@/schemaValidations/account.schema'
+import { useChangePasswordMutation } from '@/queries/useAccount'
 import {
   checkMessageFromResponse,
   handleErrorApi,
   setAccessTokenToLocalStorage,
   setRefreshTokenToLocalStorage,
-} from "@/lib/utils";
-import { Button } from "@repo/ui/components/button";
+} from '@/lib/utils'
+import { Button } from '@repo/ui/components/button'
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from "@repo/ui/components/card";
+} from '@repo/ui/components/card'
 import {
   Form,
   FormField,
   FormItem,
   FormMessage,
-} from "@repo/ui/components/form";
-import { Input } from "@repo/ui/components/input";
-import { Label } from "@repo/ui/components/label";
-import { toast } from "@repo/ui/hooks/use-toast";
+} from '@repo/ui/components/form'
+import { Input } from '@repo/ui/components/input'
+import { Label } from '@repo/ui/components/label'
+import { toast } from '@repo/ui/hooks/use-toast'
 
 const ChangePasswordForm = () => {
-  const t = useTranslations("Settings");
-  const tAll = useTranslations("All");
-  const tErrorMessage = useTranslations("ErrorMessage");
+  const t = useTranslations('Settings')
+  const tAll = useTranslations('All')
+  const tErrorMessage = useTranslations('ErrorMessage')
 
-  const changePasswordMutation = useChangePasswordMutation();
+  const changePasswordMutation = useChangePasswordMutation()
   const form = useForm<ChangePasswordBodyType>({
     resolver: zodResolver(ChangePasswordBody),
     defaultValues: {
-      oldPassword: "",
-      password: "",
-      confirmPassword: "",
+      oldPassword: '',
+      password: '',
+      confirmPassword: '',
     },
-  });
+  })
 
   const onSubmit = async (values: ChangePasswordBodyType) => {
-    if (changePasswordMutation.isPending) return;
+    if (changePasswordMutation.isPending) return
     try {
-      const result = await changePasswordMutation.mutateAsync(values);
-      setAccessTokenToLocalStorage(result.payload.data.accessToken);
-      setRefreshTokenToLocalStorage(result.payload.data.refreshToken);
+      const result = await changePasswordMutation.mutateAsync(values)
+      setAccessTokenToLocalStorage(result.payload.data.accessToken)
+      setRefreshTokenToLocalStorage(result.payload.data.refreshToken)
       toast({
         description: result.payload.message,
-      });
+      })
     } catch (error) {
       handleErrorApi({
         error,
         setError: form.setError,
-      });
+      })
     }
-  };
+  }
 
   const reset = () => {
-    form.reset();
-  };
+    form.reset()
+  }
 
   return (
     <Form {...form}>
@@ -78,7 +78,7 @@ const ChangePasswordForm = () => {
       >
         <Card className="overflow-hidden" x-chunk="dashboard-07-chunk-4">
           <CardHeader>
-            <CardTitle>{t("changePassword")}</CardTitle>
+            <CardTitle>{t('changePassword')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid gap-6">
@@ -89,7 +89,7 @@ const ChangePasswordForm = () => {
                   <FormItem>
                     <div className="grid gap-3">
                       <Label htmlFor="oldPassword">
-                        {t("enterOldPassword")}
+                        {t('enterOldPassword')}
                       </Label>
                       <Input
                         autoComplete="current-password"
@@ -116,7 +116,7 @@ const ChangePasswordForm = () => {
                 render={({ field, formState: { errors } }) => (
                   <FormItem>
                     <div className="grid gap-3">
-                      <Label htmlFor="password">{t("enterNewPassword")}</Label>
+                      <Label htmlFor="password">{t('enterNewPassword')}</Label>
                       <Input
                         autoComplete="new-password"
                         id="password"
@@ -141,7 +141,7 @@ const ChangePasswordForm = () => {
                   <FormItem>
                     <div className="grid gap-3">
                       <Label htmlFor="confirmPassword">
-                        {t("rerenderPassword")}
+                        {t('rerenderPassword')}
                       </Label>
                       <Input
                         autoComplete="new-password"
@@ -164,12 +164,12 @@ const ChangePasswordForm = () => {
                   </FormItem>
                 )}
               />
-              <div className=" items-center gap-2 md:ml-auto flex">
+              <div className=" flex items-center gap-2 md:ml-auto">
                 <Button variant="outline" size="sm" type="reset">
-                  {tAll("cancel")}
+                  {tAll('cancel')}
                 </Button>
                 <Button size="sm" type="submit">
-                  {tAll("save")}
+                  {tAll('save')}
                 </Button>
               </div>
             </div>
@@ -177,7 +177,7 @@ const ChangePasswordForm = () => {
         </Card>
       </form>
     </Form>
-  );
-};
+  )
+}
 
-export default ChangePasswordForm;
+export default ChangePasswordForm

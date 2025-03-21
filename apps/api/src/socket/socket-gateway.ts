@@ -1,11 +1,9 @@
 import {
   WebSocketGateway,
   WebSocketServer,
-  SubscribeMessage,
   OnGatewayInit,
   OnGatewayConnection,
   OnGatewayDisconnect,
-  ConnectedSocket,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { Inject, Logger, forwardRef } from '@nestjs/common';
@@ -31,7 +29,7 @@ export class SocketGateway
     @Inject(forwardRef(() => AuthService)) private authService: AuthService,
   ) {}
 
-  async afterInit(server: Server) {
+  async afterInit() {
     this.logger.log('Initialized!');
   }
 

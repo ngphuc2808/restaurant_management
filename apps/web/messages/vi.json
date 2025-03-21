@@ -64,13 +64,15 @@
     "minTableNumber": "Số bàn phải lớn hơn 0",
     "minCapacity": "Sức chứa phải lớn hơn 0"
   },
+  "ErrorPage": {
+    "title": "Oops, Lỗi rồi",
+    "description": "Hệ thống đang gặp sự cố, vui lòng kiểm tra lại dữ liệu hoặc liên hệ quản trị viên",
+    "infoTitle": "Thông tin lỗi",
+    "reload": "Tải lại"
+  },
   "NotFound": {
     "title": "Không tìm thấy trang",
     "description": "Trang bạn đang tìm kiếm không tồn tại"
-  },
-  "Error": {
-    "title": "Lỗi",
-    "description": "Hệ thống có vấn đề, vui lòng quay lại sau"
   },
   "OAuth": {
     "title": "Chuyển hướng đăng nhập Google"

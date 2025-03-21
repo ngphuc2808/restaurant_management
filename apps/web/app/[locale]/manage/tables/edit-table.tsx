@@ -1,23 +1,23 @@
-"use client";
+'use client'
 
-import { useLocale, useTranslations } from "next-intl";
-import { useEffect } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { useLocale, useTranslations } from 'next-intl'
+import { useEffect } from 'react'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
 
-import { Link } from "@/i18n/routing";
+import { Link } from '@/i18n/routing'
 import {
   UpdateTableBody,
   UpdateTableBodyType,
-} from "@/schemaValidations/table.schema";
-import { useGetTableQuery, useUpdateTableMutation } from "@/queries/useTable";
+} from '@/schemaValidations/table.schema'
+import { useGetTableQuery, useUpdateTableMutation } from '@/queries/useTable'
 import {
   checkMessageFromResponse,
   getTableLink,
   getVietnameseTableStatus,
   handleErrorApi,
-} from "@/lib/utils";
-import { Button } from "@repo/ui/components/button";
+} from '@/lib/utils'
+import { Button } from '@repo/ui/components/button'
 import {
   Dialog,
   DialogContent,
@@ -25,44 +25,44 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@repo/ui/components/dialog";
+} from '@repo/ui/components/dialog'
 import {
   Form,
   FormControl,
   FormField,
   FormItem,
   FormMessage,
-} from "@repo/ui/components/form";
-import { Input } from "@repo/ui/components/input";
-import { Label } from "@repo/ui/components/label";
+} from '@repo/ui/components/form'
+import { Input } from '@repo/ui/components/input'
+import { Label } from '@repo/ui/components/label'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@repo/ui/components/select";
-import { Switch } from "@repo/ui/components/switch";
-import { TableStatus, TableStatusValues } from "@/constants/type";
-import { toast } from "@repo/ui/hooks/use-toast";
-import QRCodeTable from "@/app/[locale]/manage/tables/qrcode-table";
+} from '@repo/ui/components/select'
+import { Switch } from '@repo/ui/components/switch'
+import { TableStatus, TableStatusValues } from '@/constants/type'
+import { toast } from '@repo/ui/hooks/use-toast'
+import QRCodeTable from '@/app/[locale]/manage/tables/qrcode-table'
 
 const EditTable = ({
   id,
   setId,
   onSubmitSuccess,
 }: {
-  id?: number | undefined;
-  setId: (value: number | undefined) => void;
-  onSubmitSuccess?: () => void;
+  id?: number | undefined
+  setId: (value: number | undefined) => void
+  onSubmitSuccess?: () => void
 }) => {
-  const t = useTranslations("Tables");
-  const tAll = useTranslations("All");
-  const tErrorMessage = useTranslations("ErrorMessage");
+  const t = useTranslations('Tables')
+  const tAll = useTranslations('All')
+  const tErrorMessage = useTranslations('ErrorMessage')
 
-  const updateTableMutation = useUpdateTableMutation();
+  const updateTableMutation = useUpdateTableMutation()
 
-  const locale = useLocale();
+  const locale = useLocale()
 
   const form = useForm<UpdateTableBodyType>({
     resolver: zodResolver(UpdateTableBody),
@@ -71,64 +71,64 @@ const EditTable = ({
       status: TableStatus.Hidden,
       changeToken: false,
     },
-  });
-  const { data } = useGetTableQuery({ enabled: Boolean(id), id: id as number });
+  })
+  const { data } = useGetTableQuery({ enabled: Boolean(id), id: id as number })
 
   const onSubmit = async (values: UpdateTableBodyType) => {
-    if (updateTableMutation.isPending) return;
+    if (updateTableMutation.isPending) return
     try {
       let body: UpdateTableBodyType & { id: number } = {
         id: id as number,
         ...values,
-      };
-      const result = await updateTableMutation.mutateAsync(body);
+      }
+      const result = await updateTableMutation.mutateAsync(body)
       toast({
         description: result.payload.message,
-      });
-      reset();
-      onSubmitSuccess && onSubmitSuccess();
+      })
+      reset()
+      onSubmitSuccess && onSubmitSuccess()
     } catch (error) {
       handleErrorApi({
         error,
         setError: form.setError,
-      });
+      })
     }
-  };
+  }
 
   const reset = () => {
-    setId(undefined);
-  };
+    setId(undefined)
+  }
 
   useEffect(() => {
     if (data) {
-      const { capacity, status } = data.payload.data;
+      const { capacity, status } = data.payload.data
       form.reset({
         capacity,
         status,
-        changeToken: form.getValues("changeToken"),
-      });
+        changeToken: form.getValues('changeToken'),
+      })
     }
-  }, [data, form]);
+  }, [data, form])
 
   return (
     <Dialog
       open={Boolean(id)}
       onOpenChange={(value) => {
         if (!value) {
-          reset();
+          reset()
         }
       }}
     >
       <DialogContent
-        className="sm:max-w-[600px] max-h-screen overflow-auto"
+        className="max-h-screen overflow-auto sm:max-w-[600px]"
         onCloseAutoFocus={() => {
-          form.reset();
-          setId(undefined);
+          form.reset()
+          setId(undefined)
         }}
       >
         <DialogHeader>
-          <DialogTitle>{t("updateTable")}</DialogTitle>
-          <DialogDescription>{t("requiredDescription")}</DialogDescription>
+          <DialogTitle>{t('updateTable')}</DialogTitle>
+          <DialogDescription>{t('requiredDescription')}</DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form
@@ -140,7 +140,7 @@ const EditTable = ({
             <div className="grid gap-4 py-4">
               <FormItem>
                 <div className="grid grid-cols-4 items-center justify-items-start gap-4">
-                  <Label htmlFor="name">{t("table.tableNumber")}</Label>
+                  <Label htmlFor="name">{t('table.tableNumber')}</Label>
                   <div className="col-span-3 w-full space-y-2">
                     <Input
                       id="number"
@@ -158,7 +158,7 @@ const EditTable = ({
                 render={({ field, formState: { errors } }) => (
                   <FormItem>
                     <div className="grid grid-cols-4 items-center justify-items-start gap-4">
-                      <Label htmlFor="price">{t("table.capacity")}</Label>
+                      <Label htmlFor="price">{t('table.capacity')}</Label>
                       <div className="col-span-3 w-full space-y-2">
                         <Input
                           id="capacity"
@@ -183,7 +183,7 @@ const EditTable = ({
                 render={({ field, formState: { errors } }) => (
                   <FormItem>
                     <div className="grid grid-cols-4 items-center justify-items-start gap-4">
-                      <Label htmlFor="description">{t("table.status")}</Label>
+                      <Label htmlFor="description">{t('table.status')}</Label>
                       <div className="col-span-3 w-full space-y-2">
                         <Select
                           onValueChange={field.onChange}
@@ -191,7 +191,7 @@ const EditTable = ({
                         >
                           <FormControl>
                             <SelectTrigger>
-                              <SelectValue placeholder={t("selectStatus")} />
+                              <SelectValue placeholder={t('selectStatus')} />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
@@ -219,7 +219,7 @@ const EditTable = ({
                 render={({ field, formState: { errors } }) => (
                   <FormItem>
                     <div className="grid grid-cols-4 items-center justify-items-start gap-4">
-                      <Label htmlFor="price">{t("changeQrCode")}</Label>
+                      <Label htmlFor="price">{t('changeQrCode')}</Label>
                       <div className="col-span-3 w-full space-y-2">
                         <div className="flex items-center space-x-2">
                           <Switch
@@ -243,7 +243,7 @@ const EditTable = ({
               />
               <FormItem>
                 <div className="grid grid-cols-4 items-center justify-items-start gap-4">
-                  <Label>{t("table.qrCode")}</Label>
+                  <Label>{t('table.qrCode')}</Label>
                   <div className="col-span-3 w-full space-y-2">
                     {data && (
                       <QRCodeTable
@@ -256,7 +256,7 @@ const EditTable = ({
               </FormItem>
               <FormItem>
                 <div className="grid grid-cols-4 items-center justify-items-start gap-4">
-                  <Label>{t("urlOrdering")}</Label>
+                  <Label>{t('urlOrdering')}</Label>
                   <div className="col-span-3 w-full space-y-2">
                     {data && (
                       <Link
@@ -283,12 +283,12 @@ const EditTable = ({
         </Form>
         <DialogFooter>
           <Button type="submit" form="edit-table-form">
-            {tAll("save")}
+            {tAll('save')}
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  );
-};
+  )
+}
 
-export default EditTable;
+export default EditTable

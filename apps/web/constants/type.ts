@@ -1,57 +1,51 @@
-import {
-  BookX,
-  CookingPot,
-  HandCoins,
-  LoaderCircle,
-  Truck,
-} from "lucide-react";
+import { BookX, CookingPot, HandCoins, LoaderCircle, Truck } from 'lucide-react'
 
 export const TokenType = {
-  ForgotPasswordToken: "ForgotPasswordToken",
-  AccessToken: "AccessToken",
-  RefreshToken: "RefreshToken",
-  TableToken: "TableToken",
-} as const;
+  ForgotPasswordToken: 'ForgotPasswordToken',
+  AccessToken: 'AccessToken',
+  RefreshToken: 'RefreshToken',
+  TableToken: 'TableToken',
+} as const
 
 export const Role = {
-  Owner: "Owner",
-  Employee: "Employee",
-  Guest: "Guest",
-} as const;
+  Owner: 'Owner',
+  Employee: 'Employee',
+  Guest: 'Guest',
+} as const
 
-export const RoleValues = [Role.Owner, Role.Employee, Role.Guest] as const;
+export const RoleValues = [Role.Owner, Role.Employee, Role.Guest] as const
 
 export const DishStatus = {
-  Available: "Available",
-  Unavailable: "Unavailable",
-  Hidden: "Hidden",
-} as const;
+  Available: 'Available',
+  Unavailable: 'Unavailable',
+  Hidden: 'Hidden',
+} as const
 
 export const DishStatusValues = [
   DishStatus.Available,
   DishStatus.Unavailable,
   DishStatus.Hidden,
-] as const;
+] as const
 
 export const TableStatus = {
-  Available: "Available",
-  Hidden: "Hidden",
-  Reserved: "Reserved",
-} as const;
+  Available: 'Available',
+  Hidden: 'Hidden',
+  Reserved: 'Reserved',
+} as const
 
 export const TableStatusValues = [
   TableStatus.Available,
   TableStatus.Hidden,
   TableStatus.Reserved,
-] as const;
+] as const
 
 export const OrderStatus = {
-  Pending: "Pending",
-  Processing: "Processing",
-  Rejected: "Rejected",
-  Delivered: "Delivered",
-  Paid: "Paid",
-} as const;
+  Pending: 'Pending',
+  Processing: 'Processing',
+  Rejected: 'Rejected',
+  Delivered: 'Delivered',
+  Paid: 'Paid',
+} as const
 
 export const OrderStatusValues = [
   OrderStatus.Pending,
@@ -59,7 +53,7 @@ export const OrderStatusValues = [
   OrderStatus.Rejected,
   OrderStatus.Delivered,
   OrderStatus.Paid,
-] as const;
+] as const
 
 export const OrderStatusIcon = {
   [OrderStatus.Pending]: LoaderCircle,
@@ -67,6 +61,6 @@ export const OrderStatusIcon = {
   [OrderStatus.Rejected]: BookX,
   [OrderStatus.Delivered]: Truck,
   [OrderStatus.Paid]: HandCoins,
-};
+}
 
-export const ManagerRoom = "manager" as const;
+export const ManagerRoom = 'manager' as const
