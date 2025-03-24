@@ -1,27 +1,8 @@
 import { Injectable } from '@nestjs/common';
 
-import { CreateGuestDto } from '@/guest/dto/create-guest.dto';
-import { UpdateGuestDto } from '@/guest/dto/update-guest.dto';
+import { PrismaService } from '@/prisma.service';
 
 @Injectable()
 export class GuestService {
-  create(createGuestDto: CreateGuestDto) {
-    return 'This action adds a new guest';
-  }
-
-  findAll() {
-    return `This action returns all guest`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} guest`;
-  }
-
-  update(id: number, updateGuestDto: UpdateGuestDto) {
-    return `This action updates a #${id} guest`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} guest`;
-  }
+  constructor(private readonly prisma: PrismaService) {}
 }

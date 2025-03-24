@@ -9,6 +9,7 @@ import {
   Query,
   Param,
   Delete,
+  Put,
 } from '@nestjs/common';
 import { ApiOkResponse } from '@nestjs/swagger';
 
@@ -18,6 +19,7 @@ import { RoleGuard } from '@/auth/guards/role.guard';
 import { Public, Roles } from '@/auth/decorators/public.decorator';
 
 import { CreateTableReqDto } from '@/table/dto/req/create.req.dto';
+import { UpdateTableReqDto } from '@/table/dto/req/update.req.dto';
 import { TableResDto } from '@/table/dto/res/table.res.dto';
 import { GetTablesListResDto } from '@/table/dto/res/get-list.res.dto';
 import { PaginationReqDto } from '@/utils/paginate.dto';
@@ -52,6 +54,19 @@ export class TableController {
   @Post()
   create(@Body() createTableDto: CreateTableReqDto) {
     return this.tableService.create(createTableDto);
+  }
+
+  @UseGuards(RoleGuard)
+  @Roles([Role.Owner, Role.Employee])
+  @HttpCode(HttpStatus.OK)
+  @ResponseMessage('res.success.table.update')
+  @ApiOkResponse({ type: TableResDto })
+  @Put(':number')
+  update(
+    @Param('number') number: string,
+    @Body() updateTableDto: UpdateTableReqDto,
+  ) {
+    return this.tableService.update(Number(number), updateTableDto);
   }
 
   @UseGuards(RoleGuard)

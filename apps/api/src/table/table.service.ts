@@ -7,6 +7,7 @@ import { I18nService } from 'nestjs-i18n';
 
 import { PrismaService } from '@/prisma.service';
 import { CreateTableReqDto } from '@/table/dto/req/create.req.dto';
+import { UpdateTableReqDto } from '@/table/dto/req/update.req.dto';
 import {
   isPrismaClientKnownRequestError,
   PrismaErrorCode,
@@ -92,6 +93,52 @@ export class TableService {
       }
       this.logger.error(error);
       throw error;
+    }
+  }
+
+  async update(number: number, body: UpdateTableReqDto) {
+    try {
+      if (body.changeToken) {
+        const token = randomId();
+        return await this.prisma.$transaction(async (tx) => {
+          const [table] = await Promise.all([
+            tx.table.update({
+              where: { number },
+              data: {
+                status: body.status,
+                capacity: body.capacity,
+                token,
+              },
+            }),
+            tx.guest.updateMany({
+              where: { tableNumber: number },
+              data: {
+                refreshToken: null,
+                refreshTokenExpiresAt: null,
+              },
+            }),
+          ]);
+          return table;
+        });
+      } else {
+        return await this.prisma.table.update({
+          where: {
+            number,
+          },
+          data: {
+            status: body.status,
+            capacity: body.capacity,
+          },
+        });
+      }
+    } catch (error) {
+      if (isPrismaClientKnownRequestError(error)) {
+        if (error.code === PrismaErrorCode.RecordNotFound) {
+          throw new UnprocessableEntityException(
+            this.i18n.t('errors.table.no-table-found'),
+          );
+        }
+      }
     }
   }
 
