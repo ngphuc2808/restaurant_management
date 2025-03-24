@@ -8,6 +8,7 @@ import { Role } from '@/constants/type';
 describe('SocketService', () => {
   let service: SocketService;
   let prismaService: PrismaService;
+  let logger: Logger;
 
   const mockSocket = {
     id: 1,
@@ -32,9 +33,9 @@ describe('SocketService', () => {
           provide: PrismaService,
           useValue: {
             socket: {
-              findUnique: jest.fn(),
-              create: jest.fn(),
-              update: jest.fn(),
+              findUnique: jest.fn().mockResolvedValue(mockSocket),
+              create: jest.fn().mockResolvedValue(mockSocket),
+              update: jest.fn().mockResolvedValue(mockSocket),
             },
           },
         },
@@ -43,6 +44,7 @@ describe('SocketService', () => {
 
     service = module.get<SocketService>(SocketService);
     prismaService = module.get<PrismaService>(PrismaService);
+    logger = module.get<Logger>(Logger);
 
     jest.clearAllMocks();
   });
@@ -67,13 +69,18 @@ describe('SocketService', () => {
     });
 
     it('should throw error when find fails', async () => {
+      const errorMessage = 'Failed to find socket';
       jest
         .spyOn(prismaService.socket, 'findUnique')
-        .mockRejectedValue(new Error('Failed to find socket'));
+        .mockRejectedValue(new Error(errorMessage));
+
+      const errorSpy = jest.spyOn(logger, 'error');
 
       await expect(
         service.findOneWithAccountId(mockSocket.accountId),
-      ).rejects.toThrow('Failed to find socket');
+      ).rejects.toThrow(errorMessage);
+
+      expect(errorSpy).toHaveBeenCalledWith(errorMessage);
     });
   });
 
@@ -189,9 +196,12 @@ describe('SocketService', () => {
     });
 
     it('should throw error when operation fails', async () => {
+      const errorMessage = 'Failed to upsert socket';
       jest
         .spyOn(prismaService.socket, 'findUnique')
-        .mockRejectedValue(new Error('Failed to upsert socket'));
+        .mockRejectedValue(new Error(errorMessage));
+
+      const errorSpy = jest.spyOn(logger, 'error');
 
       await expect(
         service.upsertSocket(
@@ -199,7 +209,9 @@ describe('SocketService', () => {
           mockSocket.socketId,
           Role.Employee,
         ),
-      ).rejects.toThrow('Failed to upsert socket');
+      ).rejects.toThrow(errorMessage);
+
+      expect(errorSpy).toHaveBeenCalledWith(errorMessage);
     });
   });
 });

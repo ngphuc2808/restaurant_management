@@ -1,43 +1,66 @@
 import {
   Controller,
-  Get,
   Post,
   Body,
-  Patch,
+  HttpCode,
+  UseGuards,
+  HttpStatus,
+  Get,
+  Query,
   Param,
   Delete,
 } from '@nestjs/common';
+import { ApiOkResponse } from '@nestjs/swagger';
 
 import { TableService } from '@/table/table.service';
-import { CreateTableDto } from '@/table/dto/create-table.dto';
-import { UpdateTableDto } from '@/table/dto/update-table.dto';
+import { ResponseMessage, Role } from '@/constants/type';
+import { RoleGuard } from '@/auth/guards/role.guard';
+import { Public, Roles } from '@/auth/decorators/public.decorator';
 
-@Controller('table')
+import { CreateTableReqDto } from '@/table/dto/req/create.req.dto';
+import { TableResDto } from '@/table/dto/res/table.res.dto';
+import { GetTablesListResDto } from '@/table/dto/res/get-list.res.dto';
+import { PaginationReqDto } from '@/utils/paginate.dto';
+
+@Controller('tables')
 export class TableController {
   constructor(private readonly tableService: TableService) {}
 
+  @Public()
+  @HttpCode(HttpStatus.OK)
+  @ResponseMessage('res.success.dish.get')
+  @ApiOkResponse({ type: TableResDto })
+  @Get(':number')
+  getDetail(@Param('number') number: string) {
+    return this.tableService.getDetail(Number(number));
+  }
+
+  @Public()
+  @HttpCode(HttpStatus.OK)
+  @ResponseMessage('res.success.account.get-list')
+  @ApiOkResponse({ type: GetTablesListResDto })
+  @Get()
+  getAccountList(@Query() paginationDto: PaginationReqDto) {
+    return this.tableService.getTableList(paginationDto);
+  }
+
+  @UseGuards(RoleGuard)
+  @Roles([Role.Owner, Role.Employee])
+  @HttpCode(HttpStatus.OK)
+  @ResponseMessage('res.success.table.create')
+  @ApiOkResponse({ type: TableResDto })
   @Post()
-  create(@Body() createTableDto: CreateTableDto) {
+  create(@Body() createTableDto: CreateTableReqDto) {
     return this.tableService.create(createTableDto);
   }
 
-  @Get()
-  findAll() {
-    return this.tableService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.tableService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateTableDto: UpdateTableDto) {
-    return this.tableService.update(+id, updateTableDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.tableService.remove(+id);
+  @UseGuards(RoleGuard)
+  @Roles([Role.Owner, Role.Employee])
+  @HttpCode(HttpStatus.OK)
+  @ResponseMessage('res.success.table.delete')
+  @ApiOkResponse({ type: TableResDto })
+  @Delete(':number')
+  delete(@Param('number') number: string) {
+    return this.tableService.delete(Number(number));
   }
 }

@@ -10,6 +10,20 @@
       "update": "Update account successfully!",
       "delete": "Delete account successfully!",
       "update-password": "Update password successfully!"
+    },
+    "dish": {
+      "get-list": "Get all dishes successfully!",
+      "get": "Get dish successfully!",
+      "create": "Create dish successfully!",
+      "update": "Update dish successfully!",
+      "delete": "Delete dish successfully!"
+    },
+    "table": {
+      "get-list": "Get all tables successfully!",
+      "get": "Get table successfully!",
+      "create": "Create table successfully!",
+      "update": "Update table successfully!",
+      "delete": "Delete table successfully!"
     }
   }
 }

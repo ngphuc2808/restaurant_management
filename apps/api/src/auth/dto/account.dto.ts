@@ -9,15 +9,15 @@ import {
 import { Role } from '@/constants/type';
 
 export class UserDto {
-  @IsNumber()
   @IsOptional()
+  @IsNumber()
   id?: number;
 
   @IsEmail()
   @IsNotEmpty()
   email: string;
 
-  @IsEnum([Role.Owner, Role.Employee])
   @IsOptional()
+  @IsEnum([Role.Owner, Role.Employee])
   role?: string;
 }

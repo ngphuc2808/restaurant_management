@@ -21,9 +21,9 @@ import {
 
 type Props = {
   page: number
-  setPage: (page?: number) => void
+  setPage: (page: number) => void
   limit: number
-  setLimit: (limit?: number) => void
+  setLimit: (limit: number) => void
   pageSize: number
 }
 

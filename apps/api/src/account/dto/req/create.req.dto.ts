@@ -16,9 +16,9 @@ export class CreateAccountReqDto {
   @ApiProperty()
   name: string;
 
-  @IsString()
-  @IsUrl()
   @IsOptional()
+  @IsString()
+  @IsUrl({ require_tld: false })
   @ApiProperty()
   avatar: string;
 
@@ -27,15 +27,15 @@ export class CreateAccountReqDto {
   @ApiProperty()
   email: string;
 
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
   @MinLength(6)
   @MaxLength(100)
   @ApiProperty()
   password: string;
 
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
   @MinLength(6)
   @MaxLength(100)
   @ApiProperty()

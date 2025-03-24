@@ -22,5 +22,15 @@
   },
   "token": {
     "invalid": "Token không hợp lệ"
+  },
+  "dish": {
+    "no-dish-found": "Không tìm thấy món ăn",
+    "invalid-id": "ID món ăn không hợp lệ"
+  },
+  "table": {
+    "no-table-found": "Không tìm thấy bàn",
+    "invalid-number": "Số bàn không hợp lệ",
+    "invalid-capacity": "Sức chứa bàn không hợp lệ",
+    "table-already-exists": "Bàn đã tồn tại"
   }
 }

@@ -22,5 +22,15 @@
   },
   "token": {
     "invalid": "Invalid token"
+  },
+  "dish": {
+    "no-dish-found": "No dish found",
+    "invalid-id": "Invalid dish ID"
+  },
+  "table": {
+    "no-table-found": "No table found",
+    "invalid-number": "Invalid table number",
+    "invalid-capacity": "Invalid table capacity",
+    "table-already-exists": "Table already exists"
   }
 }

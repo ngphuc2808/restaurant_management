@@ -213,7 +213,6 @@ export class AuthService {
     try {
       await this.refreshTokenService.invalidate(refreshToken);
     } catch (error) {
-      this.logger.error(error.message);
       if (isPrismaClientKnownRequestError(error)) {
         if (error.code === PrismaErrorCode.RecordNotFound) {
           throw new UnprocessableEntityException(
@@ -221,6 +220,7 @@ export class AuthService {
           );
         }
       }
+      this.logger.error(error.message);
       throw error;
     }
   }

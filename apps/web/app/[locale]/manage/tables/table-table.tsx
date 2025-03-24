@@ -52,12 +52,9 @@ import AddTable from '@/app/[locale]/manage/tables/add-table'
 import EditTable from '@/app/[locale]/manage/tables/edit-table'
 import AutoPagination from '@/components/molecules/auto-pagination'
 import QRCodeTable from '@/app/[locale]/manage/tables/qrcode-table'
-import SearchParamsLoader, {
-  useSearchParamsLoader,
-} from '@/components/atoms/search-params-loader'
 import useTable from '@/store/table'
 
-type TableItem = TableListResType['data'][0]
+type TableItem = TableListResType['data']['tables'][0]
 
 const AlertDialogDeleteTable = ({
   tableDelete,
@@ -85,6 +82,7 @@ const AlertDialogDeleteTable = ({
       }
     }
   }
+
   return (
     <AlertDialog
       open={Boolean(tableDelete)}
@@ -114,28 +112,26 @@ const AlertDialogDeleteTable = ({
   )
 }
 
-const PAGE_SIZE = 10
-
 const TableTable = () => {
   const t = useTranslations('Tables')
   const tAll = useTranslations('All')
 
-  const { searchParams, setSearchParams } = useSearchParamsLoader()
-  const page = searchParams?.get('page') ? Number(searchParams?.get('page')) : 1
-  const pageIndex = page - 1
+  const [page, setPage] = useState<number>(0)
+  const [limit, setLimit] = useState<number>(12)
+  const tableListQuery = useTableListQuery(page + 1, limit)
+  const data = tableListQuery.data?.payload.data.tables ?? []
+  const meta = tableListQuery.data?.payload.data.meta
 
   const { tableIdEdit, setTableIdEdit, tableDelete, setTableDelete } =
     useTable()
 
-  const tableListQuery = useTableListQuery()
-  const data = tableListQuery.data?.payload.data ?? []
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
   const [rowSelection, setRowSelection] = useState({})
   const [pagination, setPagination] = useState({
-    pageIndex,
-    pageSize: PAGE_SIZE,
+    pageIndex: page,
+    pageSize: limit,
   })
 
   const columns: ColumnDef<TableItem>[] = useMemo(() => {
@@ -191,7 +187,7 @@ const TableTable = () => {
             setTableDelete(row.original)
           }
           return (
-            <DropdownMenu>
+            <DropdownMenu modal={false}>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="h-8 w-8 p-0">
                   <DotsHorizontalIcon className="h-4 w-4" />
@@ -238,102 +234,99 @@ const TableTable = () => {
 
   useEffect(() => {
     table.setPagination({
-      pageIndex,
-      pageSize: PAGE_SIZE,
+      pageIndex: page,
+      pageSize: limit,
     })
-  }, [table, pageIndex])
+  }, [table, page, limit])
 
   return (
-    <>
-      <SearchParamsLoader onParamsReceived={setSearchParams} />
-      <div className="w-full">
-        <EditTable id={tableIdEdit} setId={setTableIdEdit} />
-        <AlertDialogDeleteTable
-          tableDelete={tableDelete}
-          setTableDelete={setTableDelete}
+    <div className="w-full">
+      <EditTable id={tableIdEdit} setId={setTableIdEdit} />
+      <AlertDialogDeleteTable
+        tableDelete={tableDelete}
+        setTableDelete={setTableDelete}
+      />
+      <div className="flex items-center gap-2 py-4">
+        <Input
+          placeholder={tAll('searchValue', { value: t('table.tableNumber') })}
+          value={(table.getColumn('number')?.getFilterValue() as string) ?? ''}
+          onChange={(event) => {
+            table.getColumn('number')?.setFilterValue(event.target.value)
+          }}
+          className="max-w-sm"
         />
-        <div className="flex items-center gap-2 py-4">
-          <Input
-            placeholder={tAll('searchValue', { value: t('table.tableNumber') })}
-            value={
-              (table.getColumn('number')?.getFilterValue() as string) ?? ''
-            }
-            onChange={(event) => {
-              table.getColumn('number')?.setFilterValue(event.target.value)
-            }}
-            className="max-w-sm"
-          />
-          <div className="ml-auto flex items-center gap-2">
-            <AddTable />
-          </div>
-        </div>
-        <div className="rounded-md border">
-          <Table>
-            <TableHeader>
-              {table.getHeaderGroups().map((headerGroup) => (
-                <TableRow key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => {
-                    return (
-                      <TableHead key={header.id}>
-                        {header.isPlaceholder
-                          ? null
-                          : flexRender(
-                              header.column.columnDef.header,
-                              header.getContext(),
-                            )}
-                      </TableHead>
-                    )
-                  })}
-                </TableRow>
-              ))}
-            </TableHeader>
-            <TableBody>
-              {table.getRowModel().rows?.length ? (
-                table.getRowModel().rows.map((row) => (
-                  <TableRow
-                    key={row.id}
-                    data-state={row.getIsSelected() && 'selected'}
-                  >
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id}>
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext(),
-                        )}
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell
-                    colSpan={columns.length}
-                    className="h-24 text-center"
-                  >
-                    {tAll('noData')}
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </div>
-        <div className="flex items-center justify-end space-x-2 py-4">
-          <div className="flex-1 py-4 text-xs text-muted-foreground ">
-            {tAll('showResultPagination', {
-              result: table.getPaginationRowModel().rows.length,
-              total: data.length,
-            })}
-          </div>
-          <div>
-            <AutoPagination
-              page={table.getState().pagination.pageIndex + 1}
-              pageSize={table.getPageCount()}
-              pathname="/manage/tables"
-            />
-          </div>
+        <div className="ml-auto flex items-center gap-2">
+          <AddTable />
         </div>
       </div>
-    </>
+      <div className="rounded-md border">
+        <Table>
+          <TableHeader>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow key={headerGroup.id}>
+                {headerGroup.headers.map((header) => {
+                  return (
+                    <TableHead key={header.id}>
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext(),
+                          )}
+                    </TableHead>
+                  )
+                })}
+              </TableRow>
+            ))}
+          </TableHeader>
+          <TableBody>
+            {table.getRowModel().rows?.length ? (
+              table.getRowModel().rows.map((row) => (
+                <TableRow
+                  key={row.id}
+                  data-state={row.getIsSelected() && 'selected'}
+                >
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell key={cell.id}>
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext(),
+                      )}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell
+                  colSpan={columns.length}
+                  className="h-24 text-center"
+                >
+                  {tAll('noData')}
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </div>
+      <div className="flex items-center justify-end space-x-2 py-4">
+        <div className="flex-1 py-4 text-xs text-muted-foreground ">
+          {tAll('showResultPagination', {
+            result: table.getPaginationRowModel().rows.length,
+            total: data.length,
+          })}
+        </div>
+        <div>
+          <AutoPagination
+            pageSize={meta?.totalPages ?? 1}
+            page={page}
+            setPage={setPage}
+            limit={limit}
+            setLimit={setLimit}
+          />
+        </div>
+      </div>
+    </div>
   )
 }
 

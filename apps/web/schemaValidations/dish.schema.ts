@@ -1,5 +1,7 @@
-import { DishStatusValues } from '@/constants/type'
 import z from 'zod'
+
+import { DishStatusValues } from '@/constants/type'
+import { MetaSchema } from '@/schemaValidations/metadata.schema'
 
 export const CreateDishBody = z.object({
   name: z.string().min(1, 'minCharacter').max(256, 'maxCharacter'),
@@ -30,7 +32,10 @@ export const DishRes = z.object({
 export type DishResType = z.TypeOf<typeof DishRes>
 
 export const DishListRes = z.object({
-  data: z.array(DishSchema),
+  data: z.object({
+    dishes: z.array(DishSchema),
+    meta: MetaSchema,
+  }),
   message: z.string(),
 })
 

@@ -1,6 +1,7 @@
 import {
   UseMutationResult,
   UseQueryResult,
+  keepPreviousData,
   useMutation,
   useQuery,
   useQueryClient,
@@ -14,13 +15,14 @@ import {
   UpdateDishBodyType,
 } from '@/schemaValidations/dish.schema'
 
-export const useDishListQuery = (): UseQueryResult<
-  QueryResponseType<DishListResType>,
-  Error
-> => {
+export const useDishListQuery = (
+  page: number,
+  limit: number,
+): UseQueryResult<QueryResponseType<DishListResType>, Error> => {
   return useQuery({
-    queryKey: ['dishes'],
-    queryFn: dishApiRequest.list,
+    queryKey: ['dishes', page, limit],
+    queryFn: () => dishApiRequest.list({ page, limit }),
+    placeholderData: keepPreviousData,
   })
 }
 
@@ -68,7 +70,6 @@ export const useUpdateDishMutation = (): UseMutationResult<
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ['dishes'],
-        exact: true,
       })
     },
   })

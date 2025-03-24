@@ -15,18 +15,17 @@ import { ApiOkResponse } from '@nestjs/swagger';
 
 import { AccountService } from '@/account/account.service';
 import { ResponseMessage, Role, User } from '@/constants/type';
-import { UserDto } from '@/auth/dto/account.dto';
+import { RoleGuard } from '@/auth/guards/role.guard';
+import { Roles } from '@/auth/decorators/public.decorator';
 
+import { UserDto } from '@/auth/dto/account.dto';
 import { CreateAccountReqDto } from '@/account/dto/req/create.req.dto';
-import { AccountResDto } from '@/account/dto/res/get-detail.res.dto';
-import { PaginationReqDto } from '@/account/dto/req/paginate.req.dto';
+import { AccountResDto } from '@/account/dto/res/account.res.dto';
+import { PaginationReqDto } from '@/utils/paginate.dto';
 import { GetAccountListResDto } from '@/account/dto/res/get-list.res.dto';
 import { UpdateMeReqDto } from '@/account/dto/req/update-me.req.dto';
 import { ChangePasswordReqDto } from '@/account/dto/req/change-password.req.dto';
 import { UpdateAccountReqDto } from '@/account/dto/req/update.req.dto';
-import { DeleteAccountResDto } from '@/account/dto/res/delete.res.dto';
-import { RoleGuard } from '@/auth/guards/role.guard';
-import { Roles } from '@/auth/decorators/public.decorator';
 
 @Controller('accounts')
 export class AccountController {
@@ -60,7 +59,7 @@ export class AccountController {
   }
 
   @UseGuards(RoleGuard)
-  @Roles(Role.Owner)
+  @Roles([Role.Owner])
   @HttpCode(HttpStatus.OK)
   @ResponseMessage('res.success.account.get-list')
   @ApiOkResponse({ type: GetAccountListResDto })
@@ -70,7 +69,7 @@ export class AccountController {
   }
 
   @UseGuards(RoleGuard)
-  @Roles(Role.Owner)
+  @Roles([Role.Owner])
   @HttpCode(HttpStatus.OK)
   @ResponseMessage('res.success.account.get')
   @ApiOkResponse({ type: AccountResDto })
@@ -80,7 +79,7 @@ export class AccountController {
   }
 
   @UseGuards(RoleGuard)
-  @Roles(Role.Owner)
+  @Roles([Role.Owner])
   @HttpCode(HttpStatus.OK)
   @ResponseMessage('res.success.account.create')
   @ApiOkResponse({ type: AccountResDto })
@@ -90,7 +89,7 @@ export class AccountController {
   }
 
   @UseGuards(RoleGuard)
-  @Roles(Role.Owner)
+  @Roles([Role.Owner])
   @HttpCode(HttpStatus.OK)
   @ResponseMessage('res.success.account.update')
   @ApiOkResponse({ type: AccountResDto })
@@ -104,10 +103,10 @@ export class AccountController {
   }
 
   @UseGuards(RoleGuard)
-  @Roles(Role.Owner)
+  @Roles([Role.Owner])
   @HttpCode(HttpStatus.OK)
   @ResponseMessage('res.success.account.delete')
-  @ApiOkResponse({ type: DeleteAccountResDto })
+  @ApiOkResponse({ type: AccountResDto })
   @Delete('detail/:id')
   deleteAccount(@Param('id') id: string) {
     return this.accountService.deleteAccount(Number(id));

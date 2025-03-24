@@ -54,48 +54,6 @@ describe('AuthService', () => {
       },
     },
     id: 'socket-id',
-    nsp: { name: '/' },
-    client: { id: 'client-id' },
-    recovered: false,
-    data: {},
-    rooms: new Set(),
-    flags: {},
-    server: {},
-    adapter: {},
-    request: {},
-    conn: {},
-    remoteAddress: '',
-    handshakeAddress: '',
-    connected: true,
-    disconnected: false,
-    compress: false,
-    io: {},
-    json: {},
-    volatile: {},
-    broadcast: {},
-    local: {},
-    to: {},
-    in: {},
-    except: {},
-    emit: {},
-    listeners: {},
-    listenerCount: 0,
-    on: {},
-    once: {},
-    off: {},
-    removeListener: {},
-    removeAllListeners: {},
-    eventNames: {},
-    rawListeners: {},
-    prependListener: {},
-    prependOnceListener: {},
-    timeout: {},
-    disconnect: {},
-    join: {},
-    leave: {},
-    leaveAll: {},
-    emitWithAck: {},
-    getBroadcastOperator: {},
   } as unknown as Socket<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap>;
 
   beforeEach(async () => {
@@ -131,7 +89,7 @@ describe('AuthService', () => {
         {
           provide: SocketService,
           useValue: {
-            upsertSocket: jest.fn(),
+            upsertSocket: jest.fn().mockResolvedValue(undefined),
           },
         },
         {
@@ -187,48 +145,6 @@ describe('AuthService', () => {
           auth: {},
         },
         id: 'socket-id',
-        nsp: { name: '/' },
-        client: { id: 'client-id' },
-        recovered: false,
-        data: {},
-        rooms: new Set(),
-        flags: {},
-        server: {},
-        adapter: {},
-        request: {},
-        conn: {},
-        remoteAddress: '',
-        handshakeAddress: '',
-        connected: true,
-        disconnected: false,
-        compress: false,
-        io: {},
-        json: {},
-        volatile: {},
-        broadcast: {},
-        local: {},
-        to: {},
-        in: {},
-        except: {},
-        emit: {},
-        listeners: {},
-        listenerCount: 0,
-        on: {},
-        once: {},
-        off: {},
-        removeListener: {},
-        removeAllListeners: {},
-        eventNames: {},
-        rawListeners: {},
-        prependListener: {},
-        prependOnceListener: {},
-        timeout: {},
-        disconnect: {},
-        join: {},
-        leave: {},
-        leaveAll: {},
-        emitWithAck: {},
-        getBroadcastOperator: {},
       } as unknown as Socket<
         DefaultEventsMap,
         DefaultEventsMap,
@@ -237,6 +153,17 @@ describe('AuthService', () => {
 
       await expect(service.validateSocket(invalidSocket)).rejects.toThrow(
         UnauthorizedException,
+      );
+    });
+
+    it('should throw error when token verification fails', async () => {
+      (configService.get as jest.Mock).mockResolvedValue('secret');
+      jest
+        .spyOn(jwtService, 'verifyAsync')
+        .mockRejectedValue(new Error('Invalid token'));
+
+      await expect(service.validateSocket(mockSocket)).rejects.toThrow(
+        'Invalid token',
       );
     });
   });

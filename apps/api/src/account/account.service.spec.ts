@@ -11,7 +11,7 @@ import { SocketService } from '@/socket/socket.service';
 import { SocketGateway } from '@/socket/socket-gateway';
 import { AccountService } from '@/account/account.service';
 import { CreateAccountReqDto } from '@/account/dto/req/create.req.dto';
-import { PaginationReqDto } from '@/account/dto/req/paginate.req.dto';
+import { PaginationReqDto } from '@/utils/paginate.dto';
 import { UpdateMeReqDto } from '@/account/dto/req/update-me.req.dto';
 import { ChangePasswordReqDto } from '@/account/dto/req/change-password.req.dto';
 import { UpdateAccountReqDto } from '@/account/dto/req/update.req.dto';

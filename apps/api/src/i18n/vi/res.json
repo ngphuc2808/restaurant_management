@@ -10,6 +10,20 @@
       "update": "Cập nhật tài khoản thành công!",
       "delete": "Xóa tài khoản thành công!",
       "update-password": "Cập nhật mật khẩu thành công!"
+    },
+    "dish": {
+      "get-list": "Lấy danh sách món ăn thành công!",
+      "get": "Lấy thông tin món ăn thành công!",
+      "create": "Tạo món ăn thành công!",
+      "update": "Cập nhật món ăn thành công!",
+      "delete": "Xóa món ăn thành công!"
+    },
+    "table": {
+      "get-list": "Lấy danh sách bàn thành công!",
+      "get": "Lấy thông tin bàn thành công!",
+      "create": "Tạo bàn thành công!",
+      "update": "Cập nhật bàn thành công!",
+      "delete": "Xóa bàn thành công!"
     }
   }
 }

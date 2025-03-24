@@ -1,4 +1,3 @@
-import { PrismaService } from '@/prisma.service';
 import {
   Inject,
   Injectable,
@@ -9,13 +8,13 @@ import {
 import { I18nService } from 'nestjs-i18n';
 import * as bcrypt from 'bcryptjs';
 
+import { PrismaService } from '@/prisma.service';
 import { AuthService } from '@/auth/auth.service';
-
 import { RefreshTokenService } from '@/refresh-token/refresh-token.service';
 import { SocketService } from '@/socket/socket.service';
 import { SocketGateway } from '@/socket/socket-gateway';
 import { CreateAccountReqDto } from '@/account/dto/req/create.req.dto';
-import { PaginationReqDto } from '@/account/dto/req/paginate.req.dto';
+import { PaginationReqDto } from '@/utils/paginate.dto';
 import { UpdateMeReqDto } from '@/account/dto/req/update-me.req.dto';
 import { ChangePasswordReqDto } from '@/account/dto/req/change-password.req.dto';
 import { UpdateAccountReqDto } from '@/account/dto/req/update.req.dto';
@@ -204,7 +203,6 @@ export class AccountService {
 
       return account;
     } catch (error) {
-      this.logger.error(error.message);
       if (isPrismaClientKnownRequestError(error)) {
         if (error.code === PrismaErrorCode.RecordNotFound) {
           throw new UnprocessableEntityException(
@@ -212,6 +210,7 @@ export class AccountService {
           );
         }
       }
+      this.logger.error(error.message);
       throw error;
     }
   }
@@ -276,8 +275,6 @@ export class AccountService {
 
       return updatedAccount;
     } catch (error) {
-      this.logger.error(error.message);
-
       if (isPrismaClientKnownRequestError(error)) {
         if (error.code === PrismaErrorCode.UniqueConstraintViolation) {
           throw new UnprocessableEntityException({
@@ -291,7 +288,7 @@ export class AccountService {
           });
         }
       }
-
+      this.logger.error(error.message);
       throw error;
     }
   }

@@ -27,7 +27,11 @@ export class SocketGateway
 
   constructor(
     @Inject(forwardRef(() => AuthService)) private authService: AuthService,
-  ) {}
+  ) {
+    if (process.env.NODE_ENV === 'test') {
+      this.logger.error = () => {};
+    }
+  }
 
   async afterInit() {
     this.logger.log('Initialized!');
