@@ -1,9 +1,7 @@
 import {
-  Inject,
   Injectable,
   Logger,
   UnprocessableEntityException,
-  forwardRef,
 } from '@nestjs/common';
 import { I18nService } from 'nestjs-i18n';
 import * as bcrypt from 'bcryptjs';
@@ -30,7 +28,6 @@ export class AccountService {
     private logger: Logger,
     private i18n: I18nService,
     private prisma: PrismaService,
-    @Inject(forwardRef(() => AuthService))
     private authService: AuthService,
     private refreshTokenService: RefreshTokenService,
     private socketService: SocketService,

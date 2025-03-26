@@ -19,8 +19,12 @@ const guestApiRequest = {
     status: number
     payload: RefreshTokenResType
   }> | null,
-  sLogin: (body: GuestLoginBodyType) =>
-    http.post<GuestLoginResType>(`/${prefix}/auth/login`, body),
+  sLogin: (body: GuestLoginBodyType, locale: string) =>
+    http.post<GuestLoginResType>(`/${prefix}/auth/login`, body, {
+      headers: {
+        locale,
+      },
+    }),
   login: (body: GuestLoginBodyType) =>
     http.post<GuestLoginResType>(`/${prefix}/auth/login`, body, {
       baseUrl: '/api',
@@ -29,6 +33,7 @@ const guestApiRequest = {
     body: LogoutBodyType & {
       accessToken: string
     },
+    locale: string,
   ) =>
     http.post(
       `/${prefix}/auth/logout`,
@@ -38,12 +43,17 @@ const guestApiRequest = {
       {
         headers: {
           Authorization: `Bearer ${body.accessToken}`,
+          locale,
         },
       },
     ),
   logout: () => http.post(`/${prefix}/auth/logout`, null, { baseUrl: '/api' }),
-  sRefreshToken: (body: RefreshTokenBodyType) =>
-    http.post<RefreshTokenResType>(`/${prefix}/auth/refresh-token`, body),
+  sRefreshToken: (body: RefreshTokenBodyType, locale: string) =>
+    http.post<RefreshTokenResType>(`/${prefix}/auth/refresh-token`, body, {
+      headers: {
+        locale,
+      },
+    }),
   async refreshToken() {
     if (this.refreshTokenRequest) {
       return this.refreshTokenRequest

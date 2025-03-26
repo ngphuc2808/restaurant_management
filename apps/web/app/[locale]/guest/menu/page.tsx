@@ -9,7 +9,9 @@ import MenuOrder from '@/app/[locale]/guest/menu/menu-order'
 import { envConfig } from '@/config'
 import { baseOpenGraph } from '@/shared-metadata'
 
-const getDishList = cache(() => wrapServerApi(() => dishApiRequest.list()))
+const getDishList = cache(() =>
+  wrapServerApi(() => dishApiRequest.list({ page: 1, limit: 12 })),
+)
 
 export async function generateMetadata(props: GlobalProps): Promise<Metadata> {
   const params = await props.params
@@ -45,7 +47,7 @@ const MenuPage = async (props: { params: Promise<{ locale: string }> }) => {
   setRequestLocale(locale)
 
   const result = await getDishList()
-  const dishes = result?.payload.data ?? []
+  const dishes = result?.payload.data.dishes ?? []
 
   return <MenuOrder dishes={dishes} />
 }

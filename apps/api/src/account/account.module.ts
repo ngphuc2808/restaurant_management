@@ -16,11 +16,11 @@ import { SocketGateway } from '@/socket/socket-gateway';
     Logger,
     JwtService,
     PrismaService,
-    SocketGateway,
     AuthService,
     AccountService,
     SocketService,
     RefreshTokenService,
+    SocketGateway,
   ],
 })
 export class AccountModule {}

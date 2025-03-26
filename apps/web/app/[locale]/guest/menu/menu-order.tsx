@@ -15,7 +15,7 @@ import { DishStatus } from '@/constants/type'
 import Quantity from '@/app/[locale]/guest/menu/quantity'
 
 type Props = {
-  dishes: DishListResType['data']
+  dishes: DishListResType['data']['dishes']
 }
 
 const MenuOrder = ({ dishes }: Props) => {

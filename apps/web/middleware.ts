@@ -14,6 +14,7 @@ export const decodeToken = (token: string) => {
 const managePaths = ['/vi/manage', '/en/manage']
 const guestPaths = ['/vi/guest', '/en/guest']
 const onlyOwnerPaths = ['/vi/manage/accounts', '/en/manage/accounts']
+const tablesPaths = ['/vi/tables', '/en/tables']
 const privatePaths = [...managePaths, ...guestPaths]
 const unAuthPaths = ['/vi/login', '/en/login']
 const loginPaths = ['/vi/login', '/en/login']
@@ -66,6 +67,10 @@ export function middleware(request: NextRequest) {
     const isNotGuestGoToGuestPath =
       role !== Role.Guest &&
       guestPaths.some((path) => pathname.startsWith(path))
+    // Không phải Guest nhưng cố vào trang order món của Guest
+    const isNotGuestGoToGuestOrderPath =
+      role !== Role.Guest &&
+      tablesPaths.some((path) => pathname.startsWith(path))
     // Không phải Owner nhưng cố tình truy cập vào các route dành cho owner
     const isNotOwnerGoToOwnerPath =
       role !== Role.Owner &&
@@ -73,6 +78,7 @@ export function middleware(request: NextRequest) {
     if (
       isGuestGoToManagePath ||
       isNotGuestGoToGuestPath ||
+      isNotGuestGoToGuestOrderPath ||
       isNotOwnerGoToOwnerPath
     ) {
       return NextResponse.redirect(new URL(`/${locale}`, request.url))

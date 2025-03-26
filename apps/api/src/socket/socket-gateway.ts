@@ -6,7 +6,7 @@ import {
   OnGatewayDisconnect,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { Inject, Logger, forwardRef } from '@nestjs/common';
+import { Logger } from '@nestjs/common';
 
 import { AuthService } from '@/auth/auth.service';
 import { ManagerRoom } from '@/constants/type';
@@ -25,9 +25,7 @@ export class SocketGateway
   @WebSocketServer() server: Server;
   private logger: Logger = new Logger('SocketGateway');
 
-  constructor(
-    @Inject(forwardRef(() => AuthService)) private authService: AuthService,
-  ) {
+  constructor(private authService: AuthService) {
     if (process.env.NODE_ENV === 'test') {
       this.logger.error = () => {};
     }

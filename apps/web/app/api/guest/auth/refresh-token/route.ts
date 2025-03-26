@@ -4,8 +4,10 @@ import jwt from 'jsonwebtoken'
 import guestApiRequest from '@/apiRequests/guest'
 
 export async function POST(request: Request) {
+  const locale = request.headers.get('locale')
   const cookieStore = await cookies()
   const refreshToken = cookieStore.get('refreshToken')?.value
+
   if (!refreshToken) {
     return Response.json(
       {
@@ -17,9 +19,12 @@ export async function POST(request: Request) {
     )
   }
   try {
-    const { payload } = await guestApiRequest.sRefreshToken({
-      refreshToken,
-    })
+    const { payload } = await guestApiRequest.sRefreshToken(
+      {
+        refreshToken,
+      },
+      locale!,
+    )
 
     const decodedAccessToken = jwt.decode(payload.data.accessToken) as {
       exp: number

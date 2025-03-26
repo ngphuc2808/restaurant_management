@@ -7,15 +7,14 @@ import * as ms from 'ms';
 
 import { PrismaService } from '@/prisma.service';
 import { AuthService } from '@/auth/auth.service';
-import { AccountService } from '@/account/account.service';
-import { RefreshTokenService } from '@/refresh-token/refresh-token.service';
 import { SocketService } from '@/socket/socket.service';
-import { SocketGateway } from '@/socket/socket-gateway';
+import { RefreshTokenService } from '@/refresh-token/refresh-token.service';
 
 import { AuthController } from '@/auth/auth.controller';
 import { LocalStrategy } from '@/auth/strategies/local.strategy';
 import { JwtStrategy } from '@/auth/strategies/jwt.strategy';
 import { JwtAuthGuard } from '@/auth/guards/jwt-auth.guard';
+import { SocketGateway } from '@/socket/socket-gateway';
 
 @Module({
   imports: [
@@ -44,9 +43,8 @@ import { JwtAuthGuard } from '@/auth/guards/jwt-auth.guard';
       useClass: JwtAuthGuard,
     },
     SocketGateway,
-    AuthService,
-    AccountService,
     SocketService,
+    AuthService,
     RefreshTokenService,
   ],
 })

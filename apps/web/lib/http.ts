@@ -97,13 +97,20 @@ const request = async <Response>(
       : options.baseUrl
 
   const fullUrl = `${baseUrl}/${normalizePath(url)}`
-  const locale = Cookies.get('NEXT_LOCALE')
+
+  let locale: string | undefined
+  if (isClient) {
+    locale = Cookies.get('NEXT_LOCALE')
+  } else {
+    locale = (options?.headers as any)?.locale ?? defaultLocale
+  }
+
   const res = await fetch(fullUrl, {
     ...options,
     headers: {
       ...baseHeaders,
       ...options?.headers,
-      locale: locale ?? defaultLocale,
+      locale,
     } as any,
     body,
     method,

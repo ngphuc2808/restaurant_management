@@ -1,22 +1,26 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
-  IsEmail,
   IsNotEmpty,
   IsString,
   MinLength,
   MaxLength,
+  IsNumber,
 } from 'class-validator';
 
-export class LoginReqDto {
-  @IsEmail()
-  @IsNotEmpty()
-  @ApiProperty()
-  email: string;
-
+export class GuestLoginReqDto {
   @IsString()
   @IsNotEmpty()
-  @MinLength(6)
-  @MaxLength(100)
+  @MinLength(2)
+  @MaxLength(50)
   @ApiProperty()
-  password: string;
+  name: string;
+
+  @IsNumber()
+  @IsNotEmpty()
+  @ApiProperty()
+  tableNumber: number;
+
+  @IsString()
+  @ApiProperty()
+  token: string;
 }

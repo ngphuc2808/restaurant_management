@@ -10,7 +10,9 @@ import { htmlToTextForDescription } from '@/lib/server-utils'
 import { envConfig } from '@/config'
 import { baseOpenGraph } from '@/shared-metadata'
 
-const getDishList = cache(() => wrapServerApi(() => dishApiRequest.list()))
+const getDishList = cache(() =>
+  wrapServerApi(() => dishApiRequest.list({ page: 1, limit: 12 })),
+)
 
 export async function generateMetadata(props: GlobalProps): Promise<Metadata> {
   const params = await props.params
@@ -71,9 +73,9 @@ const HomePage = async (props: { params: Promise<{ locale: string }> }) => {
         <h2 className="text-center text-2xl font-bold">
           {t('aVarietyOfDishes')}
         </h2>
-        {dishList && dishList?.payload?.data?.length > 0 ? (
+        {dishList && dishList?.payload?.data.dishes?.length > 0 ? (
           <div className="grid grid-cols-1 gap-10 sm:grid-cols-2">
-            {dishList?.payload?.data.map((dish) => (
+            {dishList?.payload?.data.dishes.map((dish) => (
               <Link
                 href={`/dishes/${generateSlugUrl({
                   name: dish.name,

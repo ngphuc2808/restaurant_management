@@ -159,4 +159,15 @@ export class TableService {
       throw error;
     }
   }
+
+  async getTableByToken(number: number, token: string) {
+    try {
+      return await this.prisma.table.findUnique({
+        where: { number, token },
+      });
+    } catch (error) {
+      this.logger.error(error.message);
+      throw error;
+    }
+  }
 }

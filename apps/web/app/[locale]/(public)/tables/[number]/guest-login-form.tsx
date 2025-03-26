@@ -61,10 +61,12 @@ const GuestLoginForm = () => {
     if (loginMutation.isPending) return
     try {
       const result = await loginMutation.mutateAsync(values)
+      console.log(result.payload.data.guest.role)
       setRole(result.payload.data.guest.role)
       setSocket(generateSocketInstace(result.payload.data.accessToken))
       router.push('/guest/menu')
     } catch (error) {
+      console.log(error)
       handleErrorApi({
         error,
         setError: form.setError,

@@ -16,8 +16,8 @@ const nextConfig = {
         port: '4000',
       },
       {
-        hostname: 'via.placeholder.com',
-        pathname: '/**',
+        protocol: 'https',
+        hostname: 'phucnh-restaurant-management.s3.amazonaws.com',
       },
     ],
   },

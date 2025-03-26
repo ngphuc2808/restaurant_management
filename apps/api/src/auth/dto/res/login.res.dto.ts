@@ -9,17 +9,26 @@ export class LoginResDto {
 
   @ApiProperty({
     example: {
-      id: 1,
-      email: 'test@example.com',
-      role: 'Owner',
+      account: {
+        id: 1,
+        name: 'Phúc Admin 2',
+        email: 'test@example.com',
+        role: 'Owner',
+        avatar:
+          'https://phucnh-restaurant-management.s3.amazonaws.com/employees/64d63761-586e-4813-b8a6-680838f86556-pexels-frank-cone-140140-31190087.jpg',
+      },
       accessToken: 'access-token',
       refreshToken: 'refresh-token',
     },
   })
   data: {
-    id: number;
-    email: string;
-    role: string;
+    account: {
+      id: number;
+      name: string;
+      email: string;
+      role: string;
+      avatar: string;
+    };
     accessToken: string;
     refreshToken: string;
   };

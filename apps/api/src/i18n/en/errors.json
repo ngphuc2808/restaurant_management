@@ -31,6 +31,8 @@
     "no-table-found": "No table found",
     "invalid-number": "Invalid table number",
     "invalid-capacity": "Invalid table capacity",
-    "table-already-exists": "Table already exists"
+    "table-invalid-token": "Table not found or invalid token",
+    "table-hidden": "This table is hidden, please choose another table to login",
+    "table-reserved": "This table is reserved, please contact the staff for assistance"
   }
 }

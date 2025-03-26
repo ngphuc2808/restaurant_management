@@ -2,7 +2,9 @@ import { cookies } from 'next/headers'
 
 import authApiRequest from '@/apiRequests/auth'
 
-export async function POST() {
+export async function POST(request: Request) {
+  const locale = request.headers.get('locale')
+
   const cookieStore = await cookies()
   const accessToken = cookieStore.get('accessToken')?.value
   const refreshToken = cookieStore.get('refreshToken')?.value
@@ -19,10 +21,13 @@ export async function POST() {
     )
   }
   try {
-    const { payload } = await authApiRequest.sLogout({
-      accessToken,
-      refreshToken,
-    })
+    const { payload } = await authApiRequest.sLogout(
+      {
+        accessToken,
+        refreshToken,
+      },
+      locale!,
+    )
 
     return Response.json(payload)
   } catch (error) {

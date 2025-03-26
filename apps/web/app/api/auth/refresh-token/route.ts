@@ -4,6 +4,8 @@ import jwt from 'jsonwebtoken'
 import authApiRequest from '@/apiRequests/auth'
 
 export async function POST(request: Request) {
+  const locale = request.headers.get('locale')
+
   const cookieStore = await cookies()
   const refreshToken = cookieStore.get('refreshToken')?.value
   if (!refreshToken) {
@@ -17,9 +19,12 @@ export async function POST(request: Request) {
     )
   }
   try {
-    const { payload } = await authApiRequest.sRefreshToken({
-      refreshToken,
-    })
+    const { payload } = await authApiRequest.sRefreshToken(
+      {
+        refreshToken,
+      },
+      locale!,
+    )
 
     const decodedAccessToken = jwt.decode(payload.data.accessToken) as {
       exp: number

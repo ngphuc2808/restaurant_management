@@ -31,6 +31,9 @@
     "no-table-found": "Không tìm thấy bàn",
     "invalid-number": "Số bàn không hợp lệ",
     "invalid-capacity": "Sức chứa bàn không hợp lệ",
-    "table-already-exists": "Bàn đã tồn tại"
+    "table-already-exists": "Bàn đã tồn tại",
+    "table-invalid-token": "Bàn không tồn tại hoặc mã token không đúng",
+    "table-hidden": "Bàn này đã bị ẩn, hãy chọn bàn khác để đăng nhập",
+    "table-reserved": "Bàn đã được đặt trước, hãy liên hệ nhân viên để được hỗ trợ"
   }
 }
