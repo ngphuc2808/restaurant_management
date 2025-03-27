@@ -14,14 +14,14 @@ import * as ms from 'ms';
 import { Account } from '@prisma/client';
 import { LoginReqDto } from '@/auth/dto/req/login.req.dto';
 
-import { RefreshTokenService } from '@/refresh-token/refresh-token.service';
+import { PrismaService } from '@/prisma.service';
 import { SocketService } from '@/socket/socket.service';
+import { RefreshTokenService } from '@/refresh-token/refresh-token.service';
 import {
   PrismaErrorCode,
   isPrismaClientKnownRequestError,
 } from '@/utils/errors';
 import { Role } from '@/constants/type';
-import { PrismaService } from '@/prisma.service';
 
 @Injectable()
 export class AuthService {

@@ -49,12 +49,13 @@ const DropdownAvatar = () => {
         <Button
           variant="outline"
           size="icon"
-          className="overflow-hidden rounded-full"
+          className="size-10 overflow-hidden rounded-full"
         >
           <Avatar>
             <AvatarImage
               src={account?.avatar ?? undefined}
               alt={account?.name}
+              className="size-10"
             />
             <AvatarFallback>
               {account?.name.slice(0, 2).toUpperCase()}

@@ -15,10 +15,11 @@ import { PrismaErrorCode } from '@/utils/errors';
 
 import { Account } from '@prisma/client';
 import { AuthService } from '@/auth/auth.service';
-import { AccountService } from '@/account/account.service';
 import { RefreshTokenService } from '@/refresh-token/refresh-token.service';
 import { SocketService } from '@/socket/socket.service';
 import { LoginReqDto } from '@/auth/dto/req/login.req.dto';
+import { PrismaService } from '@/prisma.service';
+import { Role } from '@/constants/type';
 
 jest.mock('bcryptjs');
 jest.mock('ms');
@@ -29,11 +30,12 @@ jest.mock('@/utils/errors', () => ({
 
 describe('AuthService', () => {
   let service: AuthService;
-  let accountService: AccountService;
   let refreshTokenService: RefreshTokenService;
   let socketService: SocketService;
   let jwtService: JwtService;
   let configService: ConfigService;
+  let prismaService: PrismaService;
+  let logger: Logger;
 
   const mockAccount: Account = {
     id: 1,
@@ -73,12 +75,6 @@ describe('AuthService', () => {
           },
         },
         {
-          provide: AccountService,
-          useValue: {
-            findAccountWithEmail: jest.fn(),
-          },
-        },
-        {
           provide: RefreshTokenService,
           useValue: {
             insert: jest.fn(),
@@ -105,15 +101,24 @@ describe('AuthService', () => {
             get: jest.fn(),
           },
         },
+        {
+          provide: PrismaService,
+          useValue: {
+            account: {
+              findUnique: jest.fn(),
+            },
+          },
+        },
       ],
     }).compile();
 
     service = module.get<AuthService>(AuthService);
-    accountService = module.get<AccountService>(AccountService);
     refreshTokenService = module.get<RefreshTokenService>(RefreshTokenService);
     socketService = module.get<SocketService>(SocketService);
     jwtService = module.get<JwtService>(JwtService);
     configService = module.get<ConfigService>(ConfigService);
+    prismaService = module.get<PrismaService>(PrismaService);
+    logger = module.get<Logger>(Logger);
 
     jest.clearAllMocks();
   });
@@ -171,7 +176,7 @@ describe('AuthService', () => {
   describe('validateAccount', () => {
     it('should validate account successfully', async () => {
       jest
-        .spyOn(accountService, 'findAccountWithEmail')
+        .spyOn(prismaService.account, 'findUnique')
         .mockResolvedValue(mockAccount);
       (bcrypt.compare as jest.Mock).mockResolvedValue(true);
 
@@ -181,15 +186,15 @@ describe('AuthService', () => {
       );
 
       expect(result).toEqual(mockAccount);
-      expect(accountService.findAccountWithEmail).toHaveBeenCalledWith(
-        'test@example.com',
-      );
+      expect(prismaService.account.findUnique).toHaveBeenCalledWith({
+        where: { email: 'test@example.com' },
+      });
       expect(bcrypt.compare).toHaveBeenCalledWith('password', 'hashedPassword');
     });
 
     it('should throw UnprocessableEntityException when password is invalid', async () => {
       jest
-        .spyOn(accountService, 'findAccountWithEmail')
+        .spyOn(prismaService.account, 'findUnique')
         .mockResolvedValue(mockAccount);
       (bcrypt.compare as jest.Mock).mockResolvedValue(false);
 
@@ -207,7 +212,7 @@ describe('AuthService', () => {
       };
 
       jest
-        .spyOn(accountService, 'findAccountWithEmail')
+        .spyOn(prismaService.account, 'findUnique')
         .mockResolvedValue(mockAccount);
       (bcrypt.compare as jest.Mock).mockResolvedValue(true);
       jest.spyOn(jwtService, 'signAsync').mockResolvedValue('token');
@@ -266,9 +271,121 @@ describe('AuthService', () => {
         role: 'USER',
       });
 
-      expect(result).toBe('refresh-token');
+      expect(result).toHaveProperty('refreshToken');
+      expect(result).toHaveProperty('refreshTokenExpiresAt');
       expect(jwtService.signAsync).toHaveBeenCalled();
       expect(refreshTokenService.insert).toHaveBeenCalled();
+    });
+  });
+
+  describe('getGuestRefreshToken', () => {
+    it('should generate guest refresh token successfully', async () => {
+      const guestData = {
+        id: 1,
+        role: Role.Guest,
+      };
+
+      const mockRefreshToken = 'mock-refresh-token';
+      const mockExpiresIn = '7d';
+      const mockSecret = 'mock-secret';
+
+      jest.spyOn(jwtService, 'signAsync').mockResolvedValue(mockRefreshToken);
+      (configService.get as jest.Mock)
+        .mockResolvedValueOnce(mockExpiresIn) // JWT_REFRESH_TOKEN_EXPIRES_IN
+        .mockResolvedValueOnce(mockSecret); // JWT_REFRESH_TOKEN_SECRET
+      (ms as jest.Mock).mockReturnValue(604800000); // 7 days in milliseconds
+
+      const result = await service.getGuestRefreshToken(guestData);
+
+      expect(result).toHaveProperty('refreshToken', mockRefreshToken);
+      expect(result).toHaveProperty('refreshTokenExpiresAt');
+      expect(result.refreshTokenExpiresAt).toBeInstanceOf(Date);
+
+      expect(configService.get).toHaveBeenCalledWith(
+        'JWT_REFRESH_TOKEN_EXPIRES_IN',
+      );
+      expect(configService.get).toHaveBeenCalledWith(
+        'JWT_REFRESH_TOKEN_SECRET',
+      );
+
+      expect(jwtService.signAsync).toHaveBeenCalledWith(guestData, {
+        secret: mockSecret,
+        expiresIn: 604800, // 7 days in seconds
+      });
+    });
+
+    it('should use default values when config is not available', async () => {
+      const guestData = {
+        id: 1,
+        role: Role.Guest,
+      };
+
+      const mockRefreshToken = 'mock-refresh-token';
+
+      jest.spyOn(jwtService, 'signAsync').mockResolvedValue(mockRefreshToken);
+      (configService.get as jest.Mock)
+        .mockResolvedValueOnce(null) // JWT_REFRESH_TOKEN_EXPIRES_IN not set
+        .mockResolvedValueOnce(null); // JWT_REFRESH_TOKEN_SECRET not set
+      (ms as jest.Mock).mockReturnValue(604800000); // 7 days in milliseconds
+
+      const result = await service.getGuestRefreshToken(guestData);
+
+      expect(result).toHaveProperty('refreshToken', mockRefreshToken);
+      expect(result).toHaveProperty('refreshTokenExpiresAt');
+
+      expect(jwtService.signAsync).toHaveBeenCalledWith(guestData, {
+        secret: 'secret', // default value
+        expiresIn: 604800, // 7 days in seconds
+      });
+    });
+
+    it('should throw error when token generation fails', async () => {
+      const guestData = {
+        id: 1,
+        role: Role.Guest,
+      };
+
+      const errorMessage = 'Token generation failed';
+      jest
+        .spyOn(jwtService, 'signAsync')
+        .mockRejectedValue(new Error(errorMessage));
+
+      const errorSpy = jest.spyOn(logger, 'error');
+
+      await expect(service.getGuestRefreshToken(guestData)).rejects.toThrow(
+        errorMessage,
+      );
+
+      expect(errorSpy).toHaveBeenCalledWith(errorMessage);
+    });
+  });
+
+  describe('generateGuestTokens', () => {
+    it('should generate guest tokens successfully', async () => {
+      jest
+        .spyOn(jwtService, 'signAsync')
+        .mockResolvedValueOnce('access-token')
+        .mockResolvedValueOnce('refresh-token');
+      (configService.get as jest.Mock).mockResolvedValue('secret');
+      (ms as jest.Mock).mockReturnValue(604800000); // 7 days
+
+      const result = await service.generateGuestTokens(1);
+
+      expect(result).toHaveProperty('accessToken');
+      expect(result).toHaveProperty('refreshToken');
+      expect(jwtService.signAsync).toHaveBeenCalledTimes(2);
+    });
+
+    it('should handle errors during guest token generation', async () => {
+      jest
+        .spyOn(jwtService, 'signAsync')
+        .mockRejectedValue(new Error('Token generation failed'));
+      (configService.get as jest.Mock).mockResolvedValue('secret');
+      (ms as jest.Mock).mockReturnValue(604800000);
+
+      await expect(service.generateGuestTokens(1)).rejects.toThrow(
+        'Token generation failed',
+      );
     });
   });
 
@@ -282,7 +399,7 @@ describe('AuthService', () => {
         .spyOn(refreshTokenService, 'invalidate')
         .mockResolvedValue(undefined);
       jest
-        .spyOn(accountService, 'findAccountWithEmail')
+        .spyOn(prismaService.account, 'findUnique')
         .mockResolvedValue(mockAccount);
       jest.spyOn(jwtService, 'signAsync').mockResolvedValue('token');
 

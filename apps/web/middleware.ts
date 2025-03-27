@@ -14,8 +14,8 @@ export const decodeToken = (token: string) => {
 const managePaths = ['/vi/manage', '/en/manage']
 const guestPaths = ['/vi/guest', '/en/guest']
 const onlyOwnerPaths = ['/vi/manage/accounts', '/en/manage/accounts']
-const tablesPaths = ['/vi/tables', '/en/tables']
 const privatePaths = [...managePaths, ...guestPaths]
+const tablesPaths = ['/vi/tables', '/en/tables']
 const unAuthPaths = ['/vi/login', '/en/login']
 const loginPaths = ['/vi/login', '/en/login']
 
@@ -47,6 +47,11 @@ export function middleware(request: NextRequest) {
       }
       return NextResponse.redirect(new URL(`/${locale}`, request.url))
     }
+
+    if (tablesPaths.some((path) => pathname.startsWith(path))) {
+      return NextResponse.redirect(new URL(`/${locale}`, request.url))
+    }
+
     // 2.2 Nhưng access token lại hết hạn
     if (
       privatePaths.some((path) => pathname.startsWith(path)) &&
@@ -57,6 +62,7 @@ export function middleware(request: NextRequest) {
       url.searchParams.set('redirect', pathname)
       return NextResponse.redirect(url)
     }
+
     // 2.3 Vào không đúng role, redirect về trang chủ
     const role = decodeToken(refreshToken).role
     // Guest nhưng cố vào route owner
@@ -67,18 +73,14 @@ export function middleware(request: NextRequest) {
     const isNotGuestGoToGuestPath =
       role !== Role.Guest &&
       guestPaths.some((path) => pathname.startsWith(path))
-    // Không phải Guest nhưng cố vào trang order món của Guest
-    const isNotGuestGoToGuestOrderPath =
-      role !== Role.Guest &&
-      tablesPaths.some((path) => pathname.startsWith(path))
     // Không phải Owner nhưng cố tình truy cập vào các route dành cho owner
     const isNotOwnerGoToOwnerPath =
       role !== Role.Owner &&
       onlyOwnerPaths.some((path) => pathname.startsWith(path))
+
     if (
       isGuestGoToManagePath ||
       isNotGuestGoToGuestPath ||
-      isNotGuestGoToGuestOrderPath ||
       isNotOwnerGoToOwnerPath
     ) {
       return NextResponse.redirect(new URL(`/${locale}`, request.url))

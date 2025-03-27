@@ -313,29 +313,4 @@ export class AccountService {
       throw error;
     }
   }
-
-  async findAccountWithEmail(email: string) {
-    try {
-      const account = await this.prisma.account.findUnique({
-        where: { email },
-      });
-
-      if (!account) {
-        throw new UnprocessableEntityException({
-          message: this.i18n.t('errors.auth.invalid-email'),
-          errors: [
-            {
-              field: 'email',
-              message: this.i18n.t('errors.auth.invalid-email'),
-            },
-          ],
-        });
-      }
-
-      return account;
-    } catch (error) {
-      this.logger.error(error.message);
-      throw error;
-    }
-  }
 }

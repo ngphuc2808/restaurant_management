@@ -23,6 +23,6 @@ import { AccountService } from '@/account/account.service';
     AccountService,
     RefreshTokenService,
   ],
-  exports: [],
+  exports: [SocketGateway, SocketService],
 })
 export class SocketModule {}

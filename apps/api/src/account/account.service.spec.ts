@@ -529,27 +529,4 @@ describe('AccountService', () => {
       await expect(service.getAccountDetail(1)).rejects.toThrow();
     });
   });
-
-  describe('findAccountWithEmail', () => {
-    it('should return account by email', async () => {
-      jest
-        .spyOn(prismaService.account, 'findUnique')
-        .mockResolvedValue(mockAccount);
-
-      const result = await service.findAccountWithEmail('test@example.com');
-
-      expect(result).toEqual(mockAccount);
-      expect(prismaService.account.findUnique).toHaveBeenCalledWith({
-        where: { email: 'test@example.com' },
-      });
-    });
-
-    it('should throw UnprocessableEntityException when account not found', async () => {
-      jest.spyOn(prismaService.account, 'findUnique').mockResolvedValue(null);
-
-      await expect(
-        service.findAccountWithEmail('test@example.com'),
-      ).rejects.toThrow(UnprocessableEntityException);
-    });
-  });
 });

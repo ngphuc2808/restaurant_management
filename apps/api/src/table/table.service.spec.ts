@@ -286,4 +286,49 @@ describe('TableService', () => {
       );
     });
   });
+
+  describe('getTableByToken', () => {
+    it('should get table by token successfully', async () => {
+      const number = 1;
+      const token = 'test-token';
+
+      mockPrismaService.table.findUnique.mockResolvedValue(mockTable);
+
+      const result = await service.getTableByToken(number, token);
+
+      expect(result).toEqual(mockTable);
+      expect(prisma.table.findUnique).toHaveBeenCalledWith({
+        where: { number, token },
+      });
+    });
+
+    it('should return null when table not found with token', async () => {
+      const number = 1;
+      const token = 'invalid-token';
+
+      mockPrismaService.table.findUnique.mockResolvedValue(null);
+
+      const result = await service.getTableByToken(number, token);
+
+      expect(result).toBeNull();
+      expect(prisma.table.findUnique).toHaveBeenCalledWith({
+        where: { number, token },
+      });
+    });
+
+    it('should handle database errors', async () => {
+      const number = 1;
+      const token = 'test-token';
+
+      const error = new Error('Database error');
+      mockPrismaService.table.findUnique.mockRejectedValue(error);
+
+      await expect(service.getTableByToken(number, token)).rejects.toThrow(
+        error,
+      );
+      expect(prisma.table.findUnique).toHaveBeenCalledWith({
+        where: { number, token },
+      });
+    });
+  });
 });

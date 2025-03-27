@@ -33,9 +33,8 @@ describe('SocketService', () => {
           provide: PrismaService,
           useValue: {
             socket: {
-              findUnique: jest.fn().mockResolvedValue(mockSocket),
-              create: jest.fn().mockResolvedValue(mockSocket),
-              update: jest.fn().mockResolvedValue(mockSocket),
+              findUnique: jest.fn(),
+              upsert: jest.fn(),
             },
           },
         },
@@ -43,8 +42,8 @@ describe('SocketService', () => {
     }).compile();
 
     service = module.get<SocketService>(SocketService);
-    prismaService = module.get<PrismaService>(PrismaService);
     logger = module.get<Logger>(Logger);
+    prismaService = module.get<PrismaService>(PrismaService);
 
     jest.clearAllMocks();
   });
@@ -86,14 +85,11 @@ describe('SocketService', () => {
 
   describe('upsertSocket', () => {
     describe('for account', () => {
-      it('should update existing socket', async () => {
-        const findSpy = jest
-          .spyOn(prismaService.socket, 'findUnique')
-          .mockResolvedValue(mockSocket);
-
-        const updateSpy = jest
-          .spyOn(prismaService.socket, 'update')
-          .mockResolvedValue({ ...mockSocket, socketId: 'new-socket-id' });
+      it('should upsert socket for account', async () => {
+        const updatedSocket = { ...mockSocket, socketId: 'new-socket-id' };
+        jest
+          .spyOn(prismaService.socket, 'upsert')
+          .mockResolvedValue(updatedSocket);
 
         await service.upsertSocket(
           mockSocket.accountId,
@@ -101,37 +97,16 @@ describe('SocketService', () => {
           Role.Employee,
         );
 
-        expect(findSpy).toHaveBeenCalledWith({
-          where: { accountId: mockSocket.accountId },
-        });
-        expect(updateSpy).toHaveBeenCalledWith({
-          where: { accountId: mockSocket.accountId },
-          data: { socketId: 'new-socket-id' },
-        });
-      });
-
-      it('should create new socket if not exists', async () => {
-        const findSpy = jest
-          .spyOn(prismaService.socket, 'findUnique')
-          .mockResolvedValue(null);
-
-        const createSpy = jest
-          .spyOn(prismaService.socket, 'create')
-          .mockResolvedValue(mockSocket);
-
-        await service.upsertSocket(
-          mockSocket.accountId,
-          mockSocket.socketId,
-          Role.Employee,
-        );
-
-        expect(findSpy).toHaveBeenCalledWith({
-          where: { accountId: mockSocket.accountId },
-        });
-        expect(createSpy).toHaveBeenCalledWith({
-          data: {
+        expect(prismaService.socket.upsert).toHaveBeenCalledWith({
+          where: {
             accountId: mockSocket.accountId,
-            socketId: mockSocket.socketId,
+          },
+          update: {
+            socketId: 'new-socket-id',
+          },
+          create: {
+            accountId: mockSocket.accountId,
+            socketId: 'new-socket-id',
           },
         });
       });
@@ -144,14 +119,14 @@ describe('SocketService', () => {
         guestId: 1,
       };
 
-      it('should update existing guest socket', async () => {
-        const findSpy = jest
-          .spyOn(prismaService.socket, 'findUnique')
-          .mockResolvedValue(mockGuestSocket);
-
-        const updateSpy = jest
-          .spyOn(prismaService.socket, 'update')
-          .mockResolvedValue({ ...mockGuestSocket, socketId: 'new-socket-id' });
+      it('should upsert socket for guest', async () => {
+        const updatedGuestSocket = {
+          ...mockGuestSocket,
+          socketId: 'new-socket-id',
+        };
+        jest
+          .spyOn(prismaService.socket, 'upsert')
+          .mockResolvedValue(updatedGuestSocket);
 
         await service.upsertSocket(
           mockGuestSocket.guestId,
@@ -159,37 +134,16 @@ describe('SocketService', () => {
           Role.Guest,
         );
 
-        expect(findSpy).toHaveBeenCalledWith({
-          where: { guestId: mockGuestSocket.guestId },
-        });
-        expect(updateSpy).toHaveBeenCalledWith({
-          where: { guestId: mockGuestSocket.guestId },
-          data: { socketId: 'new-socket-id' },
-        });
-      });
-
-      it('should create new guest socket if not exists', async () => {
-        const findSpy = jest
-          .spyOn(prismaService.socket, 'findUnique')
-          .mockResolvedValue(null);
-
-        const createSpy = jest
-          .spyOn(prismaService.socket, 'create')
-          .mockResolvedValue(mockGuestSocket);
-
-        await service.upsertSocket(
-          mockGuestSocket.guestId,
-          mockGuestSocket.socketId,
-          Role.Guest,
-        );
-
-        expect(findSpy).toHaveBeenCalledWith({
-          where: { guestId: mockGuestSocket.guestId },
-        });
-        expect(createSpy).toHaveBeenCalledWith({
-          data: {
+        expect(prismaService.socket.upsert).toHaveBeenCalledWith({
+          where: {
             guestId: mockGuestSocket.guestId,
-            socketId: mockGuestSocket.socketId,
+          },
+          update: {
+            socketId: 'new-socket-id',
+          },
+          create: {
+            guestId: mockGuestSocket.guestId,
+            socketId: 'new-socket-id',
           },
         });
       });
@@ -198,20 +152,18 @@ describe('SocketService', () => {
     it('should throw error when operation fails', async () => {
       const errorMessage = 'Failed to upsert socket';
       jest
-        .spyOn(prismaService.socket, 'findUnique')
+        .spyOn(prismaService.socket, 'upsert')
         .mockRejectedValue(new Error(errorMessage));
 
       const errorSpy = jest.spyOn(logger, 'error');
 
       await expect(
-        service.upsertSocket(
-          mockSocket.accountId,
-          mockSocket.socketId,
-          Role.Employee,
-        ),
+        service.upsertSocket(1, 'socket-id', 'USER'),
       ).rejects.toThrow(errorMessage);
 
-      expect(errorSpy).toHaveBeenCalledWith(errorMessage);
+      expect(errorSpy).toHaveBeenCalledWith(
+        `Error in upsertSocket: ${errorMessage}`,
+      );
     });
   });
 });
