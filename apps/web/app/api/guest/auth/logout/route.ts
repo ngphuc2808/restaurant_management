@@ -30,7 +30,7 @@ export async function POST(request: Request) {
     )
     return Response.json(result.payload)
   } catch (error) {
-    console.log(error)
+    console.log('>>> error: ', error)
     return Response.json(
       {
         message: 'Lỗi khi gọi API đến server backend',

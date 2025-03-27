@@ -65,7 +65,7 @@ const GuestLoginForm = () => {
       setSocket(generateSocketInstace(result.payload.data.accessToken))
       router.push('/guest/menu')
     } catch (error) {
-      console.log(error)
+      console.log('>>> error: ', error)
       handleErrorApi({
         error,
         setError: form.setError,

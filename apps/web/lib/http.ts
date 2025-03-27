@@ -142,7 +142,7 @@ const request = async <Response>(
           try {
             await clientLogoutRequest
           } catch (error) {
-            console.log(error)
+            console.log('>>> error: ', error)
             throw error
           } finally {
             removeTokensFromLocalStorage()
