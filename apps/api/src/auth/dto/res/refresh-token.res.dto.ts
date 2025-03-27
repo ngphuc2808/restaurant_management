@@ -9,17 +9,11 @@ export class RefreshTokenResDto {
 
   @ApiProperty({
     example: {
-      id: 1,
-      email: 'test@example.com',
-      role: 'Owner',
       accessToken: 'access-token',
       refreshToken: 'refresh-token',
     },
   })
   data: {
-    id: number;
-    email: string;
-    role: string;
     accessToken: string;
     refreshToken: string;
   };

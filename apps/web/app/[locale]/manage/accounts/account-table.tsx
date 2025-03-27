@@ -199,7 +199,7 @@ const AccountTable = () => {
           }
 
           return (
-            <DropdownMenu>
+            <DropdownMenu modal={false}>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="h-8 w-8 p-0">
                   <DotsHorizontalIcon className="h-4 w-4" />
@@ -254,99 +254,97 @@ const AccountTable = () => {
     return <LoaderCircle className="mr-2 h-5 w-5 animate-spin" />
 
   return (
-    <>
-      <div className="w-full">
-        <EditEmployee
-          id={employeeIdEdit}
-          setId={setEmployeeIdEdit}
-          onSubmitSuccess={() => {}}
+    <div className="w-full">
+      <EditEmployee
+        id={employeeIdEdit}
+        setId={setEmployeeIdEdit}
+        onSubmitSuccess={() => {}}
+      />
+      <AlertDialogDeleteAccount
+        employeeDelete={employeeDelete}
+        setEmployeeDelete={setEmployeeDelete}
+      />
+      <div className="flex items-center gap-2 py-4">
+        <Input
+          placeholder={tAll('searchValue', { value: t('table.email') })}
+          value={(table.getColumn('email')?.getFilterValue() as string) ?? ''}
+          onChange={(event) =>
+            table.getColumn('email')?.setFilterValue(event.target.value)
+          }
+          className="max-w-sm"
         />
-        <AlertDialogDeleteAccount
-          employeeDelete={employeeDelete}
-          setEmployeeDelete={setEmployeeDelete}
-        />
-        <div className="flex items-center gap-2 py-4">
-          <Input
-            placeholder={tAll('searchValue', { value: t('table.email') })}
-            value={(table.getColumn('email')?.getFilterValue() as string) ?? ''}
-            onChange={(event) =>
-              table.getColumn('email')?.setFilterValue(event.target.value)
-            }
-            className="max-w-sm"
-          />
-          <div className="ml-auto flex items-center gap-2">
-            <AddEmployee />
-          </div>
-        </div>
-        <div className="rounded-md border">
-          <Table>
-            <TableHeader>
-              {table.getHeaderGroups().map((headerGroup) => (
-                <TableRow key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => {
-                    return (
-                      <TableHead key={header.id}>
-                        {header.isPlaceholder
-                          ? null
-                          : flexRender(
-                              header.column.columnDef.header,
-                              header.getContext(),
-                            )}
-                      </TableHead>
-                    )
-                  })}
-                </TableRow>
-              ))}
-            </TableHeader>
-            <TableBody>
-              {table.getRowModel().rows?.length ? (
-                table.getRowModel().rows.map((row) => (
-                  <TableRow
-                    key={row.id}
-                    data-state={row.getIsSelected() && 'selected'}
-                  >
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id}>
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext(),
-                        )}
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell
-                    colSpan={columns.length}
-                    className="h-24 text-center"
-                  >
-                    {tAll('noData')}
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </div>
-        <div className="flex items-center justify-end space-x-2 py-4">
-          <div className="flex-1 py-4 text-xs text-muted-foreground ">
-            {tAll('showResultPagination', {
-              result: table.getPaginationRowModel().rows.length,
-              total: data.length,
-            })}
-          </div>
-          <div>
-            <AutoPagination
-              pageSize={meta?.totalPages ?? 1}
-              page={page}
-              setPage={setPage}
-              limit={limit}
-              setLimit={setLimit}
-            />
-          </div>
+        <div className="ml-auto flex items-center gap-2">
+          <AddEmployee />
         </div>
       </div>
-    </>
+      <div className="rounded-md border">
+        <Table>
+          <TableHeader>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow key={headerGroup.id}>
+                {headerGroup.headers.map((header) => {
+                  return (
+                    <TableHead key={header.id}>
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext(),
+                          )}
+                    </TableHead>
+                  )
+                })}
+              </TableRow>
+            ))}
+          </TableHeader>
+          <TableBody>
+            {table.getRowModel().rows?.length ? (
+              table.getRowModel().rows.map((row) => (
+                <TableRow
+                  key={row.id}
+                  data-state={row.getIsSelected() && 'selected'}
+                >
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell key={cell.id}>
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext(),
+                      )}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell
+                  colSpan={columns.length}
+                  className="h-24 text-center"
+                >
+                  {tAll('noData')}
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </div>
+      <div className="flex items-center justify-end space-x-2 py-4">
+        <div className="flex-1 py-4 text-xs text-muted-foreground ">
+          {tAll('showResultPagination', {
+            result: table.getPaginationRowModel().rows.length,
+            total: data.length,
+          })}
+        </div>
+        <div>
+          <AutoPagination
+            pageSize={meta?.totalPages ?? 1}
+            page={page}
+            setPage={setPage}
+            limit={limit}
+            setLimit={setLimit}
+          />
+        </div>
+      </div>
+    </div>
   )
 }
 

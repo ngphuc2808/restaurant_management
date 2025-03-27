@@ -14,13 +14,13 @@ import {
   UpdateTableBodyType,
 } from '@/schemaValidations/table.schema'
 
-export const useTableListQuery = (): UseQueryResult<
-  QueryResponseType<TableListResType>,
-  Error
-> => {
+export const useTableListQuery = (
+  page: number,
+  limit: number,
+): UseQueryResult<QueryResponseType<TableListResType>, Error> => {
   return useQuery({
-    queryKey: ['tables'],
-    queryFn: tableApiRequest.list,
+    queryKey: ['tables', page, limit],
+    queryFn: () => tableApiRequest.list({ page, limit }),
   })
 }
 
@@ -69,7 +69,6 @@ export const useUpdateTableMutation = (): UseMutationResult<
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ['tables'],
-        exact: true,
       })
     },
   })

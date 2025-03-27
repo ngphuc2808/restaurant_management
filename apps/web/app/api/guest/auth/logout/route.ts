@@ -3,11 +3,13 @@ import { cookies } from 'next/headers'
 import guestApiRequest from '@/apiRequests/guest'
 
 export async function POST(request: Request) {
+  const locale = request.headers.get('locale')
   const cookieStore = await cookies()
   const accessToken = cookieStore.get('accessToken')?.value
   const refreshToken = cookieStore.get('refreshToken')?.value
   cookieStore.delete('accessToken')
   cookieStore.delete('refreshToken')
+
   if (!accessToken || !refreshToken) {
     return Response.json(
       {
@@ -19,13 +21,16 @@ export async function POST(request: Request) {
     )
   }
   try {
-    const result = await guestApiRequest.sLogout({
-      accessToken,
-      refreshToken,
-    })
+    const result = await guestApiRequest.sLogout(
+      {
+        accessToken,
+        refreshToken,
+      },
+      locale!,
+    )
     return Response.json(result.payload)
   } catch (error) {
-    console.log(error)
+    console.log('>>> error: ', error)
     return Response.json(
       {
         message: 'Lỗi khi gọi API đến server backend',

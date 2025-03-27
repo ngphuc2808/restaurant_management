@@ -14,8 +14,12 @@ const authApiRequests = {
     status: number
     payload: RefreshTokenResType
   }> | null,
-  sLogin: (body: LoginBodyType) =>
-    http.post<LoginResType>(`/${prefix}/login`, body),
+  sLogin: (body: LoginBodyType, locale: string) =>
+    http.post<LoginResType>(`/${prefix}/login`, body, {
+      headers: {
+        locale,
+      },
+    }),
   login: (body: LoginBodyType) =>
     http.post<LoginResType>(`/${prefix}/login`, body, {
       baseUrl: '/api',
@@ -24,6 +28,7 @@ const authApiRequests = {
     body: LogoutBodyType & {
       accessToken: string
     },
+    locale: string,
   ) =>
     http.post(
       `/${prefix}/logout`,
@@ -33,12 +38,17 @@ const authApiRequests = {
       {
         headers: {
           Authorization: `Bearer ${body.accessToken}`,
+          locale,
         },
       },
     ),
   logout: () => http.post(`/${prefix}/logout`, null, { baseUrl: '/api' }),
-  sRefreshToken: (body: RefreshTokenBodyType) =>
-    http.post<RefreshTokenResType>(`/${prefix}/refresh-token`, body),
+  sRefreshToken: (body: RefreshTokenBodyType, locale: string) =>
+    http.post<RefreshTokenResType>(`/${prefix}/refresh-token`, body, {
+      headers: {
+        locale,
+      },
+    }),
   async refreshToken() {
     if (this.refreshTokenRequest) {
       return this.refreshTokenRequest

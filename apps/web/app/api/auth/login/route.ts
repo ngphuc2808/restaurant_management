@@ -6,11 +6,12 @@ import { HttpError } from '@/lib/http'
 import { LoginBodyType } from '@/schemaValidations/auth.schema'
 
 export async function POST(request: Request) {
+  const locale = request.headers.get('locale')
   const body = (await request.json()) as LoginBodyType
   const cookieStore = await cookies()
 
   try {
-    const { payload } = await authApiRequests.sLogin(body)
+    const { payload } = await authApiRequests.sLogin(body, locale!)
 
     const {
       data: { accessToken, refreshToken },

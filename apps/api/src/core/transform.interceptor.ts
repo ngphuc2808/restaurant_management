@@ -32,16 +32,21 @@ export class TransformInterceptor<T>
     next: CallHandler,
   ): Observable<Response<T>> {
     return next.handle().pipe(
-      map((data) => ({
-        statusCode: context.switchToHttp().getResponse().statusCode,
-        message:
-          (this.i18n.t(
-            this.reflector.get<string>(RESPONSE_MESSAGE, context.getHandler()),
-          ) as string) || '',
-        data,
-      })),
-      catchError((err) => {
-        return throwError(
+      map((data) => {
+        return {
+          statusCode: context.switchToHttp().getResponse().statusCode,
+          message:
+            (this.i18n.t(
+              this.reflector.get<string>(
+                RESPONSE_MESSAGE,
+                context.getHandler(),
+              ),
+            ) as string) || '',
+          data,
+        };
+      }),
+      catchError((err) =>
+        throwError(
           () =>
             new HttpException(
               {
@@ -51,8 +56,8 @@ export class TransformInterceptor<T>
               },
               err.status || 500,
             ),
-        );
-      }),
+        ),
+      ),
     );
   }
 }

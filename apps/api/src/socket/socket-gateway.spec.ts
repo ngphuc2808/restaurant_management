@@ -38,7 +38,7 @@ describe('SocketGateway', () => {
         {
           provide: AuthService,
           useValue: {
-            validateSocket: jest.fn(),
+            validateSocket: jest.fn().mockResolvedValue(mockDecodedToken),
           },
         },
         {

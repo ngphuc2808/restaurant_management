@@ -1,43 +1,79 @@
 import {
+  Body,
   Controller,
   Get,
+  HttpCode,
+  HttpStatus,
   Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
+  UseGuards,
 } from '@nestjs/common';
 
 import { GuestService } from '@/guest/guest.service';
-import { CreateGuestDto } from '@/guest/dto/create-guest.dto';
-import { UpdateGuestDto } from '@/guest/dto/update-guest.dto';
+import { Public, Roles } from '@/auth/decorators/public.decorator';
+import { ResponseMessage, Role, User } from '@/constants/type';
+import { ApiOkResponse } from '@nestjs/swagger';
+
+import { RoleGuard } from '@/auth/guards/role.guard';
+import { UserDto } from '@/auth/dto/types';
+import { GuestLoginReqDto } from '@/guest/dto/req/guest-login.req.dto';
+import { GuestLoginResDto } from '@/guest/dto/res/guest-login.res.dto';
+import { GuestLogoutResDto } from '@/guest/dto/res/guest-logout.res.dto';
+import { GuestLogoutReqDto } from '@/guest/dto/req/guest-logout.req.dto';
+import { GuestRefreshTokenResDto } from '@/guest/dto/res/guest-refresh-token.res.dto';
+import { GuestRefreshTokenReqDto } from '@/guest/dto/req/guest-refresh-token.req.dto';
+import { GuestCreateDishReqDto } from '@/guest/dto/req/guest-create-dish.req.dto';
+import { GuestCreateDishResDto } from '@/guest/dto/res/guest-create-dish.res.dto';
 
 @Controller('guest')
 export class GuestController {
   constructor(private readonly guestService: GuestService) {}
 
-  @Post()
-  create(@Body() createGuestDto: CreateGuestDto) {
-    return this.guestService.create(createGuestDto);
+  @Public()
+  @HttpCode(HttpStatus.OK)
+  @ResponseMessage('res.success.login')
+  @ApiOkResponse({ type: GuestLoginResDto })
+  @Post('auth/login')
+  async login(@Body() loginDto: GuestLoginReqDto) {
+    return this.guestService.login(loginDto);
   }
 
-  @Get()
-  findAll() {
-    return this.guestService.findAll();
+  @HttpCode(HttpStatus.OK)
+  @ResponseMessage('res.success.logout')
+  @ApiOkResponse({ type: GuestLogoutResDto })
+  @Post('auth/logout')
+  async logout(@Body() logoutDto: GuestLogoutReqDto) {
+    await this.guestService.logout(logoutDto.id);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.guestService.findOne(+id);
+  @Public()
+  @HttpCode(HttpStatus.OK)
+  @ResponseMessage('res.success.refresh-token')
+  @ApiOkResponse({ type: GuestRefreshTokenResDto })
+  @Post('auth/refresh-token')
+  async refresh(@Body() tokenDto: GuestRefreshTokenReqDto) {
+    return this.guestService.processNewGuestToken(tokenDto.refreshToken);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateGuestDto: UpdateGuestDto) {
-    return this.guestService.update(+id, updateGuestDto);
+  @UseGuards(RoleGuard)
+  @Roles([Role.Guest])
+  @HttpCode(HttpStatus.OK)
+  @ResponseMessage('res.success.order.create')
+  @ApiOkResponse({ type: GuestCreateDishResDto })
+  @Post('orders')
+  create(
+    @User() user: UserDto,
+    @Body() createDishDto: GuestCreateDishReqDto[],
+  ) {
+    return this.guestService.createDish(user.id, createDishDto);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.guestService.remove(+id);
+  @UseGuards(RoleGuard)
+  @Roles([Role.Guest])
+  @HttpCode(HttpStatus.OK)
+  @ResponseMessage('res.success.order.get-list')
+  @ApiOkResponse({ type: GuestCreateDishResDto })
+  @Get('orders')
+  getList(@User() user: UserDto) {
+    return this.guestService.getListOrder(user.id);
   }
 }

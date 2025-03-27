@@ -1,5 +1,7 @@
-import { TableStatusValues } from '@/constants/type'
 import z from 'zod'
+
+import { TableStatusValues } from '@/constants/type'
+import { MetaSchema } from '@/schemaValidations/metadata.schema'
 
 export const CreateTableBody = z.object({
   number: z.coerce.number().positive({ message: 'minTableNumber' }),
@@ -26,7 +28,11 @@ export const TableRes = z.object({
 export type TableResType = z.TypeOf<typeof TableRes>
 
 export const TableListRes = z.object({
-  data: z.array(TableSchema),
+  data: z.object({
+    tables: z.array(TableSchema),
+    meta: MetaSchema,
+  }),
+
   message: z.string(),
 })
 

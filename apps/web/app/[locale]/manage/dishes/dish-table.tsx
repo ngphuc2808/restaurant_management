@@ -56,13 +56,11 @@ import { toast } from '@repo/ui/hooks/use-toast'
 import AddDish from '@/app/[locale]/manage/dishes/add-dish'
 import EditDish from '@/app/[locale]/manage/dishes/edit-dish'
 import AutoPagination from '@/components/molecules/auto-pagination'
-import SearchParamsLoader, {
-  useSearchParamsLoader,
-} from '@/components/atoms/search-params-loader'
 import useDish from '@/store/dish'
 import { useTranslations } from 'next-intl'
+import { LoaderCircle } from 'lucide-react'
 
-type DishItem = DishListResType['data'][0]
+type DishItem = DishListResType['data']['dishes'][0]
 
 const AlertDialogDeleteDish = ({
   dishDelete,
@@ -75,6 +73,7 @@ const AlertDialogDeleteDish = ({
   const tAll = useTranslations('All')
 
   const { mutateAsync } = useDeleteDishMutation()
+
   const deleteDish = async () => {
     if (dishDelete) {
       try {
@@ -119,27 +118,25 @@ const AlertDialogDeleteDish = ({
   )
 }
 
-const PAGE_SIZE = 10
-
 const DishTable = () => {
   const t = useTranslations('Dishes')
   const tAll = useTranslations('All')
 
-  const { searchParams, setSearchParams } = useSearchParamsLoader()
-  const page = searchParams?.get('page') ? Number(searchParams?.get('page')) : 1
-  const pageIndex = page - 1
+  const [page, setPage] = useState<number>(0)
+  const [limit, setLimit] = useState<number>(12)
+  const dishListQuery = useDishListQuery(page + 1, limit)
+  const data = dishListQuery.data?.payload.data.dishes ?? []
+  const meta = dishListQuery.data?.payload.data.meta
 
   const { dishIdEdit, setDishIdEdit, dishDelete, setDishDelete } = useDish()
 
-  const dishListQuery = useDishListQuery()
-  const data = dishListQuery.data?.payload.data ?? []
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
   const [rowSelection, setRowSelection] = useState({})
   const [pagination, setPagination] = useState({
-    pageIndex,
-    pageSize: PAGE_SIZE,
+    pageIndex: page,
+    pageSize: limit,
   })
 
   const columns: ColumnDef<DishItem>[] = useMemo(() => {
@@ -211,7 +208,7 @@ const DishTable = () => {
             setDishDelete(row.original)
           }
           return (
-            <DropdownMenu>
+            <DropdownMenu modal={false}>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="h-8 w-8 p-0">
                   <DotsHorizontalIcon className="h-4 w-4" />
@@ -258,100 +255,102 @@ const DishTable = () => {
 
   useEffect(() => {
     table.setPagination({
-      pageIndex,
-      pageSize: PAGE_SIZE,
+      pageIndex: page,
+      pageSize: limit,
     })
-  }, [table, pageIndex])
+  }, [table, page, limit])
+
+  if (dishListQuery.isLoading)
+    return <LoaderCircle className="mr-2 h-5 w-5 animate-spin" />
 
   return (
-    <>
-      <SearchParamsLoader onParamsReceived={setSearchParams} />
-      <div className="w-full">
-        <EditDish id={dishIdEdit} setId={setDishIdEdit} />
-        <AlertDialogDeleteDish
-          dishDelete={dishDelete}
-          setDishDelete={setDishDelete}
+    <div className="w-full">
+      <EditDish id={dishIdEdit} setId={setDishIdEdit} />
+      <AlertDialogDeleteDish
+        dishDelete={dishDelete}
+        setDishDelete={setDishDelete}
+      />
+      <div className="flex items-center gap-2 py-4">
+        <Input
+          placeholder={tAll('searchValue', { value: t('table.dishName') })}
+          value={(table.getColumn('name')?.getFilterValue() as string) ?? ''}
+          onChange={(event) =>
+            table.getColumn('name')?.setFilterValue(event.target.value)
+          }
+          className="max-w-sm"
         />
-        <div className="flex items-center gap-2 py-4">
-          <Input
-            placeholder={tAll('searchValue', { value: t('table.dishName') })}
-            value={(table.getColumn('name')?.getFilterValue() as string) ?? ''}
-            onChange={(event) =>
-              table.getColumn('name')?.setFilterValue(event.target.value)
-            }
-            className="max-w-sm"
-          />
-          <div className="ml-auto flex items-center gap-2">
-            <AddDish />
-          </div>
-        </div>
-        <div className="rounded-md border">
-          <Table>
-            <TableHeader>
-              {table.getHeaderGroups().map((headerGroup) => (
-                <TableRow key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => {
-                    return (
-                      <TableHead key={header.id}>
-                        {header.isPlaceholder
-                          ? null
-                          : flexRender(
-                              header.column.columnDef.header,
-                              header.getContext(),
-                            )}
-                      </TableHead>
-                    )
-                  })}
-                </TableRow>
-              ))}
-            </TableHeader>
-            <TableBody>
-              {table.getRowModel().rows?.length ? (
-                table.getRowModel().rows.map((row) => (
-                  <TableRow
-                    key={row.id}
-                    data-state={row.getIsSelected() && 'selected'}
-                  >
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id}>
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext(),
-                        )}
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell
-                    colSpan={columns.length}
-                    className="h-24 text-center"
-                  >
-                    {tAll('noData')}
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </div>
-        <div className="flex items-center justify-end space-x-2 py-4">
-          <div className="flex-1 py-4 text-xs text-muted-foreground ">
-            {tAll('showResultPagination', {
-              result: table.getPaginationRowModel().rows.length,
-              total: data.length,
-            })}
-          </div>
-          <div>
-            <AutoPagination
-              page={table.getState().pagination.pageIndex + 1}
-              pageSize={table.getPageCount()}
-              pathname="/manage/dishes"
-            />
-          </div>
+        <div className="ml-auto flex items-center gap-2">
+          <AddDish />
         </div>
       </div>
-    </>
+      <div className="rounded-md border">
+        <Table>
+          <TableHeader>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow key={headerGroup.id}>
+                {headerGroup.headers.map((header) => {
+                  return (
+                    <TableHead key={header.id}>
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext(),
+                          )}
+                    </TableHead>
+                  )
+                })}
+              </TableRow>
+            ))}
+          </TableHeader>
+          <TableBody>
+            {table.getRowModel().rows?.length ? (
+              table.getRowModel().rows.map((row) => (
+                <TableRow
+                  key={row.id}
+                  data-state={row.getIsSelected() && 'selected'}
+                >
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell key={cell.id}>
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext(),
+                      )}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell
+                  colSpan={columns.length}
+                  className="h-24 text-center"
+                >
+                  {tAll('noData')}
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </div>
+      <div className="flex items-center justify-end space-x-2 py-4">
+        <div className="flex-1 py-4 text-xs text-muted-foreground ">
+          {tAll('showResultPagination', {
+            result: table.getPaginationRowModel().rows.length,
+            total: data.length,
+          })}
+        </div>
+        <div>
+          <AutoPagination
+            pageSize={meta?.totalPages ?? 1}
+            page={page}
+            setPage={setPage}
+            limit={limit}
+            setLimit={setLimit}
+          />
+        </div>
+      </div>
+    </div>
   )
 }
 

@@ -18,9 +18,9 @@ const staticRoutes: MetadataRoute.Sitemap = [
 ]
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const result = await dishApiRequest.list()
+  const result = await dishApiRequest.list({ page: 1, limit: 12 })
 
-  const dishList = result.payload.data
+  const dishList = result.payload.data.dishes
   const localizeStaticSiteMap = locales.reduce((acc, locale) => {
     return [
       ...acc,

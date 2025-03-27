@@ -1,4 +1,5 @@
 import z from 'zod'
+
 import { Role } from '@/constants/type'
 import { LoginRes } from '@/schemaValidations/auth.schema'
 import { MetaSchema } from '@/schemaValidations/metadata.schema'

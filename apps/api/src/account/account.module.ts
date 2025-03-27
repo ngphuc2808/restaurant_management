@@ -2,24 +2,22 @@ import { Logger, Module } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 
 import { AccountController } from '@/account/account.controller';
+import { SocketModule } from '@/socket/socket.module';
 
 import { PrismaService } from '@/prisma.service';
 import { AccountService } from '@/account/account.service';
 import { RefreshTokenService } from '@/refresh-token/refresh-token.service';
 import { AuthService } from '@/auth/auth.service';
-import { SocketService } from '@/socket/socket.service';
-import { SocketGateway } from '@/socket/socket-gateway';
 
 @Module({
   controllers: [AccountController],
+  imports: [SocketModule],
   providers: [
     Logger,
     JwtService,
     PrismaService,
-    SocketGateway,
-    AuthService,
     AccountService,
-    SocketService,
+    AuthService,
     RefreshTokenService,
   ],
 })

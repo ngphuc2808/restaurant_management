@@ -35,7 +35,7 @@ import { Input } from '@repo/ui/components/input'
 import { Label } from '@repo/ui/components/label'
 
 const GuestLoginForm = () => {
-  const { setRole, setSocket } = useAppStore()
+  const { role, setRole, setSocket } = useAppStore()
 
   const t = useTranslations('LoginGuest')
   const tErrorMessage = useTranslations('ErrorMessage')
@@ -65,6 +65,7 @@ const GuestLoginForm = () => {
       setSocket(generateSocketInstace(result.payload.data.accessToken))
       router.push('/guest/menu')
     } catch (error) {
+      console.log('>>> error: ', error)
       handleErrorApi({
         error,
         setError: form.setError,
@@ -73,7 +74,7 @@ const GuestLoginForm = () => {
   }
 
   useEffect(() => {
-    if (!token) {
+    if (!token || role) {
       router.push('/')
     }
   }, [token, router])

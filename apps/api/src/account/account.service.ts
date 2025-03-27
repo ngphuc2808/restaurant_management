@@ -1,21 +1,18 @@
-import { PrismaService } from '@/prisma.service';
 import {
-  Inject,
   Injectable,
   Logger,
   UnprocessableEntityException,
-  forwardRef,
 } from '@nestjs/common';
 import { I18nService } from 'nestjs-i18n';
 import * as bcrypt from 'bcryptjs';
 
+import { PrismaService } from '@/prisma.service';
 import { AuthService } from '@/auth/auth.service';
-
 import { RefreshTokenService } from '@/refresh-token/refresh-token.service';
 import { SocketService } from '@/socket/socket.service';
 import { SocketGateway } from '@/socket/socket-gateway';
 import { CreateAccountReqDto } from '@/account/dto/req/create.req.dto';
-import { PaginationReqDto } from '@/account/dto/req/paginate.req.dto';
+import { PaginationReqDto } from '@/utils/paginate.dto';
 import { UpdateMeReqDto } from '@/account/dto/req/update-me.req.dto';
 import { ChangePasswordReqDto } from '@/account/dto/req/change-password.req.dto';
 import { UpdateAccountReqDto } from '@/account/dto/req/update.req.dto';
@@ -31,7 +28,6 @@ export class AccountService {
     private logger: Logger,
     private i18n: I18nService,
     private prisma: PrismaService,
-    @Inject(forwardRef(() => AuthService))
     private authService: AuthService,
     private refreshTokenService: RefreshTokenService,
     private socketService: SocketService,
@@ -204,7 +200,6 @@ export class AccountService {
 
       return account;
     } catch (error) {
-      this.logger.error(error.message);
       if (isPrismaClientKnownRequestError(error)) {
         if (error.code === PrismaErrorCode.RecordNotFound) {
           throw new UnprocessableEntityException(
@@ -212,6 +207,7 @@ export class AccountService {
           );
         }
       }
+      this.logger.error(error.message);
       throw error;
     }
   }
@@ -276,8 +272,6 @@ export class AccountService {
 
       return updatedAccount;
     } catch (error) {
-      this.logger.error(error.message);
-
       if (isPrismaClientKnownRequestError(error)) {
         if (error.code === PrismaErrorCode.UniqueConstraintViolation) {
           throw new UnprocessableEntityException({
@@ -291,7 +285,7 @@ export class AccountService {
           });
         }
       }
-
+      this.logger.error(error.message);
       throw error;
     }
   }
@@ -311,31 +305,6 @@ export class AccountService {
         throw new UnprocessableEntityException(
           this.i18n.t('errors.auth.invalid-id'),
         );
-      }
-
-      return account;
-    } catch (error) {
-      this.logger.error(error.message);
-      throw error;
-    }
-  }
-
-  async findAccountWithEmail(email: string) {
-    try {
-      const account = await this.prisma.account.findUnique({
-        where: { email },
-      });
-
-      if (!account) {
-        throw new UnprocessableEntityException({
-          message: this.i18n.t('errors.auth.invalid-email'),
-          errors: [
-            {
-              field: 'email',
-              message: this.i18n.t('errors.auth.invalid-email'),
-            },
-          ],
-        });
       }
 
       return account;

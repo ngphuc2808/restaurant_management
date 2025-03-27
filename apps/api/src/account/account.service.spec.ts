@@ -11,7 +11,7 @@ import { SocketService } from '@/socket/socket.service';
 import { SocketGateway } from '@/socket/socket-gateway';
 import { AccountService } from '@/account/account.service';
 import { CreateAccountReqDto } from '@/account/dto/req/create.req.dto';
-import { PaginationReqDto } from '@/account/dto/req/paginate.req.dto';
+import { PaginationReqDto } from '@/utils/paginate.dto';
 import { UpdateMeReqDto } from '@/account/dto/req/update-me.req.dto';
 import { ChangePasswordReqDto } from '@/account/dto/req/change-password.req.dto';
 import { UpdateAccountReqDto } from '@/account/dto/req/update.req.dto';
@@ -527,29 +527,6 @@ describe('AccountService', () => {
         .mockRejectedValue(new Error());
 
       await expect(service.getAccountDetail(1)).rejects.toThrow();
-    });
-  });
-
-  describe('findAccountWithEmail', () => {
-    it('should return account by email', async () => {
-      jest
-        .spyOn(prismaService.account, 'findUnique')
-        .mockResolvedValue(mockAccount);
-
-      const result = await service.findAccountWithEmail('test@example.com');
-
-      expect(result).toEqual(mockAccount);
-      expect(prismaService.account.findUnique).toHaveBeenCalledWith({
-        where: { email: 'test@example.com' },
-      });
-    });
-
-    it('should throw UnprocessableEntityException when account not found', async () => {
-      jest.spyOn(prismaService.account, 'findUnique').mockResolvedValue(null);
-
-      await expect(
-        service.findAccountWithEmail('test@example.com'),
-      ).rejects.toThrow(UnprocessableEntityException);
     });
   });
 });

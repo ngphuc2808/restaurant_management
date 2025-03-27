@@ -7,7 +7,7 @@ import { I18nService } from 'nestjs-i18n';
 import { AccountController } from '@/account/account.controller';
 import { AccountService } from '@/account/account.service';
 import { CreateAccountReqDto } from '@/account/dto/req/create.req.dto';
-import { PaginationReqDto } from '@/account/dto/req/paginate.req.dto';
+import { PaginationReqDto } from '@/utils/paginate.dto';
 import { UpdateMeReqDto } from '@/account/dto/req/update-me.req.dto';
 import { ChangePasswordReqDto } from '@/account/dto/req/change-password.req.dto';
 import { UpdateAccountReqDto } from '@/account/dto/req/update.req.dto';

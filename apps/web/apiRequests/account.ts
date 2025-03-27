@@ -31,10 +31,15 @@ const accountApiRequest = {
     http.put<ChangePasswordV2ResType>(`/${prefix}/change-password`, body, {
       baseUrl: '/api',
     }),
-  sChangePasswordV2: (accessToken: string, body: ChangePasswordV2BodyType) =>
+  sChangePasswordV2: (
+    accessToken: string,
+    body: ChangePasswordV2BodyType,
+    locale: string,
+  ) =>
     http.put<ChangePasswordV2ResType>(`/${prefix}/change-password`, body, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
+        locale,
       },
     }),
   list: ({ page, limit }: { page: number; limit: number }) =>

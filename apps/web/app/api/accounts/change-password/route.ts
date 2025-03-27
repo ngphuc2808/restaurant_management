@@ -5,9 +5,11 @@ import accountApiRequest from '@/apiRequests/account'
 import { HttpError } from '@/lib/http'
 
 export async function PUT(request: Request) {
+  const locale = request.headers.get('locale')
   const cookieStore = await cookies()
   const body = (await request.json()) as ChangePasswordV2BodyType
   const accessToken = cookieStore.get('accessToken')?.value
+
   if (!accessToken) {
     return Response.json(
       {
@@ -22,6 +24,7 @@ export async function PUT(request: Request) {
     const { payload } = await accountApiRequest.sChangePasswordV2(
       accessToken,
       body,
+      locale!,
     )
 
     const decodedAccessToken = jwt.decode(payload.data.accessToken) as {

@@ -17,11 +17,12 @@ import { AccountService } from '@/account/account.service';
     JwtService,
     ConfigService,
     PrismaService,
+    SocketService,
     SocketGateway,
     AuthService,
     AccountService,
-    SocketService,
     RefreshTokenService,
   ],
+  exports: [SocketGateway, SocketService],
 })
 export class SocketModule {}

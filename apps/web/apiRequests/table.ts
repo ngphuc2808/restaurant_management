@@ -5,11 +5,15 @@ import {
   TableResType,
   UpdateTableBodyType,
 } from '@/schemaValidations/table.schema'
+import queryString from 'query-string'
 
 const prefix = 'tables'
 
 const tableApiRequest = {
-  list: () => http.get<TableListResType>(prefix),
+  list: ({ page, limit }: { page: number; limit: number }) =>
+    http.get<TableListResType>(
+      `${prefix}?` + queryString.stringify({ page, limit }),
+    ),
   add: (body: CreateTableBodyType) => http.post<TableResType>(prefix, body),
   getTable: (id: number) => http.get<TableResType>(`${prefix}/${id}`),
   updateTable: (id: number, body: UpdateTableBodyType) =>

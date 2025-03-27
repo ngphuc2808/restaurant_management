@@ -329,7 +329,7 @@ const OrderTable = () => {
         }
 
         return (
-          <DropdownMenu>
+          <DropdownMenu modal={false}>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="h-8 w-8 p-0">
                 <DotsHorizontalIcon className="h-4 w-4" />

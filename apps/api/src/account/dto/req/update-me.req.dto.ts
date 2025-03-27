@@ -14,9 +14,9 @@ export class UpdateMeReqDto {
   @ApiProperty()
   name: string;
 
-  @IsString()
-  @IsUrl()
   @IsOptional()
+  @IsString()
+  @IsUrl({ require_tld: false })
   @ApiProperty()
   avatar: string;
 }

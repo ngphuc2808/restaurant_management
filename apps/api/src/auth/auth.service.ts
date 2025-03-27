@@ -1,10 +1,8 @@
 import {
-  Inject,
   Injectable,
   Logger,
   UnauthorizedException,
   UnprocessableEntityException,
-  forwardRef,
 } from '@nestjs/common';
 import { I18nService } from 'nestjs-i18n';
 import { JwtService } from '@nestjs/jwt';
@@ -15,14 +13,18 @@ import * as ms from 'ms';
 
 import { Account } from '@prisma/client';
 import { LoginReqDto } from '@/auth/dto/req/login.req.dto';
+import { GoogleUserDto } from '@/auth/dto/types';
 
-import { RefreshTokenService } from '@/refresh-token/refresh-token.service';
-import { AccountService } from '@/account/account.service';
+import { PrismaService } from '@/prisma.service';
 import { SocketService } from '@/socket/socket.service';
+import { RefreshTokenService } from '@/refresh-token/refresh-token.service';
 import {
   PrismaErrorCode,
   isPrismaClientKnownRequestError,
 } from '@/utils/errors';
+import { Role } from '@/constants/type';
+import { Response } from 'express';
+import queryString from 'query-string';
 
 @Injectable()
 export class AuthService {
@@ -30,9 +32,8 @@ export class AuthService {
     private logger: Logger,
     private i18n: I18nService,
     private jwtService: JwtService,
-    @Inject(forwardRef(() => AccountService))
-    private accountService: AccountService,
     private configService: ConfigService,
+    private prisma: PrismaService,
     private refreshTokenService: RefreshTokenService,
     private socketService: SocketService,
   ) {}
@@ -71,7 +72,21 @@ export class AuthService {
 
   async validateAccount(email: string, pass: string) {
     try {
-      const account = await this.accountService.findAccountWithEmail(email);
+      const account = await this.prisma.account.findUnique({
+        where: { email },
+      });
+
+      if (!account) {
+        throw new UnprocessableEntityException({
+          message: this.i18n.t('errors.auth.invalid-email'),
+          errors: [
+            {
+              field: 'email',
+              message: this.i18n.t('errors.auth.invalid-email'),
+            },
+          ],
+        });
+      }
 
       if (!(await bcrypt.compare(pass, account.password))) {
         throw new UnprocessableEntityException({
@@ -104,6 +119,47 @@ export class AuthService {
     }
   }
 
+  async loginGoogle(user: GoogleUserDto, res: Response) {
+    const clientRedirectUrl = this.configService.get(
+      'GOOGLE_REDIRECT_CLIENT_URL',
+    );
+
+    try {
+      const account = await this.prisma.account.findUnique({
+        where: { email: user.email },
+      });
+
+      if (!account) {
+        throw new UnprocessableEntityException({
+          message: this.i18n.t('errors.auth.invalid-email'),
+          errors: [
+            {
+              field: 'email',
+              message: this.i18n.t('errors.auth.invalid-email'),
+            },
+          ],
+        });
+      }
+
+      const result = await this.generateTokens(account);
+
+      const qs = queryString.stringify({
+        accessToken: result.accessToken,
+        refreshToken: result.refreshToken,
+      });
+
+      res.redirect(`${clientRedirectUrl}?${qs}`);
+    } catch (error) {
+      const qs = queryString.stringify({
+        message: error.message,
+      });
+
+      res.redirect(`${clientRedirectUrl}?${qs}`);
+      this.logger.error(error.message);
+      throw error;
+    }
+  }
+
   async generateTokens(account: Account) {
     try {
       const payload = {
@@ -120,6 +176,28 @@ export class AuthService {
       return {
         account: { ...payload, avatar: account.avatar, name: account.name },
         accessToken,
+        refreshToken: refreshToken.refreshToken,
+      };
+    } catch (error) {
+      this.logger.error(error.message);
+      throw error;
+    }
+  }
+
+  async generateGuestTokens(id: number) {
+    try {
+      const payload = {
+        id,
+        role: Role.Guest,
+      };
+
+      const [accessToken, refreshToken] = await Promise.all([
+        this.getAccessToken(payload),
+        this.getGuestRefreshToken(payload),
+      ]);
+
+      return {
+        accessToken,
         refreshToken,
       };
     } catch (error) {
@@ -128,7 +206,7 @@ export class AuthService {
     }
   }
 
-  async getAccessToken(account: { id: number; email: string; role: string }) {
+  async getAccessToken(account: { id: number; email?: string; role: string }) {
     try {
       const data = {
         id: account.id,
@@ -136,10 +214,12 @@ export class AuthService {
         role: account.role,
       };
 
-      const expiresTime =
-        (await this.configService.get('JWT_ACCESS_TOKEN_EXPIRES_IN')) || '15m';
-      const secret =
-        (await this.configService.get('JWT_ACCESS_TOKEN_SECRET')) || 'secret';
+      const expiresTime = await this.configService.get(
+        account.role === Role.Guest
+          ? 'GUEST_JWT_ACCESS_TOKEN_EXPIRES_IN'
+          : 'JWT_ACCESS_TOKEN_EXPIRES_IN',
+      );
+      const secret = await this.configService.get('JWT_ACCESS_TOKEN_SECRET');
 
       const accessToken = await this.jwtService.signAsync(data, {
         secret,
@@ -161,21 +241,51 @@ export class AuthService {
         role: account.role,
       };
 
-      const expiresTime =
-        (await this.configService.get('JWT_REFRESH_TOKEN_EXPIRES_IN')) || '7d';
-      const secret =
-        (await this.configService.get('JWT_REFRESH_TOKEN_SECRET')) || 'secret';
+      const expiresTime = await this.configService.get(
+        'JWT_REFRESH_TOKEN_EXPIRES_IN',
+      );
+      const secret = await this.configService.get('JWT_REFRESH_TOKEN_SECRET');
 
-      const expiresAt = new Date(Date.now() + ms(expiresTime));
+      const refreshTokenExpiresAt = new Date(Date.now() + ms(expiresTime));
 
       const refreshToken = await this.jwtService.signAsync(data, {
         secret,
         expiresIn: Number(ms(expiresTime)) / 1000,
       });
 
-      await this.refreshTokenService.insert(data.id, refreshToken, expiresAt);
+      await this.refreshTokenService.insert(
+        data.id,
+        refreshToken,
+        refreshTokenExpiresAt,
+      );
 
-      return refreshToken;
+      return { refreshToken, refreshTokenExpiresAt };
+    } catch (error) {
+      this.logger.error(error.message);
+      throw error;
+    }
+  }
+
+  async getGuestRefreshToken(account: { id: number; role: string }) {
+    try {
+      const data = {
+        id: account.id,
+        role: account.role,
+      };
+
+      const expiresTime = await this.configService.get(
+        'GUEST_JWT_REFRESH_TOKEN_EXPIRES_IN',
+      );
+      const secret = await this.configService.get('JWT_REFRESH_TOKEN_SECRET');
+
+      const refreshTokenExpiresAt = new Date(Date.now() + ms(expiresTime));
+
+      const refreshToken = await this.jwtService.signAsync(data, {
+        secret,
+        expiresIn: Number(ms(expiresTime)) / 1000,
+      });
+
+      return { refreshToken, refreshTokenExpiresAt };
     } catch (error) {
       this.logger.error(error.message);
       throw error;
@@ -200,9 +310,44 @@ export class AuthService {
       }
 
       await this.refreshTokenService.invalidate(refreshToken);
-      const account = await this.accountService.findAccountWithEmail(email);
+      const account = await this.prisma.account.findUnique({
+        where: { email },
+      });
+
+      if (!account) {
+        throw new UnprocessableEntityException({
+          message: this.i18n.t('errors.auth.invalid-email'),
+          errors: [
+            {
+              field: 'email',
+              message: this.i18n.t('errors.auth.invalid-email'),
+            },
+          ],
+        });
+      }
 
       return this.generateTokens(account);
+    } catch (error) {
+      this.logger.error(error.message);
+      throw error;
+    }
+  }
+
+  async processNewGuestToken(refreshToken: string) {
+    try {
+      const secret = await this.configService.get('JWT_REFRESH_TOKEN_SECRET');
+      const { id } = await this.jwtService.verifyAsync(refreshToken, {
+        secret,
+      });
+
+      const userId = Number(id);
+
+      const token = await this.generateGuestTokens(userId);
+
+      return {
+        accessToken: token.accessToken,
+        refreshToken: token.refreshToken.refreshToken,
+      };
     } catch (error) {
       this.logger.error(error.message);
       throw error;
@@ -213,7 +358,6 @@ export class AuthService {
     try {
       await this.refreshTokenService.invalidate(refreshToken);
     } catch (error) {
-      this.logger.error(error.message);
       if (isPrismaClientKnownRequestError(error)) {
         if (error.code === PrismaErrorCode.RecordNotFound) {
           throw new UnprocessableEntityException(
@@ -221,6 +365,7 @@ export class AuthService {
           );
         }
       }
+      this.logger.error(error.message);
       throw error;
     }
   }

@@ -25,27 +25,35 @@ export class SocketService {
 
   async upsertSocket(userId: number, socketId: string, role: string) {
     try {
-      const existingSocket = await this.prisma.socket.findUnique({
-        where:
-          role === Role.Guest ? { guestId: userId } : { accountId: userId },
-      });
-
-      if (existingSocket) {
-        await this.prisma.socket.update({
-          where:
-            role === Role.Guest ? { guestId: userId } : { accountId: userId },
-          data: { socketId: socketId },
+      if (role === Role.Guest) {
+        await this.prisma.socket.upsert({
+          where: {
+            guestId: userId,
+          },
+          update: {
+            socketId: socketId,
+          },
+          create: {
+            guestId: userId,
+            socketId: socketId,
+          },
         });
       } else {
-        await this.prisma.socket.create({
-          data:
-            role === Role.Guest
-              ? { guestId: userId, socketId: socketId }
-              : { accountId: userId, socketId: socketId },
+        await this.prisma.socket.upsert({
+          where: {
+            accountId: userId,
+          },
+          update: {
+            socketId: socketId,
+          },
+          create: {
+            accountId: userId,
+            socketId: socketId,
+          },
         });
       }
     } catch (error) {
-      this.logger.error(error.message);
+      this.logger.error(`Error in upsertSocket: ${error.message}`);
       throw error;
     }
   }

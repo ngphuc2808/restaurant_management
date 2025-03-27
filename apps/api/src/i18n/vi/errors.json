@@ -12,7 +12,8 @@
     "not-found": "Không tìm thấy tài khoản",
     "invalid": "Tài khoản không hợp lệ",
     "invalid-id": "ID tài khoản không hợp lệ",
-    "invalid-data": "Dữ liệu không hợp lệ"
+    "invalid-data": "Dữ liệu không hợp lệ",
+    "login-failed": "Đăng nhập thất bại"
   },
   "pagination": {
     "invalid": "Trang không hợp lệ"
@@ -22,5 +23,18 @@
   },
   "token": {
     "invalid": "Token không hợp lệ"
+  },
+  "dish": {
+    "no-dish-found": "Không tìm thấy món ăn",
+    "invalid-id": "ID món ăn không hợp lệ"
+  },
+  "table": {
+    "no-table-found": "Không tìm thấy bàn",
+    "invalid-number": "Số bàn không hợp lệ",
+    "invalid-capacity": "Sức chứa bàn không hợp lệ",
+    "table-already-exists": "Bàn đã tồn tại",
+    "table-invalid-token": "Bàn không tồn tại hoặc mã token không đúng",
+    "table-hidden": "Bàn này đã bị ẩn, hãy chọn bàn khác để đăng nhập",
+    "table-reserved": "Bàn đã được đặt trước, hãy liên hệ nhân viên để được hỗ trợ"
   }
 }

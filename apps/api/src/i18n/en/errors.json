@@ -12,7 +12,8 @@
     "not-found": "Account not found",
     "invalid": "Invalid account",
     "invalid-id": "Invalid account ID",
-    "invalid-data": "Invalid data"
+    "invalid-data": "Invalid data",
+    "login-failed": "Login failed"
   },
   "pagination": {
     "invalid": "Invalid pagination"
@@ -22,5 +23,17 @@
   },
   "token": {
     "invalid": "Invalid token"
+  },
+  "dish": {
+    "no-dish-found": "No dish found",
+    "invalid-id": "Invalid dish ID"
+  },
+  "table": {
+    "no-table-found": "No table found",
+    "invalid-number": "Invalid table number",
+    "invalid-capacity": "Invalid table capacity",
+    "table-invalid-token": "Table not found or invalid token",
+    "table-hidden": "This table is hidden, please choose another table to login",
+    "table-reserved": "This table is reserved, please contact the staff for assistance"
   }
 }

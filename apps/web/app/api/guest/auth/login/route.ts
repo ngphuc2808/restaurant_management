@@ -6,13 +6,16 @@ import { GuestLoginBodyType } from '@/schemaValidations/guest.schema'
 import { HttpError } from '@/lib/http'
 
 export async function POST(request: Request) {
+  const locale = request.headers.get('locale')
   const body = (await request.json()) as GuestLoginBodyType
   const cookieStore = await cookies()
+
   try {
-    const { payload } = await guestApiRequest.sLogin(body)
+    const { payload } = await guestApiRequest.sLogin(body, locale!)
     const { accessToken, refreshToken } = payload.data
     const decodedAccessToken = jwt.decode(accessToken) as { exp: number }
     const decodedRefreshToken = jwt.decode(refreshToken) as { exp: number }
+
     cookieStore.set('accessToken', accessToken, {
       path: '/',
       httpOnly: true,

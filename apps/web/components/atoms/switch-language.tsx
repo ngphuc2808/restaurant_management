@@ -23,11 +23,7 @@ const SwitchLanguage = () => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild aria-label="locale">
-        <Button
-          variant="outline"
-          size="icon"
-          className="h-10 w-10 rounded-full"
-        >
+        <Button variant="outline" size="icon" className="size-10 rounded-full">
           <Image
             src={`/${locale}.png`}
             alt={locale}
