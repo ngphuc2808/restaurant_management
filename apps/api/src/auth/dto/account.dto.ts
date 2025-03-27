@@ -15,9 +15,9 @@ export class UserDto {
 
   @IsEmail()
   @IsNotEmpty()
-  email: string;
+  email?: string;
 
   @IsOptional()
-  @IsEnum([Role.Owner, Role.Employee])
+  @IsEnum([Role.Owner, Role.Employee, Role.Guest])
   role?: string;
 }

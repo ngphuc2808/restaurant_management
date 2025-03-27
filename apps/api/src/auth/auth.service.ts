@@ -171,7 +171,11 @@ export class AuthService {
       };
 
       const expiresTime =
-        (await this.configService.get('JWT_ACCESS_TOKEN_EXPIRES_IN')) || '15m';
+        (await this.configService.get(
+          account.role === Role.Guest
+            ? 'GUEST_JWT_ACCESS_TOKEN_EXPIRES_IN'
+            : 'JWT_ACCESS_TOKEN_EXPIRES_IN',
+        )) || '15m';
       const secret =
         (await this.configService.get('JWT_ACCESS_TOKEN_SECRET')) || 'secret';
 
@@ -228,7 +232,8 @@ export class AuthService {
       };
 
       const expiresTime =
-        (await this.configService.get('JWT_REFRESH_TOKEN_EXPIRES_IN')) || '7d';
+        (await this.configService.get('GUEST_JWT_REFRESH_TOKEN_EXPIRES_IN')) ||
+        '7d';
       const secret =
         (await this.configService.get('JWT_REFRESH_TOKEN_SECRET')) || 'secret';
 
@@ -281,6 +286,27 @@ export class AuthService {
       }
 
       return this.generateTokens(account);
+    } catch (error) {
+      this.logger.error(error.message);
+      throw error;
+    }
+  }
+
+  async processNewGuestToken(refreshToken: string) {
+    try {
+      const secret = await this.configService.get('JWT_REFRESH_TOKEN_SECRET');
+      const { id } = await this.jwtService.verifyAsync(refreshToken, {
+        secret,
+      });
+
+      const userId = Number(id);
+
+      const token = await this.generateGuestTokens(userId);
+
+      return {
+        accessToken: token.accessToken,
+        refreshToken: token.refreshToken.refreshToken,
+      };
     } catch (error) {
       this.logger.error(error.message);
       throw error;

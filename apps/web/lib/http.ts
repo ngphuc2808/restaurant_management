@@ -130,35 +130,36 @@ const request = async <Response>(
         },
       )
     } else if (res.status === AUTHENTICATION_ERROR_STATUS) {
-      if (isClient) {
-        if (!clientLogoutRequest) {
-          clientLogoutRequest = fetch('/api/auth/logout', {
-            method: 'POST',
-            body: null,
-            headers: {
-              ...baseHeaders,
-            } as any,
-          })
-          try {
-            await clientLogoutRequest
-          } catch (error) {
-            console.log('>>> error: ', error)
-            throw error
-          } finally {
-            removeTokensFromLocalStorage()
-            clientLogoutRequest = null
-            location.href = `/${locale}/login`
-          }
-        }
-      } else {
-        const accessToken = (options?.headers as any)?.Authorization.split(
-          'Bearer ',
-        )[1]
-        redirect({
-          href: `/login?accessToken=${accessToken}`,
-          locale: locale ?? defaultLocale,
-        })
-      }
+      // if (isClient) {
+      //   if (!clientLogoutRequest) {
+      //     clientLogoutRequest = fetch('/api/auth/logout', {
+      //       method: 'POST',
+      //       body: null,
+      //       headers: {
+      //         ...baseHeaders,
+      //       } as any,
+      //     })
+      //     try {
+      //       await clientLogoutRequest
+      //     } catch (error) {
+      //       console.log('>>> error: ', error)
+      //       throw error
+      //     } finally {
+      //       removeTokensFromLocalStorage()
+      //       clientLogoutRequest = null
+      //       location.href = `/${locale}/login`
+      //     }
+      //   }
+      // } else {
+      //   const accessToken = (options?.headers as any)?.Authorization.split(
+      //     'Bearer ',
+      //   )[1]
+      //   redirect({
+      //     href: `/login?accessToken=${accessToken}`,
+      //     locale: locale ?? defaultLocale,
+      //   })
+      // }
+      console.log(res)
     } else {
       throw new HttpError(data)
     }

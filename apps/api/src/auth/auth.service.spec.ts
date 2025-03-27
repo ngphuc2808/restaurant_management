@@ -242,9 +242,11 @@ describe('AuthService', () => {
   });
 
   describe('getAccessToken', () => {
-    it('should generate access token successfully', async () => {
+    it('should generate access token successfully for regular user', async () => {
       jest.spyOn(jwtService, 'signAsync').mockResolvedValue('access-token');
-      (configService.get as jest.Mock).mockResolvedValue('secret');
+      (configService.get as jest.Mock)
+        .mockResolvedValueOnce('15m') // JWT_ACCESS_TOKEN_EXPIRES_IN
+        .mockResolvedValueOnce('secret'); // JWT_ACCESS_TOKEN_SECRET
       (ms as jest.Mock).mockReturnValue(900000); // 15 minutes
 
       const result = await service.getAccessToken({
@@ -255,6 +257,33 @@ describe('AuthService', () => {
 
       expect(result).toBe('access-token');
       expect(jwtService.signAsync).toHaveBeenCalled();
+      expect(configService.get).toHaveBeenCalledWith(
+        'JWT_ACCESS_TOKEN_EXPIRES_IN',
+      );
+    });
+
+    it('should generate access token successfully for guest', async () => {
+      jest.spyOn(jwtService, 'signAsync').mockResolvedValue('access-token');
+      (configService.get as jest.Mock)
+        .mockResolvedValueOnce('30m') // GUEST_JWT_ACCESS_TOKEN_EXPIRES_IN
+        .mockResolvedValueOnce('secret'); // JWT_ACCESS_TOKEN_SECRET
+      (ms as jest.Mock).mockReturnValue(1800000); // 30 minutes
+
+      const result = await service.getAccessToken({
+        id: 1,
+        role: Role.Guest,
+      });
+
+      expect(result).toBe('access-token');
+      expect(jwtService.signAsync).toHaveBeenCalled();
+      expect(configService.get).toHaveBeenNthCalledWith(
+        1,
+        'GUEST_JWT_ACCESS_TOKEN_EXPIRES_IN',
+      );
+      expect(configService.get).toHaveBeenNthCalledWith(
+        2,
+        'JWT_ACCESS_TOKEN_SECRET',
+      );
     });
   });
 
@@ -286,14 +315,14 @@ describe('AuthService', () => {
       };
 
       const mockRefreshToken = 'mock-refresh-token';
-      const mockExpiresIn = '7d';
+      const mockExpiresIn = '14d';
       const mockSecret = 'mock-secret';
 
       jest.spyOn(jwtService, 'signAsync').mockResolvedValue(mockRefreshToken);
       (configService.get as jest.Mock)
-        .mockResolvedValueOnce(mockExpiresIn) // JWT_REFRESH_TOKEN_EXPIRES_IN
+        .mockResolvedValueOnce(mockExpiresIn) // GUEST_JWT_REFRESH_TOKEN_EXPIRES_IN
         .mockResolvedValueOnce(mockSecret); // JWT_REFRESH_TOKEN_SECRET
-      (ms as jest.Mock).mockReturnValue(604800000); // 7 days in milliseconds
+      (ms as jest.Mock).mockReturnValue(1209600000); // 14 days in milliseconds
 
       const result = await service.getGuestRefreshToken(guestData);
 
@@ -302,7 +331,7 @@ describe('AuthService', () => {
       expect(result.refreshTokenExpiresAt).toBeInstanceOf(Date);
 
       expect(configService.get).toHaveBeenCalledWith(
-        'JWT_REFRESH_TOKEN_EXPIRES_IN',
+        'GUEST_JWT_REFRESH_TOKEN_EXPIRES_IN',
       );
       expect(configService.get).toHaveBeenCalledWith(
         'JWT_REFRESH_TOKEN_SECRET',
@@ -310,7 +339,7 @@ describe('AuthService', () => {
 
       expect(jwtService.signAsync).toHaveBeenCalledWith(guestData, {
         secret: mockSecret,
-        expiresIn: 604800, // 7 days in seconds
+        expiresIn: 1209600, // 14 days in seconds
       });
     });
 
@@ -324,7 +353,7 @@ describe('AuthService', () => {
 
       jest.spyOn(jwtService, 'signAsync').mockResolvedValue(mockRefreshToken);
       (configService.get as jest.Mock)
-        .mockResolvedValueOnce(null) // JWT_REFRESH_TOKEN_EXPIRES_IN not set
+        .mockResolvedValueOnce(null) // GUEST_JWT_REFRESH_TOKEN_EXPIRES_IN not set
         .mockResolvedValueOnce(null); // JWT_REFRESH_TOKEN_SECRET not set
       (ms as jest.Mock).mockReturnValue(604800000); // 7 days in milliseconds
 
@@ -420,6 +449,37 @@ describe('AuthService', () => {
       await expect(service.processNewToken('invalid-token')).rejects.toThrow(
         UnauthorizedException,
       );
+    });
+  });
+
+  describe('processNewGuestToken', () => {
+    it('should process new guest token successfully', async () => {
+      const mockDecodedToken = { id: 1, role: Role.Guest };
+      (configService.get as jest.Mock).mockResolvedValue('secret');
+      jest.spyOn(jwtService, 'verifyAsync').mockResolvedValue(mockDecodedToken);
+      jest
+        .spyOn(jwtService, 'signAsync')
+        .mockResolvedValueOnce('new-access-token')
+        .mockResolvedValueOnce('new-refresh-token');
+
+      const result = await service.processNewGuestToken('refresh-token');
+
+      expect(result).toHaveProperty('accessToken', 'new-access-token');
+      expect(result).toHaveProperty('refreshToken', 'new-refresh-token');
+      expect(jwtService.verifyAsync).toHaveBeenCalledWith('refresh-token', {
+        secret: 'secret',
+      });
+    });
+
+    it('should throw error when token verification fails', async () => {
+      (configService.get as jest.Mock).mockResolvedValue('secret');
+      jest
+        .spyOn(jwtService, 'verifyAsync')
+        .mockRejectedValue(new Error('Invalid token'));
+
+      await expect(
+        service.processNewGuestToken('invalid-token'),
+      ).rejects.toThrow('Invalid token');
     });
   });
 

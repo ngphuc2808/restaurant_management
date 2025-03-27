@@ -24,6 +24,18 @@
       "create": "Tạo bàn thành công!",
       "update": "Cập nhật bàn thành công!",
       "delete": "Xóa bàn thành công!"
+    },
+    "order": {
+      "get-list": "Lấy danh sách đơn hàng thành công!",
+      "get": "Lấy thông tin đơn hàng thành công!",
+      "create": "Tạo đơn hàng thành công!",
+      "update": "Cập nhật đơn hàng thành công!",
+      "delete": "Xóa đơn hàng thành công!",
+      "table-deleted": "Bàn của bạn đã bị xóa, vui lòng đăng xuất và đăng nhập lại một bàn mới",
+      "table-hidden": "Bàn {number} đã bị ẩn, vui lòng đăng xuất và chọn bàn khác",
+      "table-reserved": "Bàn {number} đã được đặt trước, vui lòng đăng xuất và chọn bàn khác",
+      "dish-unavailable": "Món {name} đã hết",
+      "dish-hidden": "Món {name} không thể đặt"
     }
   }
 }
