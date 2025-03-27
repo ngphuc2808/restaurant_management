@@ -18,7 +18,7 @@ import { ResponseMessage, Role, User } from '@/constants/type';
 import { RoleGuard } from '@/auth/guards/role.guard';
 import { Roles } from '@/auth/decorators/public.decorator';
 
-import { UserDto } from '@/auth/dto/account.dto';
+import { UserDto } from '@/auth/dto/types';
 import { CreateAccountReqDto } from '@/account/dto/req/create.req.dto';
 import { AccountResDto } from '@/account/dto/res/account.res.dto';
 import { PaginationReqDto } from '@/utils/paginate.dto';

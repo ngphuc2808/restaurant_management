@@ -14,7 +14,7 @@ import { ResponseMessage, Role, User } from '@/constants/type';
 import { ApiOkResponse } from '@nestjs/swagger';
 
 import { RoleGuard } from '@/auth/guards/role.guard';
-import { UserDto } from '@/auth/dto/account.dto';
+import { UserDto } from '@/auth/dto/types';
 import { GuestLoginReqDto } from '@/guest/dto/req/guest-login.req.dto';
 import { GuestLoginResDto } from '@/guest/dto/res/guest-login.res.dto';
 import { GuestLogoutResDto } from '@/guest/dto/res/guest-logout.res.dto';

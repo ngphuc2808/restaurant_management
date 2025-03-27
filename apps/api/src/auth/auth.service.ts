@@ -13,6 +13,7 @@ import * as ms from 'ms';
 
 import { Account } from '@prisma/client';
 import { LoginReqDto } from '@/auth/dto/req/login.req.dto';
+import { GoogleUserDto } from '@/auth/dto/types';
 
 import { PrismaService } from '@/prisma.service';
 import { SocketService } from '@/socket/socket.service';
@@ -22,6 +23,8 @@ import {
   isPrismaClientKnownRequestError,
 } from '@/utils/errors';
 import { Role } from '@/constants/type';
+import { Response } from 'express';
+import queryString from 'query-string';
 
 @Injectable()
 export class AuthService {
@@ -116,6 +119,47 @@ export class AuthService {
     }
   }
 
+  async loginGoogle(user: GoogleUserDto, res: Response) {
+    const clientRedirectUrl = this.configService.get(
+      'GOOGLE_REDIRECT_CLIENT_URL',
+    );
+
+    try {
+      const account = await this.prisma.account.findUnique({
+        where: { email: user.email },
+      });
+
+      if (!account) {
+        throw new UnprocessableEntityException({
+          message: this.i18n.t('errors.auth.invalid-email'),
+          errors: [
+            {
+              field: 'email',
+              message: this.i18n.t('errors.auth.invalid-email'),
+            },
+          ],
+        });
+      }
+
+      const result = await this.generateTokens(account);
+
+      const qs = queryString.stringify({
+        accessToken: result.accessToken,
+        refreshToken: result.refreshToken,
+      });
+
+      res.redirect(`${clientRedirectUrl}?${qs}`);
+    } catch (error) {
+      const qs = queryString.stringify({
+        message: error.message,
+      });
+
+      res.redirect(`${clientRedirectUrl}?${qs}`);
+      this.logger.error(error.message);
+      throw error;
+    }
+  }
+
   async generateTokens(account: Account) {
     try {
       const payload = {
@@ -170,14 +214,12 @@ export class AuthService {
         role: account.role,
       };
 
-      const expiresTime =
-        (await this.configService.get(
-          account.role === Role.Guest
-            ? 'GUEST_JWT_ACCESS_TOKEN_EXPIRES_IN'
-            : 'JWT_ACCESS_TOKEN_EXPIRES_IN',
-        )) || '15m';
-      const secret =
-        (await this.configService.get('JWT_ACCESS_TOKEN_SECRET')) || 'secret';
+      const expiresTime = await this.configService.get(
+        account.role === Role.Guest
+          ? 'GUEST_JWT_ACCESS_TOKEN_EXPIRES_IN'
+          : 'JWT_ACCESS_TOKEN_EXPIRES_IN',
+      );
+      const secret = await this.configService.get('JWT_ACCESS_TOKEN_SECRET');
 
       const accessToken = await this.jwtService.signAsync(data, {
         secret,
@@ -199,10 +241,10 @@ export class AuthService {
         role: account.role,
       };
 
-      const expiresTime =
-        (await this.configService.get('JWT_REFRESH_TOKEN_EXPIRES_IN')) || '7d';
-      const secret =
-        (await this.configService.get('JWT_REFRESH_TOKEN_SECRET')) || 'secret';
+      const expiresTime = await this.configService.get(
+        'JWT_REFRESH_TOKEN_EXPIRES_IN',
+      );
+      const secret = await this.configService.get('JWT_REFRESH_TOKEN_SECRET');
 
       const refreshTokenExpiresAt = new Date(Date.now() + ms(expiresTime));
 
@@ -231,11 +273,10 @@ export class AuthService {
         role: account.role,
       };
 
-      const expiresTime =
-        (await this.configService.get('GUEST_JWT_REFRESH_TOKEN_EXPIRES_IN')) ||
-        '7d';
-      const secret =
-        (await this.configService.get('JWT_REFRESH_TOKEN_SECRET')) || 'secret';
+      const expiresTime = await this.configService.get(
+        'GUEST_JWT_REFRESH_TOKEN_EXPIRES_IN',
+      );
+      const secret = await this.configService.get('JWT_REFRESH_TOKEN_SECRET');
 
       const refreshTokenExpiresAt = new Date(Date.now() + ms(expiresTime));
 

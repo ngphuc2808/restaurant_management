@@ -45,8 +45,8 @@ export class TransformInterceptor<T>
           data,
         };
       }),
-      catchError((err) => {
-        return throwError(
+      catchError((err) =>
+        throwError(
           () =>
             new HttpException(
               {
@@ -56,8 +56,8 @@ export class TransformInterceptor<T>
               },
               err.status || 500,
             ),
-        );
-      }),
+        ),
+      ),
     );
   }
 }

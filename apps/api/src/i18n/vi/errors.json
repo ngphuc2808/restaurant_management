@@ -12,7 +12,8 @@
     "not-found": "Không tìm thấy tài khoản",
     "invalid": "Tài khoản không hợp lệ",
     "invalid-id": "ID tài khoản không hợp lệ",
-    "invalid-data": "Dữ liệu không hợp lệ"
+    "invalid-data": "Dữ liệu không hợp lệ",
+    "login-failed": "Đăng nhập thất bại"
   },
   "pagination": {
     "invalid": "Trang không hợp lệ"

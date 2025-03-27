@@ -12,7 +12,8 @@
     "not-found": "Account not found",
     "invalid": "Invalid account",
     "invalid-id": "Invalid account ID",
-    "invalid-data": "Invalid data"
+    "invalid-data": "Invalid data",
+    "login-failed": "Login failed"
   },
   "pagination": {
     "invalid": "Invalid pagination"
