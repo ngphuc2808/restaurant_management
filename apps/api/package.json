@@ -108,7 +108,11 @@
       "<rootDir>"
     ],
     "moduleNameMapper": {
-      "@/(.*)": "<rootDir>/$1"
-    }
+      "@/(.*)": "<rootDir>/$1",
+      "query-string": "<rootDir>/__mocks__/query-string.ts"
+    },
+    "transformIgnorePatterns": [
+      "node_modules/(?!query-string|decode-uri-component|split-on-first|filter-obj)"
+    ]
   }
 }

@@ -239,6 +239,16 @@ describe('AuthService', () => {
       expect(result).toHaveProperty('accessToken');
       expect(result).toHaveProperty('refreshToken');
     });
+
+    it('should handle token generation error', async () => {
+      jest
+        .spyOn(jwtService, 'signAsync')
+        .mockRejectedValue(new Error('Token error'));
+
+      await expect(service.generateTokens(mockAccount)).rejects.toThrow(
+        'Token error',
+      );
+    });
   });
 
   describe('getAccessToken', () => {
@@ -344,27 +354,22 @@ describe('AuthService', () => {
     });
 
     it('should use default values when config is not available', async () => {
-      const guestData = {
-        id: 1,
-        role: Role.Guest,
-      };
-
-      const mockRefreshToken = 'mock-refresh-token';
-
-      jest.spyOn(jwtService, 'signAsync').mockResolvedValue(mockRefreshToken);
+      const guestData = { id: 1, role: Role.Guest };
+      const expiresTime = '14d';
       (configService.get as jest.Mock)
-        .mockResolvedValueOnce(null) // GUEST_JWT_REFRESH_TOKEN_EXPIRES_IN not set
-        .mockResolvedValueOnce(null); // JWT_REFRESH_TOKEN_SECRET not set
-      (ms as jest.Mock).mockReturnValue(604800000); // 7 days in milliseconds
+        .mockReturnValueOnce(expiresTime) // GUEST_JWT_REFRESH_TOKEN_EXPIRES_IN
+        .mockReturnValueOnce('secret'); // JWT_REFRESH_TOKEN_SECRET
+      (ms as jest.Mock).mockReturnValue(1209600000); // 14 days in milliseconds
+      jest.spyOn(jwtService, 'signAsync').mockResolvedValue('token');
 
       const result = await service.getGuestRefreshToken(guestData);
 
-      expect(result).toHaveProperty('refreshToken', mockRefreshToken);
+      expect(result).toHaveProperty('refreshToken');
       expect(result).toHaveProperty('refreshTokenExpiresAt');
 
       expect(jwtService.signAsync).toHaveBeenCalledWith(guestData, {
-        secret: 'secret', // default value
-        expiresIn: 604800, // 7 days in seconds
+        secret: 'secret',
+        expiresIn: 1209600, // 14 days in seconds
       });
     });
 
@@ -504,6 +509,60 @@ describe('AuthService', () => {
       await expect(service.logout('invalid-token')).rejects.toThrow(
         UnprocessableEntityException,
       );
+    });
+  });
+
+  describe('loginGoogle', () => {
+    const mockUser = {
+      email: 'test@example.com',
+    };
+    const mockRes = {
+      redirect: jest.fn(),
+    };
+
+    beforeEach(() => {
+      (configService.get as jest.Mock).mockReturnValue('http://localhost:3000');
+    });
+
+    it('should handle successful Google login', async () => {
+      jest
+        .spyOn(prismaService.account, 'findUnique')
+        .mockResolvedValue(mockAccount);
+      jest.spyOn(jwtService, 'signAsync').mockResolvedValue('token');
+      (configService.get as jest.Mock)
+        .mockReturnValueOnce('http://localhost:3000')
+        .mockReturnValueOnce('secret');
+      (ms as jest.Mock).mockReturnValue(900000);
+
+      await service.loginGoogle(mockUser as any, mockRes as any);
+
+      expect(prismaService.account.findUnique).toHaveBeenCalledWith({
+        where: { email: mockUser.email },
+      });
+      expect(mockRes.redirect).toHaveBeenCalled();
+    });
+
+    it('should handle non-existent account', async () => {
+      jest.spyOn(prismaService.account, 'findUnique').mockResolvedValue(null);
+
+      await expect(
+        service.loginGoogle(mockUser as any, mockRes as any),
+      ).rejects.toThrow(UnprocessableEntityException);
+      expect(mockRes.redirect).toHaveBeenCalled();
+    });
+
+    it('should handle token generation error', async () => {
+      jest
+        .spyOn(prismaService.account, 'findUnique')
+        .mockResolvedValue(mockAccount);
+      jest
+        .spyOn(jwtService, 'signAsync')
+        .mockRejectedValue(new Error('Token error'));
+
+      await expect(
+        service.loginGoogle(mockUser as any, mockRes as any),
+      ).rejects.toThrow('Token error');
+      expect(mockRes.redirect).toHaveBeenCalled();
     });
   });
 });

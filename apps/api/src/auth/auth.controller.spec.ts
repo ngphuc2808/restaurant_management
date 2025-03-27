@@ -1,6 +1,8 @@
 import { Logger, UnauthorizedException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Account } from '@prisma/client';
+import { ConfigService } from '@nestjs/config';
+import { I18nService } from 'nestjs-i18n';
 
 import { AuthController } from '@/auth/auth.controller';
 import { AuthService } from '@/auth/auth.service';
@@ -46,12 +48,25 @@ describe('AuthController', () => {
             login: jest.fn(),
             processNewToken: jest.fn(),
             logout: jest.fn(),
+            loginGoogle: jest.fn(),
           },
         },
         {
           provide: Logger,
           useValue: {
             error: jest.fn(),
+          },
+        },
+        {
+          provide: I18nService,
+          useValue: {
+            t: jest.fn().mockReturnValue('translated-message'),
+          },
+        },
+        {
+          provide: ConfigService,
+          useValue: {
+            get: jest.fn().mockReturnValue('secret'),
           },
         },
       ],
@@ -144,6 +159,43 @@ describe('AuthController', () => {
       await expect(authController.refresh(refreshDto)).rejects.toThrow(
         UnauthorizedException,
       );
+    });
+  });
+
+  describe('googleAuth', () => {
+    it('should be defined', () => {
+      expect(authController.googleAuth).toBeDefined();
+    });
+  });
+
+  describe('googleAuthCallback', () => {
+    const mockReq = {
+      user: {
+        email: 'test@example.com',
+      },
+    };
+    const mockRes = {
+      redirect: jest.fn(),
+    };
+
+    it('should handle successful Google authentication', async () => {
+      jest.spyOn(authService, 'loginGoogle').mockResolvedValue(undefined);
+
+      await authController.googleAuthCallback(mockReq as any, mockRes as any);
+
+      expect(authService.loginGoogle).toHaveBeenCalledWith(
+        mockReq.user,
+        mockRes,
+      );
+    });
+
+    it('should handle Google authentication error', async () => {
+      const error = new UnauthorizedException('Google auth failed');
+      jest.spyOn(authService, 'loginGoogle').mockRejectedValue(error);
+
+      await expect(
+        authController.googleAuthCallback(mockReq as any, mockRes as any),
+      ).rejects.toThrow(UnauthorizedException);
     });
   });
 });
