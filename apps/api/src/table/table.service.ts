@@ -170,4 +170,15 @@ export class TableService {
       throw error;
     }
   }
+
+  async getTableByNumber(number: number) {
+    try {
+      return await this.prisma.table.findUnique({
+        where: { number },
+      });
+    } catch (error) {
+      this.logger.error(error.message);
+      throw error;
+    }
+  }
 }

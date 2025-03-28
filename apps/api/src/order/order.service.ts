@@ -1,27 +1,47 @@
-import { Injectable } from '@nestjs/common';
-
-import { CreateOrderDto } from '@/order/dto/create-order.dto';
-import { UpdateOrderDto } from '@/order/dto/update-order.dto';
+import { PrismaService } from '@/prisma.service';
+import { SocketGateway } from '@/socket/socket-gateway';
+import { PaginationTimeReqDto } from '@/utils/paginate-time.dto';
+import { Injectable, Logger } from '@nestjs/common';
+import { I18nService } from 'nestjs-i18n';
 
 @Injectable()
 export class OrderService {
-  create(createOrderDto: CreateOrderDto) {
-    return 'This action adds a new order';
-  }
+  constructor(
+    private logger: Logger,
+    private i18n: I18nService,
+    private prisma: PrismaService,
+    private socketGateway: SocketGateway,
+  ) {}
 
-  findAll() {
-    return `This action returns all order`;
-  }
+  async getListOrder({ fromDate, toDate, page, limit }: PaginationTimeReqDto) {
+    try {
+      if (!page || page <= 0) page = 1;
+      if (!limit || limit <= 0) limit = 12;
 
-  findOne(id: number) {
-    return `This action returns a #${id} order`;
-  }
+      const skip = (page - 1) * limit;
 
-  update(id: number, updateOrderDto: UpdateOrderDto) {
-    return `This action updates a #${id} order`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} order`;
+      const orders = await this.prisma.order.findMany({
+        skip,
+        take: limit,
+        include: {
+          dishSnapshot: true,
+          orderHandler: true,
+          guest: true,
+        },
+        orderBy: {
+          createdAt: 'desc',
+        },
+        where: {
+          createdAt: {
+            gte: fromDate,
+            lte: toDate,
+          },
+        },
+      });
+      return orders;
+    } catch (error) {
+      this.logger.error(error.message);
+      throw error;
+    }
   }
 }

@@ -14,6 +14,7 @@ import {
 import { ApiOkResponse } from '@nestjs/swagger';
 
 import { AccountService } from '@/account/account.service';
+import { GuestService } from '@/guest/guest.service';
 import { ResponseMessage, Role, User } from '@/constants/type';
 import { RoleGuard } from '@/auth/guards/role.guard';
 import { Roles } from '@/auth/decorators/public.decorator';
@@ -21,15 +22,22 @@ import { Roles } from '@/auth/decorators/public.decorator';
 import { UserDto } from '@/auth/dto/types';
 import { CreateAccountReqDto } from '@/account/dto/req/create.req.dto';
 import { AccountResDto } from '@/account/dto/res/account.res.dto';
-import { PaginationReqDto } from '@/utils/paginate.dto';
 import { GetAccountListResDto } from '@/account/dto/res/get-list.res.dto';
 import { UpdateMeReqDto } from '@/account/dto/req/update-me.req.dto';
 import { ChangePasswordReqDto } from '@/account/dto/req/change-password.req.dto';
 import { UpdateAccountReqDto } from '@/account/dto/req/update.req.dto';
+import { GetGuestListResDto } from '@/guest/dto/res/get-guest-list.res.dto';
+import { CreateGuestReqDto } from '@/guest/dto/req/create-guest.req.dto';
+import { GuestResDto } from '@/guest/dto/res/guest.res.dto';
+import { PaginationReqDto } from '@/utils/paginate.dto';
+import { PaginationTimeReqDto } from '@/utils/paginate-time.dto';
 
 @Controller('accounts')
 export class AccountController {
-  constructor(private readonly accountService: AccountService) {}
+  constructor(
+    private readonly accountService: AccountService,
+    private readonly guestService: GuestService,
+  ) {}
 
   @HttpCode(HttpStatus.OK)
   @ResponseMessage('res.success.account.get')
@@ -110,5 +118,28 @@ export class AccountController {
   @Delete('detail/:id')
   deleteAccount(@Param('id') id: string) {
     return this.accountService.deleteAccount(Number(id));
+  }
+
+  @UseGuards(RoleGuard)
+  @Roles([Role.Owner, Role.Employee])
+  @HttpCode(HttpStatus.OK)
+  @ResponseMessage('res.success.account.get-guest-list')
+  @ApiOkResponse({ type: GetGuestListResDto })
+  @Get('guests')
+  getListGuest(
+    @Query()
+    getListGuestDto: PaginationTimeReqDto,
+  ) {
+    return this.guestService.getGuestList(getListGuestDto);
+  }
+
+  @UseGuards(RoleGuard)
+  @Roles([Role.Owner, Role.Employee])
+  @HttpCode(HttpStatus.OK)
+  @ResponseMessage('res.success.account.create-guest')
+  @ApiOkResponse({ type: GuestResDto })
+  @Post('guests')
+  createGuest(@Body() createGuestDto: CreateGuestReqDto) {
+    return this.guestService.createGuest(createGuestDto);
   }
 }

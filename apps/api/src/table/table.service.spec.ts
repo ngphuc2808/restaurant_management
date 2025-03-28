@@ -331,4 +331,44 @@ describe('TableService', () => {
       });
     });
   });
+
+  describe('getTableByNumber', () => {
+    it('should get table by number successfully', async () => {
+      const number = 1;
+
+      mockPrismaService.table.findUnique.mockResolvedValue(mockTable);
+
+      const result = await service.getTableByNumber(number);
+
+      expect(result).toEqual(mockTable);
+      expect(prisma.table.findUnique).toHaveBeenCalledWith({
+        where: { number },
+      });
+    });
+
+    it('should return null when table not found', async () => {
+      const number = 999;
+
+      mockPrismaService.table.findUnique.mockResolvedValue(null);
+
+      const result = await service.getTableByNumber(number);
+
+      expect(result).toBeNull();
+      expect(prisma.table.findUnique).toHaveBeenCalledWith({
+        where: { number },
+      });
+    });
+
+    it('should handle database errors', async () => {
+      const number = 1;
+
+      const error = new Error('Database error');
+      mockPrismaService.table.findUnique.mockRejectedValue(error);
+
+      await expect(service.getTableByNumber(number)).rejects.toThrow(error);
+      expect(prisma.table.findUnique).toHaveBeenCalledWith({
+        where: { number },
+      });
+    });
+  });
 });

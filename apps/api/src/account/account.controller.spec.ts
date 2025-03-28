@@ -6,12 +6,15 @@ import { I18nService } from 'nestjs-i18n';
 
 import { AccountController } from '@/account/account.controller';
 import { AccountService } from '@/account/account.service';
+import { GuestService } from '@/guest/guest.service';
 import { CreateAccountReqDto } from '@/account/dto/req/create.req.dto';
 import { PaginationReqDto } from '@/utils/paginate.dto';
 import { UpdateMeReqDto } from '@/account/dto/req/update-me.req.dto';
 import { ChangePasswordReqDto } from '@/account/dto/req/change-password.req.dto';
 import { UpdateAccountReqDto } from '@/account/dto/req/update.req.dto';
 import { Role } from '@/constants/type';
+import { PaginationTimeReqDto } from '@/utils/paginate-time.dto';
+import { CreateGuestReqDto } from '@/guest/dto/req/create-guest.req.dto';
 
 interface UserDto {
   id: number;
@@ -68,6 +71,13 @@ describe('AccountController', () => {
             deleteAccount: jest.fn(),
             updateAccount: jest.fn(),
             getAccountDetail: jest.fn(),
+          },
+        },
+        {
+          provide: GuestService,
+          useValue: {
+            getGuestList: jest.fn(),
+            createGuest: jest.fn(),
           },
         },
         {
@@ -347,6 +357,90 @@ describe('AccountController', () => {
         .mockRejectedValue(new Error());
 
       await expect(accountController.getAccountDetail('1')).rejects.toThrow();
+    });
+  });
+
+  describe('getListGuest', () => {
+    const paginationDto: PaginationTimeReqDto = {
+      page: 1,
+      limit: 10,
+      fromDate: new Date(),
+      toDate: new Date(),
+    };
+
+    it('should return paginated guest list', async () => {
+      const mockGuests = [
+        {
+          id: 1,
+          name: 'Guest 1',
+          tableNumber: 1,
+          refreshToken: null,
+          refreshTokenExpiresAt: null,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ];
+
+      jest
+        .spyOn(accountController['guestService'], 'getGuestList')
+        .mockResolvedValue(mockGuests);
+
+      const result = await accountController.getListGuest(paginationDto);
+
+      expect(result).toEqual(mockGuests);
+      expect(
+        accountController['guestService'].getGuestList,
+      ).toHaveBeenCalledWith(paginationDto);
+    });
+
+    it('should throw error when service fails', async () => {
+      jest
+        .spyOn(accountController['guestService'], 'getGuestList')
+        .mockRejectedValue(new Error());
+
+      await expect(
+        accountController.getListGuest(paginationDto),
+      ).rejects.toThrow();
+    });
+  });
+
+  describe('createGuest', () => {
+    const createGuestDto: CreateGuestReqDto = {
+      name: 'New Guest',
+      tableNumber: 1,
+    };
+
+    it('should create guest successfully', async () => {
+      const mockGuest = {
+        id: 1,
+        name: createGuestDto.name,
+        tableNumber: createGuestDto.tableNumber,
+        refreshToken: null,
+        refreshTokenExpiresAt: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      jest
+        .spyOn(accountController['guestService'], 'createGuest')
+        .mockResolvedValue(mockGuest);
+
+      const result = await accountController.createGuest(createGuestDto);
+
+      expect(result).toEqual(mockGuest);
+      expect(
+        accountController['guestService'].createGuest,
+      ).toHaveBeenCalledWith(createGuestDto);
+    });
+
+    it('should throw error when service fails', async () => {
+      jest
+        .spyOn(accountController['guestService'], 'createGuest')
+        .mockRejectedValue(new Error());
+
+      await expect(
+        accountController.createGuest(createGuestDto),
+      ).rejects.toThrow();
     });
   });
 });

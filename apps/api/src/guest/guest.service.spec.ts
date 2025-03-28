@@ -16,6 +16,8 @@ import { GuestCreateDishReqDto } from '@/guest/dto/req/guest-create-dish.req.dto
 import { Role, TableStatus, OrderStatus, DishStatus } from '@/constants/type';
 import { PrismaErrorCode } from '@/utils/errors';
 import { SocketGateway } from '@/socket/socket-gateway';
+import { CreateGuestReqDto } from '@/guest/dto/req/create-guest.req.dto';
+import { PaginationTimeReqDto } from '@/utils/paginate-time.dto';
 
 jest.mock('@/utils/errors', () => ({
   ...jest.requireActual('@/utils/errors'),
@@ -127,6 +129,7 @@ describe('GuestService', () => {
               create: jest.fn(),
               update: jest.fn(),
               findUnique: jest.fn(),
+              findMany: jest.fn(),
             },
             table: {
               findUnique: jest.fn(),
@@ -524,6 +527,119 @@ describe('GuestService', () => {
         .mockRejectedValue(new Error());
 
       await expect(service.createDish(1, createDishDto)).rejects.toThrow();
+    });
+  });
+
+  describe('getGuestList', () => {
+    const paginationDto: PaginationTimeReqDto = {
+      page: 1,
+      limit: 10,
+      fromDate: new Date(),
+      toDate: new Date(),
+    };
+
+    it('should get guest list successfully', async () => {
+      const guests = [mockGuest];
+      jest.spyOn(prismaService.guest, 'findMany').mockResolvedValue(guests);
+
+      const result = await service.getGuestList(paginationDto);
+
+      expect(result).toEqual(guests);
+      expect(prismaService.guest.findMany).toHaveBeenCalledWith({
+        skip: 0,
+        take: 10,
+        orderBy: {
+          createdAt: 'desc',
+        },
+        where: {
+          createdAt: {
+            gte: paginationDto.fromDate,
+            lte: paginationDto.toDate,
+          },
+        },
+      });
+    });
+
+    it('should use default pagination values when not provided', async () => {
+      const guests = [mockGuest];
+      jest.spyOn(prismaService.guest, 'findMany').mockResolvedValue(guests);
+
+      const result = await service.getGuestList({});
+
+      expect(result).toEqual(guests);
+      expect(prismaService.guest.findMany).toHaveBeenCalledWith({
+        skip: 0,
+        take: 12,
+        orderBy: {
+          createdAt: 'desc',
+        },
+        where: {
+          createdAt: {
+            gte: undefined,
+            lte: undefined,
+          },
+        },
+      });
+    });
+
+    it('should throw error when fetching guests fails', async () => {
+      jest
+        .spyOn(prismaService.guest, 'findMany')
+        .mockRejectedValue(new Error());
+
+      await expect(service.getGuestList(paginationDto)).rejects.toThrow();
+    });
+  });
+
+  describe('createGuest', () => {
+    const createGuestDto: CreateGuestReqDto = {
+      name: 'New Guest',
+      tableNumber: 1,
+    };
+
+    it('should create guest successfully', async () => {
+      jest
+        .spyOn(prismaService.table, 'findUnique')
+        .mockResolvedValue(mockTable);
+      jest.spyOn(prismaService.guest, 'create').mockResolvedValue(mockGuest);
+
+      const result = await service.createGuest(createGuestDto);
+
+      expect(result).toEqual(mockGuest);
+      expect(prismaService.table.findUnique).toHaveBeenCalledWith({
+        where: { number: createGuestDto.tableNumber },
+      });
+      expect(prismaService.guest.create).toHaveBeenCalledWith({
+        data: createGuestDto,
+      });
+    });
+
+    it('should throw BadRequestException when table not found', async () => {
+      jest.spyOn(prismaService.table, 'findUnique').mockResolvedValue(null);
+
+      await expect(service.createGuest(createGuestDto)).rejects.toThrow(
+        BadRequestException,
+      );
+    });
+
+    it('should throw BadRequestException when table is hidden', async () => {
+      jest.spyOn(prismaService.table, 'findUnique').mockResolvedValue({
+        ...mockTable,
+        status: TableStatus.Hidden,
+      });
+
+      await expect(service.createGuest(createGuestDto)).rejects.toThrow(
+        BadRequestException,
+      );
+    });
+
+    it('should throw error when guest creation fails', async () => {
+      jest
+        .spyOn(prismaService.table, 'findUnique')
+        .mockResolvedValue(mockTable);
+      jest.spyOn(prismaService.guest, 'create').mockRejectedValue(new Error());
+
+      await expect(service.createGuest(createGuestDto)).rejects.toThrow();
     });
   });
 });

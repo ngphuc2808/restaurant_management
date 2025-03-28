@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-import { OrderType } from '@/guest/dto/types';
+import { OrderType } from '@/order/dto/types';
 
 export class GuestCreateDishResDto {
   @ApiProperty({ example: 200 })

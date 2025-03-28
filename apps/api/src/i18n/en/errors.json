@@ -32,8 +32,16 @@
     "no-table-found": "No table found",
     "invalid-number": "Invalid table number",
     "invalid-capacity": "Invalid table capacity",
+    "table-invalid": "Table not found",
     "table-invalid-token": "Table not found or invalid token",
     "table-hidden": "This table is hidden, please choose another table to login",
     "table-reserved": "This table is reserved, please contact the staff for assistance"
+  },
+  "order": {
+    "table-deleted": "Your table has been deleted, please logout and login again to choose a new table",
+    "table-hidden": "Table {number} has been hidden, please logout and choose a new table",
+    "table-reserved": "Table {number} has been reserved, please logout and choose a new table",
+    "dish-unavailable": "Dish {name} is unavailable",
+    "dish-hidden": "Dish {name} cannot be ordered"
   }
 }

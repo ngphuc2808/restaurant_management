@@ -9,7 +9,9 @@
       "create": "Create account successfully!",
       "update": "Update account successfully!",
       "delete": "Delete account successfully!",
-      "update-password": "Update password successfully!"
+      "update-password": "Update password successfully!",
+      "create-guest": "Create guest successfully!",
+      "get-guest-list": "Get all guests successfully!"
     },
     "dish": {
       "get-list": "Get all dishes successfully!",
@@ -30,12 +32,7 @@
       "get": "Get order successfully!",
       "create": "Create order successfully!",
       "update": "Update order successfully!",
-      "delete": "Delete order successfully!",
-      "table-deleted": "Your table has been deleted, please logout and login again to choose a new table",
-      "table-hidden": "Table {number} has been hidden, please logout and choose a new table",
-      "table-reserved": "Table {number} has been reserved, please logout and choose a new table",
-      "dish-unavailable": "Dish {name} is unavailable",
-      "dish-hidden": "Dish {name} cannot be ordered"
+      "delete": "Delete order successfully!"
     }
   }
 }

@@ -17,7 +17,6 @@ import { RefreshTokenModule } from '@/refresh-token/refresh-token.module';
 import { TableModule } from '@/table/table.module';
 import { OrderModule } from '@/order/order.module';
 import { GuestModule } from '@/guest/guest.module';
-import { DishSnapshotModule } from '@/dish-snapshot/dish-snapshot.module';
 import { DishModule } from '@/dish/dish.module';
 
 //services
@@ -40,7 +39,6 @@ import { DishModule } from '@/dish/dish.module';
     AuthModule,
     AccountModule,
     DishModule,
-    DishSnapshotModule,
     GuestModule,
     OrderModule,
     TableModule,

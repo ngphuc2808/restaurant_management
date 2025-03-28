@@ -9,7 +9,9 @@
       "create": "Tạo tài khoản thành công!",
       "update": "Cập nhật tài khoản thành công!",
       "delete": "Xóa tài khoản thành công!",
-      "update-password": "Cập nhật mật khẩu thành công!"
+      "update-password": "Cập nhật mật khẩu thành công!",
+      "create-guest": "Tạo khách hàng thành công!",
+      "get-guest-list": "Lấy danh sách khách hàng thành công!"
     },
     "dish": {
       "get-list": "Lấy danh sách món ăn thành công!",
@@ -30,12 +32,7 @@
       "get": "Lấy thông tin đơn hàng thành công!",
       "create": "Tạo đơn hàng thành công!",
       "update": "Cập nhật đơn hàng thành công!",
-      "delete": "Xóa đơn hàng thành công!",
-      "table-deleted": "Bàn của bạn đã bị xóa, vui lòng đăng xuất và đăng nhập lại một bàn mới",
-      "table-hidden": "Bàn {number} đã bị ẩn, vui lòng đăng xuất và chọn bàn khác",
-      "table-reserved": "Bàn {number} đã được đặt trước, vui lòng đăng xuất và chọn bàn khác",
-      "dish-unavailable": "Món {name} đã hết",
-      "dish-hidden": "Món {name} không thể đặt"
+      "delete": "Xóa đơn hàng thành công!"
     }
   }
 }

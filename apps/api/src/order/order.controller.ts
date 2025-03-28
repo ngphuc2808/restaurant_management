@@ -1,43 +1,40 @@
 import {
   Controller,
   Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
+  HttpCode,
+  HttpStatus,
+  Query,
+  UseGuards,
+  // Get,
+  // Post,
+  // Body,
+  // Patch,
+  // Param,
+  // Delete,
 } from '@nestjs/common';
 
 import { OrderService } from '@/order/order.service';
-import { CreateOrderDto } from '@/order/dto/create-order.dto';
-import { UpdateOrderDto } from '@/order/dto/update-order.dto';
+import { RoleGuard } from '@/auth/guards/role.guard';
+import { Roles } from '@/auth/decorators/public.decorator';
+import { ResponseMessage, Role } from '@/constants/type';
+import { ApiOkResponse } from '@nestjs/swagger';
+import { GetOrdersListResDto } from '@/order/dto/res/get-list.res.dto';
+import { PaginationTimeReqDto } from '@/utils/paginate-time.dto';
 
-@Controller('order')
+@Controller('orders')
+@UseGuards(RoleGuard)
+@Roles([Role.Guest])
 export class OrderController {
   constructor(private readonly orderService: OrderService) {}
 
-  @Post()
-  create(@Body() createOrderDto: CreateOrderDto) {
-    return this.orderService.create(createOrderDto);
-  }
-
+  @HttpCode(HttpStatus.OK)
+  @ResponseMessage('res.success.order.get-list')
+  @ApiOkResponse({ type: GetOrdersListResDto })
   @Get()
-  findAll() {
-    return this.orderService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.orderService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateOrderDto: UpdateOrderDto) {
-    return this.orderService.update(+id, updateOrderDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.orderService.remove(+id);
+  getListOrder(
+    @Query()
+    getListOrderDto: PaginationTimeReqDto,
+  ) {
+    return this.orderService.getListOrder(getListOrderDto);
   }
 }
