@@ -43,27 +43,30 @@ export class AccountController {
   @ResponseMessage('res.success.account.get')
   @ApiOkResponse({ type: AccountResDto })
   @Get('me')
-  me(@User() user: UserDto) {
-    return this.accountService.me(user.id);
+  async me(@User() user: UserDto) {
+    return await this.accountService.me(user.id);
   }
 
   @HttpCode(HttpStatus.OK)
   @ResponseMessage('res.success.account.update')
   @ApiOkResponse({ type: AccountResDto })
   @Put('me')
-  updateMe(@User() user: UserDto, @Body() updateMeDto: UpdateMeReqDto) {
-    return this.accountService.updateMe(user.id, updateMeDto);
+  async updateMe(@User() user: UserDto, @Body() updateMeDto: UpdateMeReqDto) {
+    return await this.accountService.updateMe(user.id, updateMeDto);
   }
 
   @HttpCode(HttpStatus.OK)
   @ResponseMessage('res.success.account.update-password')
   @ApiOkResponse({ type: AccountResDto })
   @Put('change-password')
-  updatePassword(
+  async updatePassword(
     @User() user: UserDto,
     @Body() changePasswordReqDto: ChangePasswordReqDto,
   ) {
-    return this.accountService.updatePassword(user.id, changePasswordReqDto);
+    return await this.accountService.updatePassword(
+      user.id,
+      changePasswordReqDto,
+    );
   }
 
   @UseGuards(RoleGuard)
@@ -72,8 +75,8 @@ export class AccountController {
   @ResponseMessage('res.success.account.get-list')
   @ApiOkResponse({ type: GetAccountListResDto })
   @Get()
-  getAccountList(@Query() paginationDto: PaginationReqDto) {
-    return this.accountService.getAccountList(paginationDto);
+  async getAccountList(@Query() paginationDto: PaginationReqDto) {
+    return await this.accountService.getAccountList(paginationDto);
   }
 
   @UseGuards(RoleGuard)
@@ -82,8 +85,8 @@ export class AccountController {
   @ResponseMessage('res.success.account.get')
   @ApiOkResponse({ type: AccountResDto })
   @Get('detail/:id')
-  getAccountDetail(@Param('id') id: string) {
-    return this.accountService.getAccountDetail(Number(id));
+  async getAccountDetail(@Param('id') id: string) {
+    return await this.accountService.getAccountDetail(Number(id));
   }
 
   @UseGuards(RoleGuard)
@@ -92,8 +95,11 @@ export class AccountController {
   @ResponseMessage('res.success.account.create')
   @ApiOkResponse({ type: AccountResDto })
   @Post()
-  create(@User() user: UserDto, @Body() createAccountDto: CreateAccountReqDto) {
-    return this.accountService.create(user.id, createAccountDto);
+  async create(
+    @User() user: UserDto,
+    @Body() createAccountDto: CreateAccountReqDto,
+  ) {
+    return await this.accountService.create(user.id, createAccountDto);
   }
 
   @UseGuards(RoleGuard)
@@ -102,12 +108,16 @@ export class AccountController {
   @ResponseMessage('res.success.account.update')
   @ApiOkResponse({ type: AccountResDto })
   @Put('detail/:id')
-  updateAccount(
+  async updateAccount(
     @User() user: UserDto,
     @Param('id') id: string,
     @Body() updateMeDto: UpdateAccountReqDto,
   ) {
-    return this.accountService.updateAccount(user.id, Number(id), updateMeDto);
+    return await this.accountService.updateAccount(
+      user.id,
+      Number(id),
+      updateMeDto,
+    );
   }
 
   @UseGuards(RoleGuard)
@@ -116,8 +126,8 @@ export class AccountController {
   @ResponseMessage('res.success.account.delete')
   @ApiOkResponse({ type: AccountResDto })
   @Delete('detail/:id')
-  deleteAccount(@Param('id') id: string) {
-    return this.accountService.deleteAccount(Number(id));
+  async deleteAccount(@Param('id') id: string) {
+    return await this.accountService.deleteAccount(Number(id));
   }
 
   @UseGuards(RoleGuard)
@@ -126,11 +136,11 @@ export class AccountController {
   @ResponseMessage('res.success.account.get-guest-list')
   @ApiOkResponse({ type: GetGuestListResDto })
   @Get('guests')
-  getListGuest(
+  async getListGuest(
     @Query()
     getListGuestDto: PaginationTimeReqDto,
   ) {
-    return this.guestService.getGuestList(getListGuestDto);
+    return await this.guestService.getGuestList(getListGuestDto);
   }
 
   @UseGuards(RoleGuard)
@@ -139,7 +149,7 @@ export class AccountController {
   @ResponseMessage('res.success.account.create-guest')
   @ApiOkResponse({ type: GuestResDto })
   @Post('guests')
-  createGuest(@Body() createGuestDto: CreateGuestReqDto) {
-    return this.guestService.createGuest(createGuestDto);
+  async createGuest(@Body() createGuestDto: CreateGuestReqDto) {
+    return await this.guestService.createGuest(createGuestDto);
   }
 }

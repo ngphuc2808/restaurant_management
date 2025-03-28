@@ -8,7 +8,7 @@ import {
   Settings,
 } from 'lucide-react'
 
-import { Role } from './type'
+import { Role } from '@/constants/type'
 import { RoleType } from '@/types/jwt.types'
 
 export const TIMEOUT = 1000

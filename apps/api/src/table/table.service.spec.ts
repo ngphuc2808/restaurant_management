@@ -1,13 +1,14 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { Logger, UnprocessableEntityException } from '@nestjs/common';
 import { I18nService } from 'nestjs-i18n';
-import { TableService } from './table.service';
+
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { PrismaService } from '@/prisma.service';
-import { CreateTableReqDto } from './dto/req/create.req.dto';
-import { UpdateTableReqDto } from './dto/req/update.req.dto';
+import { TableService } from '@/table/table.service';
+import { CreateTableReqDto } from '@/table/dto/req/create.req.dto';
+import { UpdateTableReqDto } from '@/table/dto/req/update.req.dto';
 import { PaginationReqDto } from '@/utils/paginate.dto';
 import { TableStatus } from '@/constants/type';
-import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 
 jest.mock('@/utils/errors', () => ({
   ...jest.requireActual('@/utils/errors'),

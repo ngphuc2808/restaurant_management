@@ -42,6 +42,7 @@
     "table-hidden": "Table {number} has been hidden, please logout and choose a new table",
     "table-reserved": "Table {number} has been reserved, please logout and choose a new table",
     "dish-unavailable": "Dish {name} is unavailable",
-    "dish-hidden": "Dish {name} cannot be ordered"
+    "dish-hidden": "Dish {name} cannot be ordered",
+    "payment-not-found": "There is no invoice to pay"
   }
 }

@@ -30,9 +30,15 @@
     "order": {
       "get-list": "Get all orders successfully!",
       "get": "Get order successfully!",
+      "pay": "Pay order successfully!",
       "create": "Create order successfully!",
       "update": "Update order successfully!",
-      "delete": "Delete order successfully!"
+      "delete": "Delete order successfully!",
+      "create-success": "Create successfully {length} orders for guest",
+      "pay-success": "Pay successfully {result.orders.length} orders"
+    },
+    "indicator": {
+      "get": "Get indicators successfully!"
     }
   }
 }

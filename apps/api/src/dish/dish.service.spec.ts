@@ -1,10 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { Logger, UnprocessableEntityException } from '@nestjs/common';
 import { I18nService } from 'nestjs-i18n';
-import { DishService } from './dish.service';
+
 import { PrismaService } from '@/prisma.service';
-import { CreateDishReqDto } from './dto/req/create.req.dto';
-import { UpdateDishReqDto } from './dto/req/update.req.dto';
+import { DishService } from '@/dish/dish.service';
+import { CreateDishReqDto } from '@/dish/dto/req/create.req.dto';
+import { UpdateDishReqDto } from '@/dish/dto/req/update.req.dto';
 import { PrismaErrorCode } from '@/utils/errors';
 import { Prisma } from '@prisma/client';
 

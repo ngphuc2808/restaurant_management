@@ -18,6 +18,7 @@ import { TableModule } from '@/table/table.module';
 import { OrderModule } from '@/order/order.module';
 import { GuestModule } from '@/guest/guest.module';
 import { DishModule } from '@/dish/dish.module';
+import { IndicatorModule } from '@/indicator/indicator.module';
 
 //services
 
@@ -37,6 +38,7 @@ import { DishModule } from '@/dish/dish.module';
       resolvers: [new HeaderResolver(['locale'])],
     }),
     AuthModule,
+    IndicatorModule,
     AccountModule,
     DishModule,
     GuestModule,

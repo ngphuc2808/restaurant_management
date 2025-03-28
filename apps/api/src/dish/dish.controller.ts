@@ -33,8 +33,8 @@ export class DishController {
   @ResponseMessage('res.success.dish.get')
   @ApiOkResponse({ type: DishResDto })
   @Get(':id')
-  getDetail(@Param('id') id: string) {
-    return this.dishService.getDetail(Number(id));
+  async getDetail(@Param('id') id: string) {
+    return await this.dishService.getDetail(Number(id));
   }
 
   @Public()
@@ -42,8 +42,8 @@ export class DishController {
   @ResponseMessage('res.success.dish.get-list')
   @ApiOkResponse({ type: GetDishesListResDto })
   @Get()
-  getList(@Query() paginationDto: PaginationReqDto) {
-    return this.dishService.getList(paginationDto);
+  async getList(@Query() paginationDto: PaginationReqDto) {
+    return await this.dishService.getList(paginationDto);
   }
 
   @UseGuards(RoleGuard)
@@ -52,8 +52,8 @@ export class DishController {
   @ResponseMessage('res.success.dish.create')
   @ApiOkResponse({ type: DishResDto })
   @Post()
-  create(@Body() createDishDto: CreateDishReqDto) {
-    return this.dishService.create(createDishDto);
+  async create(@Body() createDishDto: CreateDishReqDto) {
+    return await this.dishService.create(createDishDto);
   }
 
   @UseGuards(RoleGuard)
@@ -62,8 +62,11 @@ export class DishController {
   @ResponseMessage('res.success.dish.update')
   @ApiOkResponse({ type: DishResDto })
   @Put(':id')
-  update(@Param('id') id: string, @Body() updateDishDto: UpdateDishReqDto) {
-    return this.dishService.update(Number(id), updateDishDto);
+  async update(
+    @Param('id') id: string,
+    @Body() updateDishDto: UpdateDishReqDto,
+  ) {
+    return await this.dishService.update(Number(id), updateDishDto);
   }
 
   @UseGuards(RoleGuard)
@@ -72,7 +75,7 @@ export class DishController {
   @ResponseMessage('res.success.dish.delete')
   @ApiOkResponse({ type: DishResDto })
   @Delete(':id')
-  delete(@Param('id') id: string) {
-    return this.dishService.delete(Number(id));
+  async delete(@Param('id') id: string) {
+    return await this.dishService.delete(Number(id));
   }
 }

@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { I18nService } from 'nestjs-i18n';
 
+import { SocketGateway } from '@/socket/socket-gateway';
 import { PrismaService } from '@/prisma.service';
 import { AuthService } from '@/auth/auth.service';
 import { TableService } from '@/table/table.service';
@@ -13,11 +14,10 @@ import { GuestService } from '@/guest/guest.service';
 import { GuestLoginReqDto } from '@/guest/dto/req/guest-login.req.dto';
 import { GuestLogoutReqDto } from '@/guest/dto/req/guest-logout.req.dto';
 import { GuestCreateDishReqDto } from '@/guest/dto/req/guest-create-dish.req.dto';
-import { Role, TableStatus, OrderStatus, DishStatus } from '@/constants/type';
-import { PrismaErrorCode } from '@/utils/errors';
-import { SocketGateway } from '@/socket/socket-gateway';
 import { CreateGuestReqDto } from '@/guest/dto/req/create-guest.req.dto';
 import { PaginationTimeReqDto } from '@/utils/paginate-time.dto';
+import { Role, TableStatus, OrderStatus, DishStatus } from '@/constants/type';
+import { PrismaErrorCode } from '@/utils/errors';
 
 jest.mock('@/utils/errors', () => ({
   ...jest.requireActual('@/utils/errors'),

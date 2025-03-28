@@ -23,6 +23,19 @@ export class SocketService {
     }
   }
 
+  async findOneWithGuestId(guestId: number) {
+    try {
+      const socket = await this.prisma.socket.findUnique({
+        where: { guestId },
+      });
+
+      return socket;
+    } catch (error) {
+      this.logger.error(error.message);
+      throw error;
+    }
+  }
+
   async upsertSocket(userId: number, socketId: string, role: string) {
     try {
       if (role === Role.Guest) {

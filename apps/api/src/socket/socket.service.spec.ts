@@ -83,6 +83,42 @@ describe('SocketService', () => {
     });
   });
 
+  describe('findOneWithGuestId', () => {
+    const mockGuestSocket = {
+      ...mockSocket,
+      accountId: null,
+      guestId: 1,
+    };
+
+    it('should find a socket by guest id', async () => {
+      const findSpy = jest
+        .spyOn(prismaService.socket, 'findUnique')
+        .mockResolvedValue(mockGuestSocket);
+
+      const result = await service.findOneWithGuestId(mockGuestSocket.guestId);
+
+      expect(result).toEqual(mockGuestSocket);
+      expect(findSpy).toHaveBeenCalledWith({
+        where: { guestId: mockGuestSocket.guestId },
+      });
+    });
+
+    it('should throw error when find fails', async () => {
+      const errorMessage = 'Failed to find socket';
+      jest
+        .spyOn(prismaService.socket, 'findUnique')
+        .mockRejectedValue(new Error(errorMessage));
+
+      const errorSpy = jest.spyOn(logger, 'error');
+
+      await expect(
+        service.findOneWithGuestId(mockGuestSocket.guestId),
+      ).rejects.toThrow(errorMessage);
+
+      expect(errorSpy).toHaveBeenCalledWith(errorMessage);
+    });
+  });
+
   describe('upsertSocket', () => {
     describe('for account', () => {
       it('should upsert socket for account', async () => {

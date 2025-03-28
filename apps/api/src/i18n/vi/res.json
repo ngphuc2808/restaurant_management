@@ -30,9 +30,15 @@
     "order": {
       "get-list": "Lấy danh sách đơn hàng thành công!",
       "get": "Lấy thông tin đơn hàng thành công!",
+      "pay": "Thanh toán đơn hàng thành công!",
       "create": "Tạo đơn hàng thành công!",
       "update": "Cập nhật đơn hàng thành công!",
-      "delete": "Xóa đơn hàng thành công!"
+      "delete": "Xóa đơn hàng thành công!",
+      "create-success": "Tạo thành công {length} đơn hàng cho khách hàng",
+      "pay-success": "Thanh toán thành công {length} đơn"
+    },
+    "indicator": {
+      "get": "Lấy các chỉ số thành công!"
     }
   }
 }

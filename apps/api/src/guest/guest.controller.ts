@@ -34,7 +34,7 @@ export class GuestController {
   @ApiOkResponse({ type: GuestLoginResDto })
   @Post('auth/login')
   async login(@Body() loginDto: GuestLoginReqDto) {
-    return this.guestService.login(loginDto);
+    return await this.guestService.login(loginDto);
   }
 
   @HttpCode(HttpStatus.OK)
@@ -51,7 +51,7 @@ export class GuestController {
   @ApiOkResponse({ type: GuestRefreshTokenResDto })
   @Post('auth/refresh-token')
   async refresh(@Body() tokenDto: GuestRefreshTokenReqDto) {
-    return this.guestService.processNewGuestToken(tokenDto.refreshToken);
+    return await this.guestService.processNewGuestToken(tokenDto.refreshToken);
   }
 
   @UseGuards(RoleGuard)
@@ -60,11 +60,11 @@ export class GuestController {
   @ResponseMessage('res.success.order.create')
   @ApiOkResponse({ type: GuestCreateDishResDto })
   @Post('orders')
-  create(
+  async create(
     @User() user: UserDto,
     @Body() createDishDto: GuestCreateDishReqDto[],
   ) {
-    return this.guestService.createDish(user.id, createDishDto);
+    return await this.guestService.createDish(user.id, createDishDto);
   }
 
   @UseGuards(RoleGuard)
@@ -73,7 +73,7 @@ export class GuestController {
   @ResponseMessage('res.success.order.get-list')
   @ApiOkResponse({ type: GuestCreateDishResDto })
   @Get('orders')
-  getList(@User() user: UserDto) {
-    return this.guestService.getListOrder(user.id);
+  async getList(@User() user: UserDto) {
+    return await this.guestService.getListOrder(user.id);
   }
 }
