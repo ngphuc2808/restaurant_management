@@ -15,12 +15,15 @@ import { cn } from '@repo/ui/lib/utils'
 import { Button } from '@repo/ui/components/button'
 import { DishStatus } from '@/constants/type'
 import Quantity from '@/app/[locale]/guest/menu/quantity'
+import useAppStore from '@/store/app'
 
 const MenuOrder = () => {
   const router = useRouter()
 
   const t = useTranslations('GuestMenu')
   const tAll = useTranslations('All')
+
+  const { role } = useAppStore()
 
   const [orders, setOrders] = useState<GuestCreateOrdersBodyType>([])
 
@@ -76,6 +79,12 @@ const MenuOrder = () => {
       dishListQuery.fetchNextPage()
     }
   }, [inView, dishListQuery])
+
+  useEffect(() => {
+    if (!role) {
+      router.push('/login')
+    }
+  }, [role, router])
 
   if (dishes.length === 0)
     return (

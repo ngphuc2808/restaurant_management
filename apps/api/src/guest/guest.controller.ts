@@ -18,7 +18,6 @@ import { UserDto } from '@/auth/dto/types';
 import { GuestLoginReqDto } from '@/guest/dto/req/guest-login.req.dto';
 import { GuestLoginResDto } from '@/guest/dto/res/guest-login.res.dto';
 import { GuestLogoutResDto } from '@/guest/dto/res/guest-logout.res.dto';
-import { GuestLogoutReqDto } from '@/guest/dto/req/guest-logout.req.dto';
 import { GuestRefreshTokenResDto } from '@/guest/dto/res/guest-refresh-token.res.dto';
 import { GuestRefreshTokenReqDto } from '@/guest/dto/req/guest-refresh-token.req.dto';
 import { GuestCreateDishReqDto } from '@/guest/dto/req/guest-create-dish.req.dto';
@@ -41,8 +40,8 @@ export class GuestController {
   @ResponseMessage('res.success.logout')
   @ApiOkResponse({ type: GuestLogoutResDto })
   @Post('auth/logout')
-  async logout(@Body() logoutDto: GuestLogoutReqDto) {
-    await this.guestService.logout(logoutDto.id);
+  async logout(@User() user: UserDto) {
+    await this.guestService.logout(user.id);
   }
 
   @Public()
