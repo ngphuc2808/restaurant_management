@@ -164,7 +164,7 @@ const LoginForm = () => {
                 />
                 <Button type="submit" className="w-full">
                   {loginMutation.isPending && (
-                    <LoaderCircle className="mr-2 h-5 w-5 animate-spin" />
+                    <LoaderCircle className="mr-2 size-5 animate-spin" />
                   )}
                   {t('buttonLogin')}
                 </Button>

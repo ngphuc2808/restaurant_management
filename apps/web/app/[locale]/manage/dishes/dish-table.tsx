@@ -259,7 +259,7 @@ const DishTable = () => {
   }, [table, page, limit])
 
   if (dishListQuery.isLoading)
-    return <LoaderCircle className="mr-2 h-5 w-5 animate-spin" />
+    return <LoaderCircle className="mr-2 size-5 animate-spin" />
 
   return (
     <div className="w-full">
