@@ -1,5 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { Logger } from '@nestjs/common';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Cache } from 'cache-manager';
 
 import { PrismaService } from '@/prisma.service';
 import { SocketService } from '@/socket/socket.service';
@@ -9,6 +11,7 @@ describe('SocketService', () => {
   let service: SocketService;
   let prismaService: PrismaService;
   let logger: Logger;
+  let cacheManager: Cache;
 
   const mockSocket = {
     id: 1,
@@ -26,6 +29,7 @@ describe('SocketService', () => {
         {
           provide: Logger,
           useValue: {
+            log: jest.fn(),
             error: jest.fn(),
           },
         },
@@ -38,12 +42,21 @@ describe('SocketService', () => {
             },
           },
         },
+        {
+          provide: CACHE_MANAGER,
+          useValue: {
+            get: jest.fn(),
+            set: jest.fn(),
+            del: jest.fn(),
+          },
+        },
       ],
     }).compile();
 
     service = module.get<SocketService>(SocketService);
     logger = module.get<Logger>(Logger);
     prismaService = module.get<PrismaService>(PrismaService);
+    cacheManager = module.get(CACHE_MANAGER);
 
     jest.clearAllMocks();
   });
@@ -54,6 +67,18 @@ describe('SocketService', () => {
   });
 
   describe('findOneWithAccountId', () => {
+    it('should return cached socket if available', async () => {
+      jest.spyOn(cacheManager, 'get').mockResolvedValue(mockSocket);
+
+      const result = await service.findOneWithAccountId(mockSocket.accountId);
+
+      expect(result).toEqual(mockSocket);
+      expect(cacheManager.get).toHaveBeenCalledWith(
+        `socket:account:${mockSocket.accountId}`,
+      );
+      expect(prismaService.socket.findUnique).not.toHaveBeenCalled();
+    });
+
     it('should find a socket by account id', async () => {
       const findSpy = jest
         .spyOn(prismaService.socket, 'findUnique')
@@ -143,6 +168,7 @@ describe('SocketService', () => {
           create: {
             accountId: mockSocket.accountId,
             socketId: 'new-socket-id',
+            guestId: null,
           },
         });
       });
@@ -180,6 +206,7 @@ describe('SocketService', () => {
           create: {
             guestId: mockGuestSocket.guestId,
             socketId: 'new-socket-id',
+            accountId: null,
           },
         });
       });
