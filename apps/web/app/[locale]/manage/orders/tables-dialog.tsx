@@ -39,29 +39,33 @@ import {
 import { TableStatus } from '@/constants/type'
 import AutoPagination from '@/components/molecules/auto-pagination'
 
-type TableItem = TableListResType['data'][0]
-
-const PAGE_SIZE = 10
+type TableItem = TableListResType['data']['tables'][0]
 
 const TablesDialog = ({
+  onChange,
   onChoose,
 }: {
+  onChange: (tableNumber: number) => void
   onChoose: (table: TableItem) => void
 }) => {
   const t = useTranslations('Orders')
   const tAll = useTranslations('All')
 
   const [open, setOpen] = useState(false)
-  const tableListQuery = useTableListQuery()
-  const data = tableListQuery.data?.payload.data ?? []
+  const [page, setPage] = useState<number>(0)
+  const [limit, setLimit] = useState<number>(12)
+  const [pagination, setPagination] = useState({
+    pageIndex: page,
+    pageSize: limit,
+  })
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
   const [rowSelection, setRowSelection] = useState({})
-  const [pagination, setPagination] = useState({
-    pageIndex: 0,
-    pageSize: PAGE_SIZE,
-  })
+
+  const tableListQuery = useTableListQuery('tables-dialog', page + 1, limit)
+  const data = tableListQuery.data?.payload.data.tables ?? []
+  const meta = tableListQuery.data?.payload.data.meta
 
   const columns: ColumnDef<TableItem>[] = useMemo(() => {
     return [
@@ -96,6 +100,12 @@ const TablesDialog = ({
     ]
   }, [])
 
+  useEffect(() => {
+    if (data.length > 0) {
+      onChange(data[0]?.number!)
+    }
+  }, [data])
+
   const table = useReactTable({
     data,
     columns,
@@ -108,7 +118,6 @@ const TablesDialog = ({
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
     onPaginationChange: setPagination,
-    autoResetPageIndex: false,
     state: {
       sorting,
       columnFilters,
@@ -125,10 +134,10 @@ const TablesDialog = ({
 
   useEffect(() => {
     table.setPagination({
-      pageIndex: 0,
-      pageSize: PAGE_SIZE,
+      pageIndex: page,
+      pageSize: limit,
     })
-  }, [table])
+  }, [table, page, limit])
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -227,15 +236,11 @@ const TablesDialog = ({
               </div>
               <div>
                 <AutoPagination
-                  page={table.getState().pagination.pageIndex + 1}
-                  pageSize={table.getPageCount()}
-                  onClick={(pageNumber) =>
-                    table.setPagination({
-                      pageIndex: pageNumber - 1,
-                      pageSize: PAGE_SIZE,
-                    })
-                  }
-                  isLink={false}
+                  pageSize={meta?.totalPages ?? 1}
+                  page={page}
+                  setPage={setPage}
+                  limit={limit}
+                  setLimit={setLimit}
                 />
               </div>
             </div>

@@ -1,17 +1,11 @@
 import { Metadata } from 'next'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
-import { cache } from 'react'
 
-import dishApiRequest from '@/apiRequests/dish'
 import { htmlToTextForDescription } from '@/lib/server-utils'
-import { wrapServerApi } from '@/lib/utils'
+
 import MenuOrder from '@/app/[locale]/guest/menu/menu-order'
 import { envConfig } from '@/config'
 import { baseOpenGraph } from '@/shared-metadata'
-
-const getDishList = cache(() =>
-  wrapServerApi(() => dishApiRequest.list({ page: 1, limit: 12 })),
-)
 
 export async function generateMetadata(props: GlobalProps): Promise<Metadata> {
   const params = await props.params
@@ -46,10 +40,7 @@ const MenuPage = async (props: { params: Promise<{ locale: string }> }) => {
 
   setRequestLocale(locale)
 
-  const result = await getDishList()
-  const dishes = result?.payload.data.dishes ?? []
-
-  return <MenuOrder dishes={dishes} />
+  return <MenuOrder />
 }
 
 export default MenuPage

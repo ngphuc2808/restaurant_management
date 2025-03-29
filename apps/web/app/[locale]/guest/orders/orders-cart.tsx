@@ -4,6 +4,7 @@ import Image from 'next/image'
 import { useTranslations } from 'next-intl'
 import { useEffect, useMemo } from 'react'
 
+import { useRouter } from '@/i18n/routing'
 import useAppStore from '@/store/app'
 import {
   PayGuestOrdersResType,
@@ -17,7 +18,8 @@ import { toast } from '@repo/ui/hooks/use-toast'
 import { OrderStatus } from '@/constants/type'
 
 const OrdersCart = () => {
-  const { socket } = useAppStore()
+  const router = useRouter()
+  const { role, socket } = useAppStore()
 
   const t = useTranslations('GuestOrders')
   const tOrders = useTranslations('Orders')
@@ -86,7 +88,7 @@ const OrdersCart = () => {
       refetch()
     }
 
-    function onPayment(data: PayGuestOrdersResType['data']) {
+    function onPayment(data: PayGuestOrdersResType['data']['orders']) {
       const { guest } = data[0]!
       toast({
         description: tOrders('paymentSocket', {
@@ -106,6 +108,12 @@ const OrdersCart = () => {
       socket?.off('payment', onPayment)
     }
   }, [socket, refetch])
+
+  useEffect(() => {
+    if (!role) {
+      router.push('/login')
+    }
+  }, [role, router])
 
   return (
     <div className="mx-auto max-w-[400px] space-y-4">
@@ -138,7 +146,7 @@ const OrdersCart = () => {
         </div>
       ))}
       {paid.quantity !== 0 && (
-        <div className="sticky bottom-0 bg-white">
+        <div className="sticky bottom-0">
           <div className="flex w-full space-x-4 text-xl font-semibold">
             <span>
               {t('applicationPaid')} · {paid.quantity}{' '}
@@ -148,7 +156,7 @@ const OrdersCart = () => {
           </div>
         </div>
       )}
-      <div className="sticky bottom-0 bg-white">
+      <div className="sticky bottom-0">
         <div className="flex w-full space-x-4 text-xl font-semibold">
           <span>
             {t('unusedApplication')} · {waitingForPaying.quantity}{' '}

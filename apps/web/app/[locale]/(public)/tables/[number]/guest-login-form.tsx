@@ -77,7 +77,7 @@ const GuestLoginForm = () => {
     if (!token || role) {
       router.push('/')
     }
-  }, [token, router])
+  }, [role, token, router])
 
   return (
     <Card className="mx-auto max-w-sm">

@@ -5,8 +5,10 @@ import { TableListResType } from '@/schemaValidations/table.schema'
 type TableType = {
   setTableIdEdit: (tableIdEdit: number | undefined) => void
   tableIdEdit: number | undefined
-  tableDelete: TableListResType['data'][0] | undefined
-  setTableDelete: (tableDelete: TableListResType['data'][0] | undefined) => void
+  tableDelete: TableListResType['data']['tables'][0] | undefined
+  setTableDelete: (
+    tableDelete: TableListResType['data']['tables'][0] | undefined,
+  ) => void
 }
 
 const useTable = create<TableType>((set) => ({
@@ -15,7 +17,9 @@ const useTable = create<TableType>((set) => ({
   },
   tableIdEdit: undefined,
   tableDelete: undefined,
-  setTableDelete: (tableDelete: TableListResType['data'][0] | undefined) => {
+  setTableDelete: (
+    tableDelete: TableListResType['data']['tables'][0] | undefined,
+  ) => {
     set({ tableDelete })
   },
 }))

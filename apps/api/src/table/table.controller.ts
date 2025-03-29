@@ -33,17 +33,17 @@ export class TableController {
   @ResponseMessage('res.success.dish.get')
   @ApiOkResponse({ type: TableResDto })
   @Get(':number')
-  getDetail(@Param('number') number: string) {
-    return this.tableService.getDetail(Number(number));
+  async getDetail(@Param('number') number: string) {
+    return await this.tableService.getDetail(Number(number));
   }
 
   @Public()
   @HttpCode(HttpStatus.OK)
-  @ResponseMessage('res.success.account.get-list')
+  @ResponseMessage('res.success.table.get-list')
   @ApiOkResponse({ type: GetTablesListResDto })
   @Get()
-  getAccountList(@Query() paginationDto: PaginationReqDto) {
-    return this.tableService.getTableList(paginationDto);
+  async getAccountList(@Query() paginationDto: PaginationReqDto) {
+    return await this.tableService.getTableList(paginationDto);
   }
 
   @UseGuards(RoleGuard)
@@ -52,8 +52,8 @@ export class TableController {
   @ResponseMessage('res.success.table.create')
   @ApiOkResponse({ type: TableResDto })
   @Post()
-  create(@Body() createTableDto: CreateTableReqDto) {
-    return this.tableService.create(createTableDto);
+  async create(@Body() createTableDto: CreateTableReqDto) {
+    return await this.tableService.create(createTableDto);
   }
 
   @UseGuards(RoleGuard)
@@ -62,11 +62,11 @@ export class TableController {
   @ResponseMessage('res.success.table.update')
   @ApiOkResponse({ type: TableResDto })
   @Put(':number')
-  update(
+  async update(
     @Param('number') number: string,
     @Body() updateTableDto: UpdateTableReqDto,
   ) {
-    return this.tableService.update(Number(number), updateTableDto);
+    return await this.tableService.update(Number(number), updateTableDto);
   }
 
   @UseGuards(RoleGuard)
@@ -75,7 +75,7 @@ export class TableController {
   @ResponseMessage('res.success.table.delete')
   @ApiOkResponse({ type: TableResDto })
   @Delete(':number')
-  delete(@Param('number') number: string) {
-    return this.tableService.delete(Number(number));
+  async delete(@Param('number') number: string) {
+    return await this.tableService.delete(Number(number));
   }
 }

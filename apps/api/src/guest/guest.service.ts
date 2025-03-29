@@ -18,11 +18,14 @@ import {
 } from '@/constants/type';
 import { GuestLoginReqDto } from '@/guest/dto/req/guest-login.req.dto';
 import { GuestCreateDishReqDto } from '@/guest/dto/req/guest-create-dish.req.dto';
+import { CreateGuestReqDto } from '@/guest/dto/req/create-guest.req.dto';
+import { PaginationTimeReqDto } from '@/utils/paginate-time.dto';
 import {
   isPrismaClientKnownRequestError,
   PrismaErrorCode,
 } from '@/utils/errors';
 import { SocketGateway } from '@/socket/socket-gateway';
+
 @Injectable()
 export class GuestService {
   constructor(
@@ -33,6 +36,77 @@ export class GuestService {
     private tableService: TableService,
     private socketGateway: SocketGateway,
   ) {}
+
+  async getGuestList({ fromDate, toDate, page, limit }: PaginationTimeReqDto) {
+    try {
+      if (!page || page <= 0) page = 1;
+      if (!limit || limit <= 0) limit = 12;
+
+      const skip = (page - 1) * limit;
+
+      const guests = await this.prisma.guest.findMany({
+        skip,
+        take: limit,
+        orderBy: {
+          createdAt: 'desc',
+        },
+        where: {
+          createdAt: {
+            gte: fromDate,
+            lte: toDate,
+          },
+        },
+        omit: {
+          refreshToken: true,
+          refreshTokenExpiresAt: true,
+        },
+      });
+
+      return {
+        guests,
+        meta: {
+          total: guests.length,
+          page,
+          limit,
+        },
+      };
+    } catch (error) {
+      this.logger.error(error.message);
+      throw error;
+    }
+  }
+
+  async createGuest(body: CreateGuestReqDto) {
+    try {
+      const table = await this.prisma.table.findUnique({
+        where: {
+          number: body.tableNumber,
+        },
+      });
+
+      if (!table) {
+        throw new BadRequestException(
+          this.i18n.t('errors.table.table-invalid'),
+        );
+      }
+
+      if (table.status === TableStatus.Hidden) {
+        throw new BadRequestException(
+          this.i18n.t('errors.order.table-hidden', {
+            args: { number: table.number },
+          }),
+        );
+      }
+      const guest = await this.prisma.guest.create({
+        data: body,
+      });
+
+      return guest;
+    } catch (error) {
+      this.logger.error(error.message);
+      throw error;
+    }
+  }
 
   async login(body: GuestLoginReqDto) {
     try {

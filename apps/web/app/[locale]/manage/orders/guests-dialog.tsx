@@ -19,6 +19,7 @@ import { endOfDay, format, startOfDay } from 'date-fns'
 import { GetListGuestsResType } from '@/schemaValidations/account.schema'
 import { useGetGuestListQuery } from '@/queries/useAccount'
 import { formatDateTimeToLocaleString, simpleMatchText } from '@/lib/utils'
+import useDebounce from '@repo/ui/hooks/use-debounce'
 import { Button } from '@repo/ui/components/button'
 import {
   Dialog,
@@ -38,9 +39,8 @@ import {
 } from '@repo/ui/components/table'
 import AutoPagination from '@/components/molecules/auto-pagination'
 
-type GuestItem = GetListGuestsResType['data'][0]
+type GuestItem = GetListGuestsResType['data']['guests'][0]
 
-const PAGE_SIZE = 10
 const initFromDate = startOfDay(new Date())
 const initToDate = endOfDay(new Date())
 
@@ -55,19 +55,28 @@ const GuestsDialog = ({
   const [open, setOpen] = useState(false)
   const [fromDate, setFromDate] = useState(initFromDate)
   const [toDate, setToDate] = useState(initToDate)
-  const guestListQuery = useGetGuestListQuery({
-    fromDate,
-    toDate,
+  const [page, setPage] = useState<number>(0)
+  const [limit, setLimit] = useState<number>(12)
+  const [pagination, setPagination] = useState({
+    pageIndex: page,
+    pageSize: limit,
   })
-  const data = guestListQuery.data?.payload.data ?? []
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
   const [rowSelection, setRowSelection] = useState({})
-  const [pagination, setPagination] = useState({
-    pageIndex: 0,
-    pageSize: PAGE_SIZE,
+
+  const debouncedFromDate = useDebounce(fromDate, 1000)
+  const debouncedToDate = useDebounce(toDate, 1000)
+
+  const guestListQuery = useGetGuestListQuery({
+    fromDate: debouncedFromDate,
+    toDate: debouncedToDate,
+    page: page + 1,
+    limit,
   })
+  const data = guestListQuery.data?.payload.data.guests ?? []
+  const meta = guestListQuery.data?.payload.data.meta
 
   const columns: ColumnDef<GuestItem>[] = useMemo(() => {
     return [
@@ -125,7 +134,6 @@ const GuestsDialog = ({
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
     onPaginationChange: setPagination,
-    autoResetPageIndex: false,
     state: {
       sorting,
       columnFilters,
@@ -147,10 +155,10 @@ const GuestsDialog = ({
 
   useEffect(() => {
     table.setPagination({
-      pageIndex: 0,
-      pageSize: PAGE_SIZE,
+      pageIndex: page,
+      pageSize: limit,
     })
-  }, [table])
+  }, [table, page, limit])
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -289,15 +297,11 @@ const GuestsDialog = ({
               </div>
               <div>
                 <AutoPagination
-                  page={table.getState().pagination.pageIndex + 1}
-                  pageSize={table.getPageCount()}
-                  onClick={(pageNumber) =>
-                    table.setPagination({
-                      pageIndex: pageNumber - 1,
-                      pageSize: PAGE_SIZE,
-                    })
-                  }
-                  isLink={false}
+                  pageSize={meta?.totalPages ?? 1}
+                  page={page}
+                  setPage={setPage}
+                  limit={limit}
+                  setLimit={setLimit}
                 />
               </div>
             </div>

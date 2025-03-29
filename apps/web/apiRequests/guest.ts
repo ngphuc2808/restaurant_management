@@ -30,23 +30,17 @@ const guestApiRequest = {
       baseUrl: '/api',
     }),
   sLogout: (
-    body: LogoutBodyType & {
+    body: {
       accessToken: string
     },
     locale: string,
   ) =>
-    http.post(
-      `/${prefix}/auth/logout`,
-      {
-        refreshToken: body.refreshToken,
+    http.post(`/${prefix}/auth/logout`, null, {
+      headers: {
+        Authorization: `Bearer ${body.accessToken}`,
+        locale,
       },
-      {
-        headers: {
-          Authorization: `Bearer ${body.accessToken}`,
-          locale,
-        },
-      },
-    ),
+    }),
   logout: () => http.post(`/${prefix}/auth/logout`, null, { baseUrl: '/api' }),
   sRefreshToken: (body: RefreshTokenBodyType, locale: string) =>
     http.post<RefreshTokenResType>(`/${prefix}/auth/refresh-token`, body, {

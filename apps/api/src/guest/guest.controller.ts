@@ -18,7 +18,6 @@ import { UserDto } from '@/auth/dto/types';
 import { GuestLoginReqDto } from '@/guest/dto/req/guest-login.req.dto';
 import { GuestLoginResDto } from '@/guest/dto/res/guest-login.res.dto';
 import { GuestLogoutResDto } from '@/guest/dto/res/guest-logout.res.dto';
-import { GuestLogoutReqDto } from '@/guest/dto/req/guest-logout.req.dto';
 import { GuestRefreshTokenResDto } from '@/guest/dto/res/guest-refresh-token.res.dto';
 import { GuestRefreshTokenReqDto } from '@/guest/dto/req/guest-refresh-token.req.dto';
 import { GuestCreateDishReqDto } from '@/guest/dto/req/guest-create-dish.req.dto';
@@ -34,15 +33,15 @@ export class GuestController {
   @ApiOkResponse({ type: GuestLoginResDto })
   @Post('auth/login')
   async login(@Body() loginDto: GuestLoginReqDto) {
-    return this.guestService.login(loginDto);
+    return await this.guestService.login(loginDto);
   }
 
   @HttpCode(HttpStatus.OK)
   @ResponseMessage('res.success.logout')
   @ApiOkResponse({ type: GuestLogoutResDto })
   @Post('auth/logout')
-  async logout(@Body() logoutDto: GuestLogoutReqDto) {
-    await this.guestService.logout(logoutDto.id);
+  async logout(@User() user: UserDto) {
+    await this.guestService.logout(user.id);
   }
 
   @Public()
@@ -51,7 +50,7 @@ export class GuestController {
   @ApiOkResponse({ type: GuestRefreshTokenResDto })
   @Post('auth/refresh-token')
   async refresh(@Body() tokenDto: GuestRefreshTokenReqDto) {
-    return this.guestService.processNewGuestToken(tokenDto.refreshToken);
+    return await this.guestService.processNewGuestToken(tokenDto.refreshToken);
   }
 
   @UseGuards(RoleGuard)
@@ -60,11 +59,11 @@ export class GuestController {
   @ResponseMessage('res.success.order.create')
   @ApiOkResponse({ type: GuestCreateDishResDto })
   @Post('orders')
-  create(
+  async create(
     @User() user: UserDto,
     @Body() createDishDto: GuestCreateDishReqDto[],
   ) {
-    return this.guestService.createDish(user.id, createDishDto);
+    return await this.guestService.createDish(user.id, createDishDto);
   }
 
   @UseGuards(RoleGuard)
@@ -73,7 +72,7 @@ export class GuestController {
   @ResponseMessage('res.success.order.get-list')
   @ApiOkResponse({ type: GuestCreateDishResDto })
   @Get('orders')
-  getList(@User() user: UserDto) {
-    return this.guestService.getListOrder(user.id);
+  async getList(@User() user: UserDto) {
+    return await this.guestService.getListOrder(user.id);
   }
 }

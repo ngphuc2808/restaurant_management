@@ -6,11 +6,10 @@ export async function POST(request: Request) {
   const locale = request.headers.get('locale')
   const cookieStore = await cookies()
   const accessToken = cookieStore.get('accessToken')?.value
-  const refreshToken = cookieStore.get('refreshToken')?.value
   cookieStore.delete('accessToken')
   cookieStore.delete('refreshToken')
 
-  if (!accessToken || !refreshToken) {
+  if (!accessToken) {
     return Response.json(
       {
         message: 'Không nhận được access token hoặc refresh token',
@@ -24,7 +23,6 @@ export async function POST(request: Request) {
     const result = await guestApiRequest.sLogout(
       {
         accessToken,
-        refreshToken,
       },
       locale!,
     )

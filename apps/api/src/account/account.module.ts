@@ -8,6 +8,8 @@ import { PrismaService } from '@/prisma.service';
 import { AccountService } from '@/account/account.service';
 import { RefreshTokenService } from '@/refresh-token/refresh-token.service';
 import { AuthService } from '@/auth/auth.service';
+import { GuestService } from '@/guest/guest.service';
+import { TableService } from '@/table/table.service';
 
 @Module({
   controllers: [AccountController],
@@ -19,6 +21,8 @@ import { AuthService } from '@/auth/auth.service';
     AccountService,
     AuthService,
     RefreshTokenService,
+    GuestService,
+    TableService,
   ],
 })
 export class AccountModule {}

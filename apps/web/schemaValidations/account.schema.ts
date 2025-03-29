@@ -151,16 +151,20 @@ export const AccountIdParam = z.object({
 export type AccountIdParamType = z.TypeOf<typeof AccountIdParam>
 
 export const GetListGuestsRes = z.object({
-  data: z.array(
-    z.object({
-      id: z.number(),
-      name: z.string(),
-      tableNumber: z.number().nullable(),
-      createdAt: z.date(),
-      updatedAt: z.date(),
-    }),
-  ),
+  statusCode: z.number(),
   message: z.string(),
+  data: z.object({
+    guests: z.array(
+      z.object({
+        id: z.number(),
+        name: z.string(),
+        tableNumber: z.number().nullable(),
+        createdAt: z.date(),
+        updatedAt: z.date(),
+      }),
+    ),
+    meta: MetaSchema,
+  }),
 })
 
 export type GetListGuestsResType = z.TypeOf<typeof GetListGuestsRes>
@@ -168,6 +172,8 @@ export type GetListGuestsResType = z.TypeOf<typeof GetListGuestsRes>
 export const GetGuestListQueryParams = z.object({
   fromDate: z.coerce.date().optional(),
   toDate: z.coerce.date().optional(),
+  page: z.coerce.number().optional(),
+  limit: z.coerce.number().optional(),
 })
 
 export type GetGuestListQueryParamsType = z.TypeOf<

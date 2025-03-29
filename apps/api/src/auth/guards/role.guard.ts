@@ -17,11 +17,19 @@ export class RoleGuard implements CanActivate {
   ) {}
 
   canActivate(context: ExecutionContext): boolean {
-    const requiredRoles = this.reflector.get<string[]>(
+    const methodRoles = this.reflector.get<string[]>(
       ROLES_KEY,
       context.getHandler(),
     );
-    if (!requiredRoles || requiredRoles.length === 0) {
+    const controllerRoles = this.reflector.get<string[]>(
+      ROLES_KEY,
+      context.getClass(),
+    );
+
+    if (
+      (!methodRoles || methodRoles.length === 0) &&
+      (!controllerRoles || controllerRoles.length === 0)
+    ) {
       return true;
     }
 
@@ -32,7 +40,8 @@ export class RoleGuard implements CanActivate {
       throw new ForbiddenException(this.i18n.t('errors.auth.no-user-found'));
     }
 
-    if (!requiredRoles.includes(user.role)) {
+    const rolesToCheck = methodRoles || controllerRoles;
+    if (!rolesToCheck.includes(user.role)) {
       throw new ForbiddenException(
         this.i18n.t('errors.auth.you-are-not-allowed-to-do-this'),
       );

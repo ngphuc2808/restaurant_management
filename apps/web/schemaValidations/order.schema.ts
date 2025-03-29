@@ -1,7 +1,9 @@
+import z from 'zod'
+
 import { DishStatusValues, OrderStatusValues } from '@/constants/type'
 import { AccountSchema } from '@/schemaValidations/account.schema'
 import { TableSchema } from '@/schemaValidations/table.schema'
-import z from 'zod'
+import { MetaSchema } from '@/schemaValidations/metadata.schema'
 
 const DishSnapshotSchema = z.object({
   id: z.number(),
@@ -62,13 +64,19 @@ export type UpdateOrderResType = z.TypeOf<typeof UpdateOrderRes>
 export const GetOrdersQueryParams = z.object({
   fromDate: z.coerce.date().optional(),
   toDate: z.coerce.date().optional(),
+  page: z.coerce.number().optional(),
+  limit: z.coerce.number().optional(),
 })
 
 export type GetOrdersQueryParamsType = z.TypeOf<typeof GetOrdersQueryParams>
 
 export const GetOrdersRes = z.object({
+  statusCode: z.number(),
   message: z.string(),
-  data: z.array(OrderSchema),
+  data: z.object({
+    orders: z.array(OrderSchema),
+    meta: MetaSchema,
+  }),
 })
 
 export type GetOrdersResType = z.TypeOf<typeof GetOrdersRes>

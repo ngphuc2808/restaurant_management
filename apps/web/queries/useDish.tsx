@@ -5,6 +5,7 @@ import {
   useMutation,
   useQuery,
   useQueryClient,
+  useInfiniteQuery,
 } from '@tanstack/react-query'
 
 import dishApiRequest from '@/apiRequests/dish'
@@ -23,6 +24,20 @@ export const useDishListQuery = (
     queryKey: ['dishes', page, limit],
     queryFn: () => dishApiRequest.list({ page, limit }),
     placeholderData: keepPreviousData,
+  })
+}
+
+export const useInfiniteDishesQuery = (limit: number) => {
+  return useInfiniteQuery({
+    queryKey: ['infinite-dishes'],
+    queryFn: ({ pageParam = 1 }) =>
+      dishApiRequest.list({ page: pageParam, limit }),
+    getNextPageParam: (lastPage, allPages) => {
+      const totalPages = Math.ceil(lastPage.payload.data.meta.total / limit)
+      const nextPage = allPages.length + 1
+      return nextPage <= totalPages ? nextPage : undefined
+    },
+    initialPageParam: 1,
   })
 }
 

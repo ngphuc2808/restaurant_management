@@ -60,6 +60,8 @@ const accountApiRequest = {
         queryString.stringify({
           fromDate: queryParams.fromDate?.toISOString(),
           toDate: queryParams.toDate?.toISOString(),
+          page: queryParams.page,
+          limit: queryParams.limit,
         }),
     ),
   createGuest: (body: CreateGuestBodyType) =>

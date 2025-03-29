@@ -19,8 +19,8 @@ import { Badge } from '@repo/ui/components/badge'
 import { Button } from '@repo/ui/components/button'
 import { OrderStatus, OrderStatusIcon } from '@/constants/type'
 
-type Guest = GetOrdersResType['data'][0]['guest']
-type Orders = GetOrdersResType['data']
+type Guest = GetOrdersResType['data']['orders'][0]['guest']
+type Orders = GetOrdersResType['data']['orders']
 
 const OrderGuestDetail = ({
   guest,

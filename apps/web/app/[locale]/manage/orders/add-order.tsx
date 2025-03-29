@@ -45,8 +45,9 @@ import { DishStatus } from '@/constants/type'
 import GuestsDialog from '@/app/[locale]/manage/orders/guests-dialog'
 import Quantity from '@/app/[locale]/guest/menu/quantity'
 import TablesDialog from '@/app/[locale]/manage/orders/tables-dialog'
+import AutoPagination from '@/components/molecules/auto-pagination'
 
-type GuestType = GetListGuestsResType['data'][0]
+type GuestType = GetListGuestsResType['data']['guests'][0]
 
 const AddOrder = () => {
   const t = useTranslations('Orders')
@@ -56,8 +57,11 @@ const AddOrder = () => {
   const [selectedGuest, setSelectedGuest] = useState<GuestType | null>(null)
   const [isNewGuest, setIsNewGuest] = useState(true)
   const [orders, setOrders] = useState<CreateOrdersBodyType['orders']>([])
-  const { data } = useDishListQuery()
-  const dishes = useMemo(() => data?.payload.data ?? [], [data])
+  const [page, setPage] = useState<number>(0)
+  const [limit, setLimit] = useState<number>(12)
+  const dishListQuery = useDishListQuery(page + 1, limit)
+  const dishes = dishListQuery.data?.payload.data.dishes ?? []
+  const meta = dishListQuery.data?.payload.data.meta
 
   const totalPrice = useMemo(() => {
     return dishes.reduce((result, dish) => {
@@ -97,14 +101,28 @@ const AddOrder = () => {
 
   const onSubmit = async (value: GuestLoginBodyType) => {
     try {
+      const guestRes = await createGuestMutation.mutateAsync({
+        name: value.name,
+        tableNumber,
+      })
+      const guestId = guestRes.payload.data.id
+
+      await createOrderMutation.mutateAsync({
+        guestId,
+        orders,
+      })
+      reset()
+    } catch (error) {
+      handleErrorApi({
+        error,
+        setError: form.setError,
+      })
+    }
+  }
+
+  const handleOrder = async () => {
+    try {
       let guestId = selectedGuest?.id
-      if (isNewGuest) {
-        const guestRes = await createGuestMutation.mutateAsync({
-          name: value.name,
-          tableNumber,
-        })
-        guestId = guestRes.payload.data.id
-      }
       if (!guestId) {
         toast({
           description: t('pleaseSelectAGuest'),
@@ -204,6 +222,7 @@ const AddOrder = () => {
                           <div className="flex items-center gap-4">
                             <div>{field.value}</div>
                             <TablesDialog
+                              onChange={field.onChange}
                               onChoose={(table) => {
                                 field.onChange(table.number)
                               }}
@@ -238,54 +257,66 @@ const AddOrder = () => {
             </div>
           </div>
         )}
-        {dishes
-          .filter((dish) => dish.status !== DishStatus.Hidden)
-          .map((dish) => (
-            <div
-              key={dish.id}
-              className={cn('flex gap-4', {
-                'pointer-events-none': dish.status === DishStatus.Unavailable,
-              })}
-            >
-              <div className="relative flex-shrink-0">
-                {dish.status === DishStatus.Unavailable && (
-                  <span className="absolute inset-0 flex items-center justify-center rounded-md bg-slate-600/50 text-sm text-white">
-                    {t('outOfStock')}
-                  </span>
-                )}
-                <Image
-                  src={dish.image}
-                  alt={dish.name}
-                  height={100}
-                  width={100}
-                  quality={80}
-                  className="h-[80px] w-[80px] rounded-md object-cover"
-                />
+        <div className="max-h-80 overflow-auto">
+          {dishes
+            .filter((dish) => dish.status !== DishStatus.Hidden)
+            .map((dish) => (
+              <div
+                key={dish.id}
+                className={cn('flex gap-4', {
+                  'pointer-events-none': dish.status === DishStatus.Unavailable,
+                })}
+              >
+                <div className="relative flex-shrink-0">
+                  {dish.status === DishStatus.Unavailable && (
+                    <span className="absolute inset-0 flex items-center justify-center rounded-md bg-slate-600/50 text-sm text-white">
+                      {t('outOfStock')}
+                    </span>
+                  )}
+                  <Image
+                    src={dish.image}
+                    alt={dish.name}
+                    height={100}
+                    width={100}
+                    quality={80}
+                    className="h-[80px] w-[80px] rounded-md object-cover"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <h3 className="text-sm">{dish.name}</h3>
+                  <p className="text-xs">{dish.description}</p>
+                  <p className="text-xs font-semibold">
+                    {formatCurrency(dish.price)}
+                  </p>
+                </div>
+                <div className="ml-auto flex flex-shrink-0 items-center justify-center">
+                  <Quantity
+                    onChange={(value) => handleQuantityChange(dish.id, value)}
+                    value={
+                      orders.find((order) => order.dishId === dish.id)
+                        ?.quantity ?? 0
+                    }
+                  />
+                </div>
               </div>
-              <div className="space-y-1">
-                <h3 className="text-sm">{dish.name}</h3>
-                <p className="text-xs">{dish.description}</p>
-                <p className="text-xs font-semibold">
-                  {formatCurrency(dish.price)}
-                </p>
-              </div>
-              <div className="ml-auto flex flex-shrink-0 items-center justify-center">
-                <Quantity
-                  onChange={(value) => handleQuantityChange(dish.id, value)}
-                  value={
-                    orders.find((order) => order.dishId === dish.id)
-                      ?.quantity ?? 0
-                  }
-                />
-              </div>
-            </div>
-          ))}
+            ))}
+        </div>
+        <div>
+          <AutoPagination
+            pageSize={meta?.totalPages ?? 1}
+            page={page}
+            setPage={setPage}
+            limit={limit}
+            setLimit={setLimit}
+          />
+        </div>
         <DialogFooter>
           <Button
             className="w-full justify-between"
             type="submit"
-            form="add-order-form"
+            form={isNewGuest ? 'add-order-form' : undefined}
             disabled={orders.length === 0}
+            onClick={!isNewGuest ? handleOrder : undefined}
           >
             <span>
               {t('orderDish')} · {orders.length} {t('dish').toLowerCase()}

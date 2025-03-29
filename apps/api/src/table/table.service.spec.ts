@@ -1,13 +1,14 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { Logger, UnprocessableEntityException } from '@nestjs/common';
 import { I18nService } from 'nestjs-i18n';
-import { TableService } from './table.service';
+
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { PrismaService } from '@/prisma.service';
-import { CreateTableReqDto } from './dto/req/create.req.dto';
-import { UpdateTableReqDto } from './dto/req/update.req.dto';
+import { TableService } from '@/table/table.service';
+import { CreateTableReqDto } from '@/table/dto/req/create.req.dto';
+import { UpdateTableReqDto } from '@/table/dto/req/update.req.dto';
 import { PaginationReqDto } from '@/utils/paginate.dto';
 import { TableStatus } from '@/constants/type';
-import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 
 jest.mock('@/utils/errors', () => ({
   ...jest.requireActual('@/utils/errors'),
@@ -328,6 +329,46 @@ describe('TableService', () => {
       );
       expect(prisma.table.findUnique).toHaveBeenCalledWith({
         where: { number, token },
+      });
+    });
+  });
+
+  describe('getTableByNumber', () => {
+    it('should get table by number successfully', async () => {
+      const number = 1;
+
+      mockPrismaService.table.findUnique.mockResolvedValue(mockTable);
+
+      const result = await service.getTableByNumber(number);
+
+      expect(result).toEqual(mockTable);
+      expect(prisma.table.findUnique).toHaveBeenCalledWith({
+        where: { number },
+      });
+    });
+
+    it('should return null when table not found', async () => {
+      const number = 999;
+
+      mockPrismaService.table.findUnique.mockResolvedValue(null);
+
+      const result = await service.getTableByNumber(number);
+
+      expect(result).toBeNull();
+      expect(prisma.table.findUnique).toHaveBeenCalledWith({
+        where: { number },
+      });
+    });
+
+    it('should handle database errors', async () => {
+      const number = 1;
+
+      const error = new Error('Database error');
+      mockPrismaService.table.findUnique.mockRejectedValue(error);
+
+      await expect(service.getTableByNumber(number)).rejects.toThrow(error);
+      expect(prisma.table.findUnique).toHaveBeenCalledWith({
+        where: { number },
       });
     });
   });

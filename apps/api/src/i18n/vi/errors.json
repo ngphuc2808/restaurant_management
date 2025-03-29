@@ -33,8 +33,17 @@
     "invalid-number": "Số bàn không hợp lệ",
     "invalid-capacity": "Sức chứa bàn không hợp lệ",
     "table-already-exists": "Bàn đã tồn tại",
+    "table-invalid": "Bàn không tồn tại",
     "table-invalid-token": "Bàn không tồn tại hoặc mã token không đúng",
     "table-hidden": "Bàn này đã bị ẩn, hãy chọn bàn khác để đăng nhập",
     "table-reserved": "Bàn đã được đặt trước, hãy liên hệ nhân viên để được hỗ trợ"
+  },
+  "order": {
+    "table-deleted": "Bàn của bạn đã bị xóa, vui lòng đăng xuất và đăng nhập lại một bàn mới",
+    "table-hidden": "Bàn {number} đã bị ẩn, vui lòng đăng xuất và chọn bàn khác",
+    "table-reserved": "Bàn {number} đã được đặt trước, vui lòng đăng xuất và chọn bàn khác",
+    "dish-unavailable": "Món {name} đã hết",
+    "dish-hidden": "Món {name} không thể đặt",
+    "payment-not-found": "Không có hóa đơn nào cần thanh toán"
   }
 }
