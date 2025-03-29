@@ -1,7 +1,9 @@
 //libs
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { HeaderResolver, I18nModule } from 'nestjs-i18n';
+import { CacheModule } from '@nestjs/cache-manager';
+import * as redisStore from 'cache-manager-redis-store';
 import * as path from 'path';
 
 //app
@@ -36,6 +38,19 @@ import { IndicatorModule } from '@/indicator/indicator.module';
         },
       }),
       resolvers: [new HeaderResolver(['locale'])],
+    }),
+    CacheModule.registerAsync({
+      isGlobal: true,
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        store: redisStore,
+        host: configService.getOrThrow('REDIS_HOST') || 'localhost',
+        port: configService.getOrThrow('REDIS_PORT') || 6379,
+        db: configService.getOrThrow('REDIS_DB_INDEX') || 1,
+        max: 5000,
+        ttl: 3600,
+        options: { prefix: '' },
+      }),
     }),
     AuthModule,
     IndicatorModule,

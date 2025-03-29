@@ -9,6 +9,7 @@ import { Server, Socket } from 'socket.io';
 import { Logger } from '@nestjs/common';
 
 import { AuthService } from '@/auth/auth.service';
+import { SocketService } from './socket.service';
 import { ManagerRoom } from '@/constants/type';
 
 @WebSocketGateway({
@@ -25,7 +26,10 @@ export class SocketGateway
   @WebSocketServer() server: Server;
   private logger: Logger = new Logger('SocketGateway');
 
-  constructor(private authService: AuthService) {
+  constructor(
+    private authService: AuthService,
+    private socketService: SocketService,
+  ) {
     if (process.env.NODE_ENV === 'test') {
       this.logger.error = () => {};
     }
@@ -51,7 +55,18 @@ export class SocketGateway
     }
   }
 
-  handleDisconnect(client: Socket) {
+  async handleDisconnect(client: Socket) {
+    try {
+      const decodedToken = client.handshake.auth.decodedAccessToken;
+      if (decodedToken) {
+        await this.socketService.removeSocket(
+          decodedToken.sub,
+          decodedToken.role,
+        );
+      }
+    } catch (error) {
+      this.logger.error(`Error in handleDisconnect: ${error.message}`);
+    }
     this.logger.log(`Client disconnected: ${client.id}`);
   }
 }
