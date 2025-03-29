@@ -6,6 +6,7 @@ import { endOfDay, format, startOfDay } from 'date-fns'
 
 import { useDashboardIndicator } from '@/queries/useIndicator'
 import { formatCurrency } from '@/lib/utils'
+import useDebounce from '@repo/ui/hooks/use-debounce'
 import { Button } from '@repo/ui/components/button'
 import {
   Card,
@@ -26,9 +27,13 @@ const DashboardMain = () => {
 
   const [fromDate, setFromDate] = useState(initFromDate)
   const [toDate, setToDate] = useState(initToDate)
+
+  const debouncedFromDate = useDebounce(fromDate, 1000)
+  const debouncedToDate = useDebounce(toDate, 1000)
+
   const { data } = useDashboardIndicator({
-    fromDate,
-    toDate,
+    fromDate: debouncedFromDate,
+    toDate: debouncedToDate,
   })
   const revenue = data?.payload.data.revenue ?? 0
   const guestCount = data?.payload.data.guestCount ?? 0

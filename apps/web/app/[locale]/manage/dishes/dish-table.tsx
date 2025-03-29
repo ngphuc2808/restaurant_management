@@ -124,20 +124,19 @@ const DishTable = () => {
 
   const [page, setPage] = useState<number>(0)
   const [limit, setLimit] = useState<number>(12)
-  const dishListQuery = useDishListQuery(page + 1, limit)
-  const data = dishListQuery.data?.payload.data.dishes ?? []
-  const meta = dishListQuery.data?.payload.data.meta
-
-  const { dishIdEdit, setDishIdEdit, dishDelete, setDishDelete } = useDish()
-
-  const [sorting, setSorting] = useState<SortingState>([])
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
-  const [rowSelection, setRowSelection] = useState({})
   const [pagination, setPagination] = useState({
     pageIndex: page,
     pageSize: limit,
   })
+  const [sorting, setSorting] = useState<SortingState>([])
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
+  const [rowSelection, setRowSelection] = useState({})
+
+  const dishListQuery = useDishListQuery(page + 1, limit)
+  const data = dishListQuery.data?.payload.data.dishes ?? []
+  const meta = dishListQuery.data?.payload.data.meta
+  const { dishIdEdit, setDishIdEdit, dishDelete, setDishDelete } = useDish()
 
   const columns: ColumnDef<DishItem>[] = useMemo(() => {
     return [
@@ -243,7 +242,6 @@ const DishTable = () => {
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
     onPaginationChange: setPagination,
-    autoResetPageIndex: false,
     state: {
       sorting,
       columnFilters,

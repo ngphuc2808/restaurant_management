@@ -15,11 +15,12 @@ import {
 } from '@/schemaValidations/table.schema'
 
 export const useTableListQuery = (
+  key: string,
   page: number,
   limit: number,
 ): UseQueryResult<QueryResponseType<TableListResType>, Error> => {
   return useQuery({
-    queryKey: ['tables', page, limit],
+    queryKey: ['tables', key, page, limit],
     queryFn: () => tableApiRequest.list({ page, limit }),
   })
 }

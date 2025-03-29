@@ -39,7 +39,7 @@ const OrderStatics = ({
   servingGuestByTableNumber,
 }: {
   statics: Statics
-  tableList: TableListResType['data']
+  tableList: TableListResType['data']['tables']
   servingGuestByTableNumber: ServingGuestByTableNumber
 }) => {
   const t = useTranslations('Orders')

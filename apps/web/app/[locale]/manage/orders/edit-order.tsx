@@ -49,7 +49,7 @@ import {
 } from '@/queries/useOrder'
 import { toast } from '@repo/ui/hooks/use-toast'
 
-type DistType = DishListResType['data'][0]
+type DistType = DishListResType['data']['dishes'][0]
 
 const EditOrder = ({
   id,

@@ -24,6 +24,8 @@ const orderApiRequest = {
         queryString.stringify({
           fromDate: queryParams.fromDate?.toISOString(),
           toDate: queryParams.toDate?.toISOString(),
+          page: queryParams.page,
+          limit: queryParams.limit,
         }),
     ),
   updateOrder: (orderId: number, body: UpdateOrderBodyType) =>

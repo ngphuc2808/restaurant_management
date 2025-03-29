@@ -4,9 +4,9 @@ import { create } from 'zustand'
 type AccountType = {
   setEmployeeIdEdit: (employeeIdEdit: number | undefined) => void
   employeeIdEdit: number | undefined
-  employeeDelete: AccountListResType['data'][0] | undefined
+  employeeDelete: AccountListResType['data']['accounts'][0] | undefined
   setEmployeeDelete: (
-    employeeDelete: AccountListResType['data'][0] | undefined,
+    employeeDelete: AccountListResType['data']['accounts'][0] | undefined,
   ) => void
 }
 
@@ -17,7 +17,7 @@ const useAccount = create<AccountType>((set) => ({
   employeeIdEdit: undefined,
   employeeDelete: undefined,
   setEmployeeDelete: (
-    employeeDelete: AccountListResType['data'][0] | undefined,
+    employeeDelete: AccountListResType['data']['accounts'][0] | undefined,
   ) => {
     set({ employeeDelete })
   },

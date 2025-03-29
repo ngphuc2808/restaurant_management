@@ -11,11 +11,6 @@ const nextConfig = {
   images: {
     remotePatterns: [
       {
-        protocol: 'http',
-        hostname: 'localhost',
-        port: '4000',
-      },
-      {
         protocol: 'https',
         hostname: 'phucnh-restaurant-management.s3.amazonaws.com',
       },

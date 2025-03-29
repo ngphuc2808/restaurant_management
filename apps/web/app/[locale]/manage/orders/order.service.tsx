@@ -8,7 +8,9 @@ import {
 } from '@/app/[locale]/manage/orders/order-table'
 import { OrderStatus } from '@/constants/type'
 
-export const useOrderService = (orderList: GetOrdersResType['data']) => {
+export const useOrderService = (
+  orderList: GetOrdersResType['data']['orders'],
+) => {
   const result = useMemo(() => {
     const statics: Statics = {
       status: {

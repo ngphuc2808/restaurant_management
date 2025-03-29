@@ -43,25 +43,27 @@ import {
 import AutoPagination from '@/components/molecules/auto-pagination'
 import { DishStatus } from '@/constants/type'
 
-type DishItem = DishListResType['data'][0]
-
-const PAGE_SIZE = 10
+type DishItem = DishListResType['data']['dishes'][0]
 
 const DishesDialog = ({ onChoose }: { onChoose: (dish: DishItem) => void }) => {
   const t = useTranslations('Orders')
   const tAll = useTranslations('All')
 
   const [open, setOpen] = useState(false)
-  const dishListQuery = useDishListQuery()
-  const data = dishListQuery.data?.payload.data ?? []
+  const [page, setPage] = useState<number>(0)
+  const [limit, setLimit] = useState<number>(12)
+  const [pagination, setPagination] = useState({
+    pageIndex: page,
+    pageSize: limit,
+  })
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
   const [rowSelection, setRowSelection] = useState({})
-  const [pagination, setPagination] = useState({
-    pageIndex: 0,
-    pageSize: PAGE_SIZE,
-  })
+
+  const dishListQuery = useDishListQuery(page + 1, limit)
+  const data = dishListQuery.data?.payload.data.dishes ?? []
+  const meta = dishListQuery.data?.payload.data.meta
 
   const columns: ColumnDef<DishItem>[] = useMemo(() => {
     return [
@@ -116,7 +118,6 @@ const DishesDialog = ({ onChoose }: { onChoose: (dish: DishItem) => void }) => {
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
     onPaginationChange: setPagination,
-    autoResetPageIndex: false,
     state: {
       sorting,
       columnFilters,
@@ -133,10 +134,10 @@ const DishesDialog = ({ onChoose }: { onChoose: (dish: DishItem) => void }) => {
 
   useEffect(() => {
     table.setPagination({
-      pageIndex: 0,
-      pageSize: PAGE_SIZE,
+      pageIndex: page,
+      pageSize: limit,
     })
-  }, [table])
+  }, [table, page, limit])
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -230,15 +231,11 @@ const DishesDialog = ({ onChoose }: { onChoose: (dish: DishItem) => void }) => {
               </div>
               <div>
                 <AutoPagination
-                  page={table.getState().pagination.pageIndex + 1}
-                  pageSize={table.getPageCount()}
-                  onClick={(pageNumber) =>
-                    table.setPagination({
-                      pageIndex: pageNumber - 1,
-                      pageSize: PAGE_SIZE,
-                    })
-                  }
-                  isLink={false}
+                  pageSize={meta?.totalPages ?? 1}
+                  page={page}
+                  setPage={setPage}
+                  limit={limit}
+                  setLimit={setLimit}
                 />
               </div>
             </div>

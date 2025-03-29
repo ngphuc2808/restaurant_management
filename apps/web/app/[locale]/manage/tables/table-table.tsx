@@ -118,21 +118,21 @@ const TableTable = () => {
 
   const [page, setPage] = useState<number>(0)
   const [limit, setLimit] = useState<number>(12)
-  const tableListQuery = useTableListQuery(page + 1, limit)
+  const [pagination, setPagination] = useState({
+    pageIndex: page,
+    pageSize: limit,
+  })
+  const [sorting, setSorting] = useState<SortingState>([])
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
+  const [rowSelection, setRowSelection] = useState({})
+
+  const tableListQuery = useTableListQuery('table-table', page + 1, limit)
   const data = tableListQuery.data?.payload.data.tables ?? []
   const meta = tableListQuery.data?.payload.data.meta
 
   const { tableIdEdit, setTableIdEdit, tableDelete, setTableDelete } =
     useTable()
-
-  const [sorting, setSorting] = useState<SortingState>([])
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
-  const [rowSelection, setRowSelection] = useState({})
-  const [pagination, setPagination] = useState({
-    pageIndex: page,
-    pageSize: limit,
-  })
 
   const columns: ColumnDef<TableItem>[] = useMemo(() => {
     return [
@@ -222,7 +222,6 @@ const TableTable = () => {
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
     onPaginationChange: setPagination,
-    autoResetPageIndex: false,
     state: {
       sorting,
       columnFilters,

@@ -127,19 +127,18 @@ const AccountTable = () => {
 
   const [page, setPage] = useState<number>(0)
   const [limit, setLimit] = useState<number>(12)
-  const accountListQuery = useGetAccountList(page + 1, limit)
-  const data = accountListQuery.data?.payload.data.accounts ?? []
-  const meta = accountListQuery.data?.payload.data.meta
-
+  const [pagination, setPagination] = useState({
+    pageIndex: page,
+    pageSize: limit,
+  })
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
   const [rowSelection, setRowSelection] = useState({})
 
-  const [pagination, setPagination] = useState({
-    pageIndex: page,
-    pageSize: limit,
-  })
+  const accountListQuery = useGetAccountList(page + 1, limit)
+  const data = accountListQuery.data?.payload.data.accounts ?? []
+  const meta = accountListQuery.data?.payload.data.meta
 
   const columns: ColumnDef<AccountType>[] = useMemo(() => {
     return [

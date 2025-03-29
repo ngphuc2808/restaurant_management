@@ -5,8 +5,10 @@ import { DishListResType } from '@/schemaValidations/dish.schema'
 type DishType = {
   setDishIdEdit: (dishIdEdit: number | undefined) => void
   dishIdEdit: number | undefined
-  dishDelete: DishListResType['data'][0] | undefined
-  setDishDelete: (dishDelete: DishListResType['data'][0] | undefined) => void
+  dishDelete: DishListResType['data']['dishes'][0] | undefined
+  setDishDelete: (
+    dishDelete: DishListResType['data']['dishes'][0] | undefined,
+  ) => void
 }
 
 const useDish = create<DishType>((set) => ({
@@ -15,7 +17,9 @@ const useDish = create<DishType>((set) => ({
   },
   dishIdEdit: undefined,
   dishDelete: undefined,
-  setDishDelete: (dishDelete: DishListResType['data'][0] | undefined) => {
+  setDishDelete: (
+    dishDelete: DishListResType['data']['dishes'][0] | undefined,
+  ) => {
     set({ dishDelete })
   },
 }))

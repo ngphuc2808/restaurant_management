@@ -86,7 +86,7 @@ const OrdersCart = () => {
       refetch()
     }
 
-    function onPayment(data: PayGuestOrdersResType['data']) {
+    function onPayment(data: PayGuestOrdersResType['data']['orders']) {
       const { guest } = data[0]!
       toast({
         description: tOrders('paymentSocket', {
@@ -138,7 +138,7 @@ const OrdersCart = () => {
         </div>
       ))}
       {paid.quantity !== 0 && (
-        <div className="sticky bottom-0 bg-white">
+        <div className="sticky bottom-0">
           <div className="flex w-full space-x-4 text-xl font-semibold">
             <span>
               {t('applicationPaid')} · {paid.quantity}{' '}
@@ -148,7 +148,7 @@ const OrdersCart = () => {
           </div>
         </div>
       )}
-      <div className="sticky bottom-0 bg-white">
+      <div className="sticky bottom-0">
         <div className="flex w-full space-x-4 text-xl font-semibold">
           <span>
             {t('unusedApplication')} · {waitingForPaying.quantity}{' '}

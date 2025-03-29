@@ -5,26 +5,32 @@ import { useTranslations } from 'next-intl'
 import { useMemo, useState } from 'react'
 
 import { useRouter } from '@/i18n/routing'
-import { DishListResType } from '@/schemaValidations/dish.schema'
 import { GuestCreateOrdersBodyType } from '@/schemaValidations/guest.schema'
+import { useDishListQuery } from '@/queries/useDish'
 import { useGuestOrderMutation } from '@/queries/useGuest'
 import { formatCurrency, handleErrorApi } from '@/lib/utils'
 import { cn } from '@repo/ui/lib/utils'
 import { Button } from '@repo/ui/components/button'
 import { DishStatus } from '@/constants/type'
 import Quantity from '@/app/[locale]/guest/menu/quantity'
+import AutoPagination from '@/components/molecules/auto-pagination'
 
-type Props = {
-  dishes: DishListResType['data']['dishes']
-}
+const MenuOrder = () => {
+  const router = useRouter()
 
-const MenuOrder = ({ dishes }: Props) => {
   const t = useTranslations('GuestMenu')
   const tAll = useTranslations('All')
 
   const [orders, setOrders] = useState<GuestCreateOrdersBodyType>([])
+
+  const [page, setPage] = useState<number>(0)
+  const [limit, setLimit] = useState<number>(12)
+  const dishListQuery = useDishListQuery(page + 1, limit)
+
+  const dishes = dishListQuery.data?.payload.data.dishes ?? []
+  const meta = dishListQuery.data?.payload.data.meta
+
   const { mutateAsync } = useGuestOrderMutation()
-  const router = useRouter()
 
   const totalPrice = useMemo(() => {
     return dishes.reduce((result, dish) => {
@@ -68,7 +74,7 @@ const MenuOrder = ({ dishes }: Props) => {
     )
 
   return (
-    <div className="mx-auto max-w-[400px] space-y-4">
+    <div className="mx-auto max-w-[800px] space-y-4">
       <h1 className="text-center text-xl font-bold">🍕 {t('title')}</h1>
       {dishes
         .filter((dish) => dish.status !== DishStatus.Hidden)
@@ -112,6 +118,15 @@ const MenuOrder = ({ dishes }: Props) => {
             </div>
           </div>
         ))}
+      <div>
+        <AutoPagination
+          pageSize={meta?.totalPages ?? 1}
+          page={page}
+          setPage={setPage}
+          limit={limit}
+          setLimit={setLimit}
+        />
+      </div>
       <div className="sticky bottom-0">
         <Button
           className="w-full justify-between"
