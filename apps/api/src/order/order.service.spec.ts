@@ -154,7 +154,14 @@ describe('OrderService', () => {
 
       const result = await service.getListOrder(paginationDto);
 
-      expect(result).toEqual(orders);
+      expect(result).toEqual({
+        orders,
+        meta: {
+          total: orders.length,
+          page: paginationDto.page,
+          limit: paginationDto.limit,
+        },
+      });
       expect(prismaService.order.findMany).toHaveBeenCalled();
     });
 

@@ -39,7 +39,7 @@ export class TableController {
 
   @Public()
   @HttpCode(HttpStatus.OK)
-  @ResponseMessage('res.success.account.get-list')
+  @ResponseMessage('res.success.table.get-list')
   @ApiOkResponse({ type: GetTablesListResDto })
   @Get()
   async getAccountList(@Query() paginationDto: PaginationReqDto) {

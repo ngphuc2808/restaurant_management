@@ -216,7 +216,12 @@ describe('IndicatorService', () => {
         orderCount: 0,
         servingTableCount: 0,
         dishIndicator: [],
-        revenueByDate: [],
+        revenueByDate: [
+          {
+            date: '28/03/2024',
+            revenue: 0,
+          },
+        ],
       });
     });
 

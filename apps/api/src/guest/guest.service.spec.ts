@@ -544,7 +544,14 @@ describe('GuestService', () => {
 
       const result = await service.getGuestList(paginationDto);
 
-      expect(result).toEqual(guests);
+      expect(result).toEqual({
+        guests,
+        meta: {
+          total: guests.length,
+          page: paginationDto.page,
+          limit: paginationDto.limit,
+        },
+      });
       expect(prismaService.guest.findMany).toHaveBeenCalledWith({
         skip: 0,
         take: 10,
@@ -557,6 +564,10 @@ describe('GuestService', () => {
             lte: paginationDto.toDate,
           },
         },
+        omit: {
+          refreshToken: true,
+          refreshTokenExpiresAt: true,
+        },
       });
     });
 
@@ -566,7 +577,14 @@ describe('GuestService', () => {
 
       const result = await service.getGuestList({});
 
-      expect(result).toEqual(guests);
+      expect(result).toEqual({
+        guests,
+        meta: {
+          total: guests.length,
+          page: 1,
+          limit: 12,
+        },
+      });
       expect(prismaService.guest.findMany).toHaveBeenCalledWith({
         skip: 0,
         take: 12,
@@ -578,6 +596,10 @@ describe('GuestService', () => {
             gte: undefined,
             lte: undefined,
           },
+        },
+        omit: {
+          refreshToken: true,
+          refreshTokenExpiresAt: true,
         },
       });
     });

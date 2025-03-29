@@ -89,13 +89,13 @@ export class OrderController {
   @HttpCode(HttpStatus.OK)
   @ResponseMessage('res.success.order.pay')
   @ApiOkResponse({ type: PayOrderResDto })
-  @Post()
+  @Post('pay')
   async payOrder(
     @User()
     user: UserDto,
     @Body()
     payOrderDto: PayOrderReqDto,
   ) {
-    return await this.orderService.payOrder(user.id, payOrderDto.orderId);
+    return await this.orderService.payOrder(user.id, payOrderDto.guestId);
   }
 }

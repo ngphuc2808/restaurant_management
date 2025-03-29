@@ -44,7 +44,7 @@ export class GuestService {
 
       const skip = (page - 1) * limit;
 
-      return await this.prisma.guest.findMany({
+      const guests = await this.prisma.guest.findMany({
         skip,
         take: limit,
         orderBy: {
@@ -56,7 +56,20 @@ export class GuestService {
             lte: toDate,
           },
         },
+        omit: {
+          refreshToken: true,
+          refreshTokenExpiresAt: true,
+        },
       });
+
+      return {
+        guests,
+        meta: {
+          total: guests.length,
+          page,
+          limit,
+        },
+      };
     } catch (error) {
       this.logger.error(error.message);
       throw error;

@@ -381,13 +381,22 @@ describe('AccountController', () => {
         },
       ];
 
+      const mockResponse = {
+        guests: mockGuests,
+        meta: {
+          total: mockGuests.length,
+          page: 1,
+          limit: 10,
+        },
+      };
+
       jest
         .spyOn(accountController['guestService'], 'getGuestList')
-        .mockResolvedValue(mockGuests);
+        .mockResolvedValue(mockResponse);
 
       const result = await accountController.getListGuest(paginationDto);
 
-      expect(result).toEqual(mockGuests);
+      expect(result).toEqual(mockResponse);
       expect(
         accountController['guestService'].getGuestList,
       ).toHaveBeenCalledWith(paginationDto);

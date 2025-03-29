@@ -49,7 +49,15 @@ export class OrderService {
           },
         },
       });
-      return orders;
+
+      return {
+        orders,
+        meta: {
+          total: orders.length,
+          page,
+          limit,
+        },
+      };
     } catch (error) {
       this.logger.error(error.message);
       throw error;
@@ -167,9 +175,11 @@ export class OrderService {
         this.socketGateway.server
           .to(ManagerRoom)
           .to(socketRecord?.socketId)
-          .emit('new-order', orders);
+          .emit('new-order', ordersRecord);
       } else {
-        this.socketGateway.server.to(ManagerRoom).emit('new-order', orders);
+        this.socketGateway.server
+          .to(ManagerRoom)
+          .emit('new-order', ordersRecord);
       }
 
       return ordersRecord;

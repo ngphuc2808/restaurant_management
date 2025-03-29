@@ -5,5 +5,5 @@ export class PayOrderReqDto {
   @IsNumber()
   @Min(1)
   @ApiProperty()
-  orderId: number;
+  guestId: number;
 }

@@ -24,7 +24,7 @@ export class IndicatorController {
   @HttpCode(HttpStatus.OK)
   @ResponseMessage('res.success.indicator.get')
   @ApiOkResponse({ type: IndicatorResDto })
-  @Get()
+  @Get('dashboard')
   async getIndicators(
     @Query()
     getIndicatorsDto: TimeReqDto,

@@ -77,7 +77,11 @@ export class IndicatorService {
       const revenueByDateObj: { [key: string]: number } = {};
 
       // Lặp từ fromDate -> toDate
-      for (let i = fromDate; i <= toDate; i.setDate(i.getDate() + 1)) {
+      for (
+        let i = new Date(fromDate);
+        i <= new Date(toDate);
+        i.setDate(i.getDate() + 1)
+      ) {
         revenueByDateObj[
           formatInTimeZone(
             i,
