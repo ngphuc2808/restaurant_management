@@ -9,7 +9,6 @@
     "build": "turbo build",
     "dev": "turbo dev",
     "lint": "turbo lint",
-    "tauri:dev": "turbo tauri:dev",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "prepare": "node .husky/install.mjs"
   },
