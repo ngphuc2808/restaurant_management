@@ -6,10 +6,10 @@ import { Reflector } from '@nestjs/core';
 import { GuestController } from '@/guest/guest.controller';
 import { GuestService } from '@/guest/guest.service';
 import { GuestLoginReqDto } from '@/guest/dto/req/guest-login.req.dto';
-import { GuestLogoutReqDto } from '@/guest/dto/req/guest-logout.req.dto';
 import { GuestRefreshTokenReqDto } from '@/guest/dto/req/guest-refresh-token.req.dto';
 import { GuestCreateDishReqDto } from '@/guest/dto/req/guest-create-dish.req.dto';
 import { Role, OrderStatus, DishStatus } from '@/constants/type';
+import { UserDto } from '@/auth/dto/types';
 
 describe('GuestController', () => {
   let controller: GuestController;
@@ -30,7 +30,7 @@ describe('GuestController', () => {
     refreshToken: 'mock-refresh-token',
   };
 
-  const mockUser = {
+  const mockUser: UserDto = {
     id: 1,
     role: Role.Guest,
   };
@@ -105,22 +105,18 @@ describe('GuestController', () => {
   });
 
   describe('logout', () => {
-    const logoutDto: GuestLogoutReqDto = {
-      id: 1,
-    };
-
     it('should logout successfully', async () => {
       jest.spyOn(guestService, 'logout').mockResolvedValue(undefined);
 
-      await controller.logout(logoutDto);
+      await controller.logout(mockUser);
 
-      expect(guestService.logout).toHaveBeenCalledWith(logoutDto.id);
+      expect(guestService.logout).toHaveBeenCalledWith(mockUser.id);
     });
 
     it('should throw error when service fails', async () => {
       jest.spyOn(guestService, 'logout').mockRejectedValue(new Error());
 
-      await expect(controller.logout(logoutDto)).rejects.toThrow();
+      await expect(controller.logout(mockUser)).rejects.toThrow();
     });
   });
 

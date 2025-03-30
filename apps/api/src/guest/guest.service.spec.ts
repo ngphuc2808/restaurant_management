@@ -12,7 +12,6 @@ import { AuthService } from '@/auth/auth.service';
 import { TableService } from '@/table/table.service';
 import { GuestService } from '@/guest/guest.service';
 import { GuestLoginReqDto } from '@/guest/dto/req/guest-login.req.dto';
-import { GuestLogoutReqDto } from '@/guest/dto/req/guest-logout.req.dto';
 import { GuestCreateDishReqDto } from '@/guest/dto/req/guest-create-dish.req.dto';
 import { CreateGuestReqDto } from '@/guest/dto/req/create-guest.req.dto';
 import { PaginationTimeReqDto } from '@/utils/paginate-time.dto';
@@ -284,9 +283,7 @@ describe('GuestService', () => {
   });
 
   describe('logout', () => {
-    const logoutDto: GuestLogoutReqDto = {
-      id: 1,
-    };
+    const guestId = 1;
 
     it('should logout successfully', async () => {
       jest.spyOn(prismaService.guest, 'update').mockResolvedValue({
@@ -295,10 +292,10 @@ describe('GuestService', () => {
         refreshTokenExpiresAt: null,
       });
 
-      await service.logout(logoutDto.id);
+      await service.logout(guestId);
 
       expect(prismaService.guest.update).toHaveBeenCalledWith({
-        where: { id: logoutDto.id },
+        where: { id: guestId },
         data: {
           refreshToken: null,
           refreshTokenExpiresAt: null,
@@ -311,7 +308,7 @@ describe('GuestService', () => {
         code: PrismaErrorCode.RecordNotFound,
       });
 
-      await expect(service.logout(logoutDto.id)).rejects.toThrow(
+      await expect(service.logout(guestId)).rejects.toThrow(
         UnprocessableEntityException,
       );
     });
@@ -319,7 +316,7 @@ describe('GuestService', () => {
     it('should throw error when update fails', async () => {
       jest.spyOn(prismaService.guest, 'update').mockRejectedValue(new Error());
 
-      await expect(service.logout(logoutDto.id)).rejects.toThrow();
+      await expect(service.logout(guestId)).rejects.toThrow();
     });
   });
 
