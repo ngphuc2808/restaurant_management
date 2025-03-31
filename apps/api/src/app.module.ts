@@ -1,5 +1,5 @@
 //libs
-import { Module } from '@nestjs/common';
+import { Logger, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { HeaderResolver, I18nModule } from 'nestjs-i18n';
 import { CacheInterceptor, CacheModule } from '@nestjs/cache-manager';
@@ -20,8 +20,8 @@ import { DishModule } from '@/dish/dish.module';
 import { IndicatorModule } from '@/indicator/indicator.module';
 
 //services
-import { AppService } from '@/app.service';
 import { PrismaService } from '@/prisma.service';
+import { AppService } from '@/app.service';
 
 //utils
 import { RedisOptions } from '@/utils/redis.configuration';
@@ -53,6 +53,7 @@ import { APP_INTERCEPTOR } from '@nestjs/core';
   ],
   controllers: [AppController],
   providers: [
+    Logger,
     {
       provide: APP_INTERCEPTOR,
       useClass: CacheInterceptor,
