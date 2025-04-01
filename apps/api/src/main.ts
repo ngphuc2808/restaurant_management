@@ -47,7 +47,7 @@ async function bootstrap() {
   app.setBaseViewsDir(join(__dirname, '..', 'views'));
 
   app.enableCors({
-    origin: 'http://localhost:3000',
+    origin: configService.get('CLIENT_PUBLIC_URL'),
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     preflightContinue: false,
     optionsSuccessStatus: 204,
