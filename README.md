@@ -1,27 +1,31 @@
 # Restaurant Management System
 
-Hệ thống quản lý nhà hàng với các tính năng quản lý đơn hàng, menu, nhân viên và báo cáo thống kê.
+A comprehensive restaurant management system with features for order management, menu management, staff management, and reporting.
 
-## Cấu Trúc Dự Án
+## Project Structure
 
-Dự án được xây dựng theo mô hình monorepo sử dụng Turborepo:
+The project is built as a monorepo using Turborepo:
 
 ```
 restaurant_management/
 ├── apps/
 │   ├── api/         # Backend API (NestJS)
 │   └── web/         # Frontend (Next.js)
-└── packages/        # Shared packages
+├── docker/
+│   ├── Dockerfile.api
+│   └── Dockerfile.web
+├── docker-compose.yml
+└── .env
 ```
 
-## Yêu Cầu Hệ Thống
+## System Requirements
 
-- Node.js (version 18.x trở lên)
-- pnpm (version 8.x trở lên)
+- Node.js (version 18.x or higher)
+- pnpm (version 8.x or higher)
 - MySQL (version 8.x)
 - Redis
 
-## Cài Đặt
+## Installation
 
 1. Clone repository:
 
@@ -30,17 +34,17 @@ git clone [repository-url]
 cd restaurant_management
 ```
 
-2. Cài đặt dependencies:
+2. Install dependencies:
 
 ```bash
 pnpm install
 ```
 
-3. Cấu hình môi trường:
+3. Configure environment:
 
 ### Backend (apps/api)
 
-Tạo file `.env` trong thư mục `apps/api` với các biến môi trường sau:
+Create `.env` file in `apps/api` directory with the following environment variables:
 
 ```env
 # Database Configuration
@@ -79,7 +83,7 @@ INITIAL_PASSWORD_OWNER=
 
 ### Frontend (apps/web)
 
-Tạo file `.env` trong thư mục `apps/web` với các biến môi trường sau:
+Create `.env` file in `apps/web` directory with the following environment variables:
 
 ```env
 # Server Configuration
@@ -103,18 +107,18 @@ AWS_REGION=
 AWS_BUCKET_NAME=
 ```
 
-## Khởi Chạy Ứng Dụng
+## Running the Application
 
 ### Development Mode
 
-1. Khởi chạy backend:
+1. Start backend:
 
 ```bash
 cd apps/api
 pnpm dev
 ```
 
-2. Khởi chạy frontend:
+2. Start frontend:
 
 ```bash
 cd apps/web
@@ -123,35 +127,36 @@ pnpm dev
 
 ### Production Mode
 
-1. Build ứng dụng:
+1. Build application:
 
 ```bash
 pnpm build
 ```
 
-2. Khởi chạy:
+2. Start:
 
 ```bash
 pnpm start
 ```
 
-## Tính Năng Chính
+## Main Features
 
-- Quản lý đơn hàng và bàn
-- Quản lý menu và danh mục
-- Quản lý nhân viên và phân quyền
-- Quản lý kho và nguyên liệu
-- Báo cáo thống kê
-- Tích hợp thanh toán
-- Đăng nhập bằng Google OAuth
-- Hỗ trợ đa ngôn ngữ (Việt-Anh)
-- Quản lý hình ảnh với AWS S3
+- Order and table management
+- Menu and category management
+- Staff and role management
+- Inventory and ingredient management
+- Reporting and analytics
+- Payment integration
+- Google OAuth login
+- Multi-language support (Vietnamese-English)
+- Image management with AWS S3
 
-## Công Nghệ Sử Dụng
+## Technologies Used
 
 ### Backend
 
 - NestJS
+- TypeORM
 - MySQL
 - Redis
 - JWT Authentication
@@ -166,18 +171,15 @@ pnpm start
 - Socket.IO Client
 - i18next
 
-## Đóng Góp
+## Contributing
 
-1. Fork dự án
-2. Tạo branch mới (`git checkout -b feature/AmazingFeature`)
-3. Commit các thay đổi (`git commit -m 'Add some AmazingFeature'`)
-4. Push lên branch (`git push origin feature/AmazingFeature`)
-5. Mở Pull Request
+1. Fork the project
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
-## License
+## Contact
 
-[MIT License](LICENSE)
-
-## Liên Hệ
-
-phucnh.forwork@gmail.com
+Email: phucnh.forwork@gmail.com
+Phone: 0866866923
