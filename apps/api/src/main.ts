@@ -86,6 +86,8 @@ async function bootstrap() {
 
   await app.listen(configService.get('PORT'));
 
+  console.log(`Server is running on port ${configService.get('PORT')}`);
+
   if (module.hot) {
     module.hot.accept();
     module.hot.dispose(() => app.close());
