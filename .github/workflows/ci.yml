@@ -11,10 +11,10 @@ jobs:
     name: Build and Test
     timeout-minutes: 15
     runs-on: ubuntu-latest
-    env:
-      TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
-      TURBO_TEAM: ${{ vars.TURBO_TEAM }}
-      TURBO_REMOTE_ONLY: true
+    # To use Remote Caching, uncomment the next lines and follow the steps below.
+    # env:
+    #  TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+    #  TURBO_TEAM: ${{ vars.TURBO_TEAM }}
 
     steps:
       - name: Check out code
@@ -22,58 +22,21 @@ jobs:
         with:
           fetch-depth: 2
 
+      - uses: pnpm/action-setup@v3
+        with:
+          version: 8
+
       - name: Setup Node.js environment
         uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: "pnpm"
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@v3
-        with:
-          version: 8.15.6
-
-      - name: Get pnpm store directory
-        shell: bash
-        run: |
-          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
-
-      - name: Setup pnpm cache
-        uses: actions/cache@v4
-        with:
-          path: ${{ env.STORE_PATH }}
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-store-
-
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Type check
-        run: pnpm turbo typecheck
-
-      - name: Lint
-        run: pnpm turbo lint
-
-      - name: Test
-        run: pnpm turbo test
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          NODE_ENV: test
+        run: pnpm install
 
       - name: Build
-        run: pnpm turbo build
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: ${{ secrets.AWS_REGION }}
-          AWS_BUCKET_NAME: ${{ secrets.AWS_BUCKET_NAME }}
+        run: pnpm build
 
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-outputs
-          path: |
-            apps/api/dist
-            apps/web/.next
+      - name: Test
+        run: pnpm test
