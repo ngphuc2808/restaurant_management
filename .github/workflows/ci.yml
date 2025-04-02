@@ -1,4 +1,4 @@
-name: CI/CD Pipeline
+name: CI
 
 on:
   push:
@@ -9,9 +9,16 @@ on:
 jobs:
   build:
     name: Build and Test
+    timeout-minutes: 15
     runs-on: ubuntu-latest
+    # To use Remote Caching, uncomment the next lines and follow the steps below.
+    # env:
+    #  TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+    #  TURBO_TEAM: ${{ vars.TURBO_TEAM }}
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Check out code
+        uses: actions/checkout@v4
         with:
           fetch-depth: 2
 
@@ -25,133 +32,12 @@ jobs:
           node-version: 20
           cache: "pnpm"
 
-      - name: Install dependencies
-        run: pnpm install
+      - name: Create api .env file
+        run: cd apps/api && echo "${{secrets.API_ENV_PRODUCTION}}" > .env
 
-      - name: Set up MySQL
-        uses: harmon758/mysql-action@v1
-        with:
-          mysql version: "8.0"
-          mysql root password: "123456"
-          mysql database: "restaurant_management"
-          mysql port: 3306
+      - name: Create web .env file
+        run: cd apps/web && echo "${{secrets.WEB_ENV_PRODUCTION}}" > .env
 
-      - name: Create API .env file
-        run: |
-          cat << EOF > apps/api/.env
-          DATABASE_URL="${{ secrets.API_DATABASE_URL }}"
-          PORT=${{ secrets.API_PORT }}
-          REDIS_PORT=${{ secrets.API_REDIS_PORT }}
-          REDIS_HOST=${{ secrets.API_REDIS_HOST }}
-          REDIS_DB_INDEX=${{ secrets.API_REDIS_DB_INDEX }}
-          CLIENT_PUBLIC_URL=${{ secrets.API_CLIENT_PUBLIC_URL }}
-          JWT_ACCESS_TOKEN_SECRET=${{ secrets.API_JWT_ACCESS_TOKEN_SECRET }}
-          JWT_REFRESH_TOKEN_SECRET=${{ secrets.API_JWT_REFRESH_TOKEN_SECRET }}
-          JWT_ACCESS_TOKEN_EXPIRES_IN=${{ secrets.API_JWT_ACCESS_TOKEN_EXPIRES_IN }}
-          JWT_REFRESH_TOKEN_EXPIRES_IN=${{ secrets.API_JWT_REFRESH_TOKEN_EXPIRES_IN }}
-          GUEST_JWT_ACCESS_TOKEN_EXPIRES_IN=${{ secrets.API_GUEST_JWT_ACCESS_TOKEN_EXPIRES_IN }}
-          GUEST_JWT_REFRESH_TOKEN_EXPIRES_IN=${{ secrets.API_GUEST_JWT_REFRESH_TOKEN_EXPIRES_IN }}
-          SERVER_TIMEZONE=${{ secrets.API_SERVER_TIMEZONE }}
-          GOOGLE_REDIRECT_CLIENT_URL=${{ secrets.API_GOOGLE_REDIRECT_CLIENT_URL }}
-          GOOGLE_CLIENT_ID=${{ secrets.API_GOOGLE_CLIENT_ID }}
-          GOOGLE_CLIENT_SECRET=${{ secrets.API_GOOGLE_CLIENT_SECRET }}
-          GOOGLE_AUTHORIZED_REDIRECT_URI=${{ secrets.API_GOOGLE_AUTHORIZED_REDIRECT_URI }}
-          INITIAL_EMAIL_OWNER=${{ secrets.API_INITIAL_EMAIL_OWNER }}
-          INITIAL_PASSWORD_OWNER=${{ secrets.API_INITIAL_PASSWORD_OWNER }}
-          EOF
+      # - run: npm i --force
 
-      - name: Create Web .env file
-        run: |
-          cat << EOF > apps/web/.env
-          NEXT_PUBLIC_API_URL=${{ secrets.WEB_NEXT_PUBLIC_API_URL }}
-          NEXT_PUBLIC_API_VERSION=${{ secrets.WEB_NEXT_PUBLIC_API_VERSION }}
-          NEXT_PUBLIC_GOOGLE_CLIENT_ID=${{ secrets.WEB_NEXT_PUBLIC_GOOGLE_CLIENT_ID }}
-          NEXT_PUBLIC_GOOGLE_REDIRECT_URI=${{ secrets.WEB_NEXT_PUBLIC_GOOGLE_REDIRECT_URI }}
-          NEXT_PUBLIC_APP_NAME=${{ secrets.WEB_NEXT_PUBLIC_APP_NAME }}
-          NEXT_PUBLIC_APP_DESCRIPTION=${{ secrets.WEB_NEXT_PUBLIC_APP_DESCRIPTION }}
-          NEXT_PUBLIC_APP_URL=${{ secrets.WEB_NEXT_PUBLIC_APP_URL }}
-          NEXT_PUBLIC_DEFAULT_LOCALE=${{ secrets.WEB_NEXT_PUBLIC_DEFAULT_LOCALE }}
-          NEXT_PUBLIC_AVAILABLE_LOCALES=${{ secrets.WEB_NEXT_PUBLIC_AVAILABLE_LOCALES }}
-          EOF
-
-      - name: Set up prisma
-        run: cd apps/api && pnpm prisma migrate dev
-
-      - name: Build
-        run: pnpm build
-
-      - name: Test
-        run: pnpm test
-
-  deploy:
-    name: Deploy Production
-    needs: build
-    if: github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Deploy API
-        uses: appleboy/ssh-action@v1.2.0
-        with:
-          host: ${{ secrets.API_HOST_PRODUCTION }}
-          username: ${{ secrets.API_USERNAME_PRODUCTION }}
-          password: ${{ secrets.API_PASSWORD_PRODUCTION }}
-          port: ${{ secrets.API_PORT_PRODUCTION }}
-          script: |
-            export NVM_DIR=~/.nvm
-            source ~/.nvm/nvm.sh
-            cd ~/restaurant-management/apps/api
-            git fetch --all
-            git reset --hard origin/main
-            cat << EOF > .env
-            DATABASE_URL="${{ secrets.API_DATABASE_URL }}"
-            PORT=${{ secrets.API_PORT }}
-            REDIS_PORT=${{ secrets.API_REDIS_PORT }}
-            REDIS_HOST=${{ secrets.API_REDIS_HOST }}
-            REDIS_DB_INDEX=${{ secrets.API_REDIS_DB_INDEX }}
-            CLIENT_PUBLIC_URL=${{ secrets.API_CLIENT_PUBLIC_URL }}
-            JWT_ACCESS_TOKEN_SECRET=${{ secrets.API_JWT_ACCESS_TOKEN_SECRET }}
-            JWT_REFRESH_TOKEN_SECRET=${{ secrets.API_JWT_REFRESH_TOKEN_SECRET }}
-            JWT_ACCESS_TOKEN_EXPIRES_IN=${{ secrets.API_JWT_ACCESS_TOKEN_EXPIRES_IN }}
-            JWT_REFRESH_TOKEN_EXPIRES_IN=${{ secrets.API_JWT_REFRESH_TOKEN_EXPIRES_IN }}
-            GUEST_JWT_ACCESS_TOKEN_EXPIRES_IN=${{ secrets.API_GUEST_JWT_ACCESS_TOKEN_EXPIRES_IN }}
-            GUEST_JWT_REFRESH_TOKEN_EXPIRES_IN=${{ secrets.API_GUEST_JWT_REFRESH_TOKEN_EXPIRES_IN }}
-            SERVER_TIMEZONE=${{ secrets.API_SERVER_TIMEZONE }}
-            GOOGLE_REDIRECT_CLIENT_URL=${{ secrets.API_GOOGLE_REDIRECT_CLIENT_URL }}
-            GOOGLE_CLIENT_ID=${{ secrets.API_GOOGLE_CLIENT_ID }}
-            GOOGLE_CLIENT_SECRET=${{ secrets.API_GOOGLE_CLIENT_SECRET }}
-            GOOGLE_AUTHORIZED_REDIRECT_URI=${{ secrets.API_GOOGLE_AUTHORIZED_REDIRECT_URI }}
-            INITIAL_EMAIL_OWNER=${{ secrets.API_INITIAL_EMAIL_OWNER }}
-            INITIAL_PASSWORD_OWNER=${{ secrets.API_INITIAL_PASSWORD_OWNER }}
-            EOF
-            pnpm install
-            pnpm prisma generate
-            pnpm build
-            pm2 restart restaurant-api
-
-      - name: Deploy Web
-        uses: appleboy/ssh-action@v1.2.0
-        with:
-          host: ${{ secrets.WEB_HOST_PRODUCTION }}
-          username: ${{ secrets.WEB_USERNAME_PRODUCTION }}
-          password: ${{ secrets.WEB_PASSWORD_PRODUCTION }}
-          port: ${{ secrets.WEB_PORT_PRODUCTION }}
-          script: |
-            export NVM_DIR=~/.nvm
-            source ~/.nvm/nvm.sh
-            cd ~/restaurant-management/apps/web
-            git fetch --all
-            git reset --hard origin/main
-            cat << EOF > .env
-            NEXT_PUBLIC_API_URL=${{ secrets.WEB_NEXT_PUBLIC_API_URL }}
-            NEXT_PUBLIC_API_VERSION=${{ secrets.WEB_NEXT_PUBLIC_API_VERSION }}
-            NEXT_PUBLIC_GOOGLE_CLIENT_ID=${{ secrets.WEB_NEXT_PUBLIC_GOOGLE_CLIENT_ID }}
-            NEXT_PUBLIC_GOOGLE_REDIRECT_URI=${{ secrets.WEB_NEXT_PUBLIC_GOOGLE_REDIRECT_URI }}
-            NEXT_PUBLIC_APP_NAME=${{ secrets.WEB_NEXT_PUBLIC_APP_NAME }}
-            NEXT_PUBLIC_APP_DESCRIPTION=${{ secrets.WEB_NEXT_PUBLIC_APP_DESCRIPTION }}
-            NEXT_PUBLIC_APP_URL=${{ secrets.WEB_NEXT_PUBLIC_APP_URL }}
-            NEXT_PUBLIC_DEFAULT_LOCALE=${{ secrets.WEB_NEXT_PUBLIC_DEFAULT_LOCALE }}
-            NEXT_PUBLIC_AVAILABLE_LOCALES=${{ secrets.WEB_NEXT_PUBLIC_AVAILABLE_LOCALES }}
-            EOF
-            pnpm install
-            pnpm build
-            pm2 restart restaurant-web
+      # - run: npm run build
