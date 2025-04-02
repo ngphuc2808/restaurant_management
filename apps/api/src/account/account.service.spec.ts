@@ -362,19 +362,19 @@ describe('AccountService', () => {
     it('should delete account successfully', async () => {
       jest.spyOn(socketService, 'findOneWithAccountId').mockResolvedValue({
         guestId: 1,
-        accountId: 1,
+        accountId: 2,
         socketId: 'socket-id',
       });
       jest
         .spyOn(prismaService.account, 'delete')
         .mockResolvedValue(mockAccount);
 
-      const result = await service.deleteAccount(1);
+      const result = await service.deleteAccount(1, 2);
 
       expect(result).toEqual(mockAccount);
-      expect(socketService.findOneWithAccountId).toHaveBeenCalledWith(1);
+      expect(socketService.findOneWithAccountId).toHaveBeenCalledWith(2);
       expect(prismaService.account.delete).toHaveBeenCalledWith({
-        where: { id: 1 },
+        where: { id: 2 },
       });
       expect(socketGateway.server.to).toHaveBeenCalledWith('socket-id');
       expect(socketGateway.server.emit).toHaveBeenCalledWith(
@@ -388,8 +388,18 @@ describe('AccountService', () => {
         code: PrismaErrorCode.RecordNotFound,
       });
 
-      await expect(service.deleteAccount(1)).rejects.toThrow(
+      await expect(service.deleteAccount(1, 2)).rejects.toThrow(
         UnprocessableEntityException,
+      );
+    });
+
+    it('should throw UnprocessableEntityException when trying to delete owner account', async () => {
+      await expect(service.deleteAccount(1, 1)).rejects.toThrow(
+        UnprocessableEntityException,
+      );
+
+      expect(i18nService.t).toHaveBeenCalledWith(
+        'errors.account.cannot-delete-owner',
       );
     });
   });

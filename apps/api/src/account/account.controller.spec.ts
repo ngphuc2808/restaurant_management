@@ -277,10 +277,10 @@ describe('AccountController', () => {
         .spyOn(accountService, 'deleteAccount')
         .mockResolvedValue(mockAccount);
 
-      const result = await accountController.deleteAccount('1');
+      const result = await accountController.deleteAccount(mockUser, '2');
 
       expect(result).toEqual(mockAccount);
-      expect(accountService.deleteAccount).toHaveBeenCalledWith(1);
+      expect(accountService.deleteAccount).toHaveBeenCalledWith(mockUser.id, 2);
     });
 
     it('should throw UnprocessableEntityException when account not found', async () => {
@@ -288,9 +288,9 @@ describe('AccountController', () => {
         .spyOn(accountService, 'deleteAccount')
         .mockRejectedValue(new UnprocessableEntityException());
 
-      await expect(accountController.deleteAccount('1')).rejects.toThrow(
-        UnprocessableEntityException,
-      );
+      await expect(
+        accountController.deleteAccount(mockUser, '2'),
+      ).rejects.toThrow(UnprocessableEntityException);
     });
   });
 
