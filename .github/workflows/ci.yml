@@ -43,7 +43,7 @@ jobs:
           echo "${{secrets.WEB_ENV_PRODUCTION}}" > apps/web/.env
 
       - name: Install dependencies
-        run: npm install -g pnpm && pnpm install
+        run: pnpm install
 
       - name: Generate Prisma Client
         run: pnpm prisma generate
