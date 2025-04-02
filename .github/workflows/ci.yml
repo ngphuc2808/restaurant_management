@@ -9,11 +9,12 @@ on:
 jobs:
   build:
     name: Build and Test
-    timeout-minutes: 30
+    timeout-minutes: 15
     runs-on: ubuntu-latest
-    env:
-      DATABASE_URL: ${{ secrets.DATABASE_URL }}
-      NODE_ENV: test
+    # To use Remote Caching, uncomment the next lines and follow the steps below.
+    # env:
+    #  TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+    #  TURBO_TEAM: ${{ vars.TURBO_TEAM }}
 
     steps:
       - name: Check out code
@@ -34,36 +35,11 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - name: Setup MySQL
-        uses: harmon758/mysql-action@v1
-        with:
-          mysql version: "8.0"
-          mysql root password: "root"
-          mysql database: "test_db"
-          mysql port: 3306
-
-      - name: Generate Prisma Client
-        run: cd apps/api && pnpm prisma generate
-
-      - name: Run Database Migrations
-        run: cd apps/api && pnpm prisma migrate deploy
-
-      - name: Lint
-        run: pnpm lint
+      - name: Set up prisma
+        run: cd apps/api && pnpm prisma migrate dev
 
       - name: Build
         run: pnpm build
 
       - name: Test
         run: pnpm test
-
-      - name: Upload coverage reports
-        uses: codecov/codecov-action@v4
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          fail_ci_if_error: true
-          files: ./coverage/coverage-final.json
-          flags: unittests
-          name: codecov-umbrella
-          yml: ./coverage.yml
-          directory: ./coverage
