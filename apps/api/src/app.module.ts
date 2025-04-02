@@ -2,7 +2,7 @@
 import { Logger, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { HeaderResolver, I18nModule } from 'nestjs-i18n';
-import { CacheInterceptor, CacheModule } from '@nestjs/cache-manager';
+import { CacheModule } from '@nestjs/cache-manager';
 import * as path from 'path';
 
 //app
@@ -25,7 +25,6 @@ import { AppService } from '@/app.service';
 
 //utils
 import { RedisOptions } from '@/utils/redis.configuration';
-import { APP_INTERCEPTOR } from '@nestjs/core';
 
 @Module({
   imports: [
@@ -52,14 +51,6 @@ import { APP_INTERCEPTOR } from '@nestjs/core';
     SocketModule,
   ],
   controllers: [AppController],
-  providers: [
-    Logger,
-    {
-      provide: APP_INTERCEPTOR,
-      useClass: CacheInterceptor,
-    },
-    PrismaService,
-    AppService,
-  ],
+  providers: [Logger, PrismaService, AppService],
 })
 export class AppModule {}

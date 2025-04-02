@@ -21,6 +21,9 @@
   "authorization": {
     "invalid": "Invalid authorization"
   },
+  "account": {
+    "cannot-delete-owner": "Cannot delete owner account"
+  },
   "token": {
     "invalid": "Invalid token"
   },

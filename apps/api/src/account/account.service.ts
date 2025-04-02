@@ -182,8 +182,14 @@ export class AccountService {
     }
   }
 
-  async deleteAccount(accountId: number) {
+  async deleteAccount(ownerId: number, accountId: number) {
     try {
+      if (ownerId === accountId) {
+        throw new UnprocessableEntityException(
+          this.i18n.t('errors.account.cannot-delete-owner'),
+        );
+      }
+
       const socketRecord =
         await this.socketService.findOneWithAccountId(accountId);
       const account = await this.prisma.account.delete({

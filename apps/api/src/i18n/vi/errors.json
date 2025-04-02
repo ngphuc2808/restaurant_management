@@ -24,6 +24,9 @@
   "token": {
     "invalid": "Token không hợp lệ"
   },
+  "account": {
+    "cannot-delete-owner": "Không thể xóa tài khoản chủ sở hữu"
+  },
   "dish": {
     "no-dish-found": "Không tìm thấy món ăn",
     "invalid-id": "ID món ăn không hợp lệ"

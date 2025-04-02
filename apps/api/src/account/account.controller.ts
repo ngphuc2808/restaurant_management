@@ -126,8 +126,8 @@ export class AccountController {
   @ResponseMessage('res.success.account.delete')
   @ApiOkResponse({ type: AccountResDto })
   @Delete('detail/:id')
-  async deleteAccount(@Param('id') id: string) {
-    return await this.accountService.deleteAccount(Number(id));
+  async deleteAccount(@User() user: UserDto, @Param('id') id: string) {
+    return await this.accountService.deleteAccount(user.id, Number(id));
   }
 
   @UseGuards(RoleGuard)
