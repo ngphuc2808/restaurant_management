@@ -1,0 +1,98 @@
+name: Deploy Production
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.18.0
+          cache: "pnpm"
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+          run_install: false
+
+      - name: Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v3
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Create .env files
+        run: |
+          echo "${{secrets.API_ENV_PRODUCTION}}" > apps/api/.env
+          echo "${{secrets.WEB_ENV_PRODUCTION}}" > apps/web/.env
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Generate Prisma Client
+        run: pnpm prisma generate
+        working-directory: apps/api
+
+      - name: Run tests
+        run: pnpm test
+
+      - name: Build applications
+        run: pnpm build
+
+  deploy:
+    needs: build
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy API Server
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.API_HOST_PRODUCTION }}
+          username: ${{ secrets.API_USERNAME_PRODUCTION }}
+          password: ${{ secrets.API_PASSWORD_PRODUCTION }}
+          port: ${{ secrets.API_PORT_PRODUCTION }}
+          script: |
+            export NVM_DIR=~/.nvm
+            source ~/.nvm/nvm.sh
+            cd ~/deploy-api-server
+            git fetch --all
+            git reset --hard origin/main
+            echo "${{secrets.API_ENV_PRODUCTION}}" > .env
+            pnpm install
+            pnpm prisma generate
+            pnpm build
+            pm2 restart api-server
+
+      - name: Deploy Web Server
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.WEB_HOST_PRODUCTION }}
+          username: ${{ secrets.WEB_USERNAME_PRODUCTION }}
+          password: ${{ secrets.WEB_PASSWORD_PRODUCTION }}
+          port: ${{ secrets.WEB_PORT_PRODUCTION }}
+          script: |
+            export NVM_DIR=~/.nvm
+            source ~/.nvm/nvm.sh
+            cd ~/deploy-web-server
+            git fetch --all
+            git reset --hard origin/main
+            echo "${{secrets.WEB_ENV_PRODUCTION}}" > .env
+            pnpm install
+            pnpm build
+            pm2 restart web-server
