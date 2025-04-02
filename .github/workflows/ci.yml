@@ -32,15 +32,17 @@ jobs:
           node-version: 20
           cache: "pnpm"
 
-      - name: Install dependencies
-        run: pnpm install
-
       - name: Create api .env file
         run: cd apps/api && echo "${{secrets.API_ENV_PRODUCTION}}" > .env
 
       - name: Create web .env file
         run: cd apps/web && echo "${{secrets.WEB_ENV_PRODUCTION}}" > .env
 
-      # - run: npm i --force
+      - name: Install dependencies
+        run: pnpm install
 
-      # - run: npm run build
+      - name: Build
+        run: pnpm build
+
+      - name: Test
+        run: pnpm test
