@@ -35,6 +35,7 @@ import SearchParamsLoader, {
   useSearchParamsLoader,
 } from '@/components/atoms/search-params-loader'
 import { envConfig } from '@/config'
+import { Role } from '@/constants/type'
 
 const getOauthGoogleUrl = () => {
   const rootUrl = 'https://accounts.google.com/o/oauth2/v2/auth'
@@ -82,7 +83,11 @@ const LoginForm = () => {
       const result = await loginMutation.mutateAsync(values)
       setRole(result.payload.data.account.role)
       setSocket(generateSocketInstace(result.payload.data.accessToken))
-      router.push('/manage/dashboard')
+      if (result.payload.data.account.role === Role.Owner) {
+        router.push('/manage/dashboard')
+      } else {
+        router.push('/manage/orders')
+      }
     } catch (error) {
       handleErrorApi({
         error,

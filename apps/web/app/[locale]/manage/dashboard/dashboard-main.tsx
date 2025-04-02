@@ -4,6 +4,7 @@ import { useTranslations } from 'next-intl'
 import { useState } from 'react'
 import { endOfDay, format, startOfDay } from 'date-fns'
 
+import useAppStore from '@/store/app'
 import { useDashboardIndicator } from '@/queries/useIndicator'
 import { formatCurrency } from '@/lib/utils'
 import useDebounce from '@repo/ui/hooks/use-debounce'
@@ -17,6 +18,7 @@ import {
 import { Input } from '@repo/ui/components/input'
 import DishBarChart from '@/app/[locale]/manage/dashboard/dish-bar-chart'
 import RevenueLineChart from '@/app/[locale]/manage/dashboard/revenue-line-chart'
+import { Role } from '@/constants/type'
 
 const initFromDate = startOfDay(new Date())
 const initToDate = endOfDay(new Date())
@@ -25,13 +27,15 @@ const DashboardMain = () => {
   const t = useTranslations('Dashboard')
   const tAll = useTranslations('All')
 
+  const { role } = useAppStore()
+
   const [fromDate, setFromDate] = useState(initFromDate)
   const [toDate, setToDate] = useState(initToDate)
 
   const debouncedFromDate = useDebounce(fromDate, 1000)
   const debouncedToDate = useDebounce(toDate, 1000)
 
-  const { data } = useDashboardIndicator({
+  const { data } = useDashboardIndicator(role === Role.Owner, {
     fromDate: debouncedFromDate,
     toDate: debouncedToDate,
   })
