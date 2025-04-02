@@ -1,101 +1,39 @@
-name: Deploy Production
+name: CI
 
 on:
   push:
     branches: ["main"]
   pull_request:
-    branches: ["main"]
+    types: [opened, synchronize]
 
 jobs:
   build:
+    name: Build and Test
+    timeout-minutes: 15
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
+    # To use Remote Caching, uncomment the next lines and follow the steps below.
+    # env:
+    #  TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+    #  TURBO_TEAM: ${{ vars.TURBO_TEAM }}
+    #  TURBO_REMOTE_ONLY: true
 
-      - name: Setup Node.js
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Setup Node.js environment
         uses: actions/setup-node@v4
         with:
-          node-version: 20.18.0
+          node-version: 20
           cache: "pnpm"
-
-      - name: Enable Corepack & Install pnpm
-        run: |
-          corepack enable
-          corepack prepare pnpm@8 --activate
-
-      - name: Get pnpm store directory
-        shell: bash
-        run: |
-          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
-
-      - name: Setup pnpm cache
-        uses: actions/cache@v3
-        with:
-          path: ${{ env.STORE_PATH }}
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-store-
-
-      - name: Create .env files
-        run: |
-          echo "${{secrets.API_ENV_PRODUCTION}}" > apps/api/.env
-          echo "${{secrets.WEB_ENV_PRODUCTION}}" > apps/web/.env
 
       - name: Install dependencies
         run: pnpm install
 
-      - name: Generate Prisma Client
-        run: pnpm prisma generate
-        working-directory: apps/api
+      - name: Build
+        run: pnpm run build
 
-      - name: Run tests
-        run: pnpm test
-
-      - name: Build applications
-        run: pnpm build
-
-  deploy:
-    needs: build
-    if: github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Deploy API Server
-        uses: appleboy/ssh-action@v1.2.0
-        with:
-          host: ${{ secrets.API_HOST_PRODUCTION }}
-          username: ${{ secrets.API_USERNAME_PRODUCTION }}
-          password: ${{ secrets.API_PASSWORD_PRODUCTION }}
-          port: ${{ secrets.API_PORT_PRODUCTION }}
-          script: |
-            export NVM_DIR=~/.nvm
-            source ~/.nvm/nvm.sh
-            cd ~/deploy-api-server
-            git fetch --all
-            git reset --hard origin/main
-            echo "${{secrets.API_ENV_PRODUCTION}}" > .env
-            corepack enable
-            corepack prepare pnpm@8 --activate
-            pnpm install
-            pnpm prisma generate
-            pnpm build
-            pm2 restart api-server
-
-      - name: Deploy Web Server
-        uses: appleboy/ssh-action@v1.2.0
-        with:
-          host: ${{ secrets.WEB_HOST_PRODUCTION }}
-          username: ${{ secrets.WEB_USERNAME_PRODUCTION }}
-          password: ${{ secrets.WEB_PASSWORD_PRODUCTION }}
-          port: ${{ secrets.WEB_PORT_PRODUCTION }}
-          script: |
-            export NVM_DIR=~/.nvm
-            source ~/.nvm/nvm.sh
-            cd ~/deploy-web-server
-            git fetch --all
-            git reset --hard origin/main
-            echo "${{secrets.WEB_ENV_PRODUCTION}}" > .env
-            corepack enable
-            corepack prepare pnpm@8 --activate
-            pnpm install
-            pnpm build
-            pm2 restart web-server
+      - name: Test
+        run: pnpm run test
