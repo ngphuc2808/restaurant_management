@@ -126,11 +126,13 @@ const AutoPagination = ({
         {renderPagination()}
         <PaginationItem>
           <Button
-            disabled={page === pageSize - 1}
+            disabled={page === pageSize - 1 || pageSize === 0}
             className="h-9 p-0 px-2"
             variant={'ghost'}
             onClick={() => {
-              setPage(page + 1)
+              if (pageSize > 1) {
+                setPage(page + 1)
+              }
             }}
           >
             {tAll('next')} <ChevronRight className="h-5 w-5" />
