@@ -43,7 +43,7 @@ jobs:
           echo "${{secrets.WEB_ENV_PRODUCTION}}" > apps/web/.env
 
       - name: Install dependencies
-        run: pnpm install
+        run: npm install -g pnpm && pnpm install
 
       - name: Generate Prisma Client
         run: pnpm prisma generate
@@ -74,6 +74,7 @@ jobs:
             git fetch --all
             git reset --hard origin/main
             echo "${{secrets.API_ENV_PRODUCTION}}" > .env
+            npm install -g pnpm
             pnpm install
             pnpm prisma generate
             pnpm build
@@ -93,6 +94,7 @@ jobs:
             git fetch --all
             git reset --hard origin/main
             echo "${{secrets.WEB_ENV_PRODUCTION}}" > .env
+            npm install -g pnpm
             pnpm install
             pnpm build
             pm2 restart web-server
