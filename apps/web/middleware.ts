@@ -28,8 +28,11 @@ export function middleware(request: NextRequest) {
   const refreshToken = request.cookies.get('refreshToken')?.value
   const locale = request.cookies.get('NEXT_LOCALE')?.value ?? defaultLocale
 
+  console.log(1)
+
   // 1. Chưa đăng nhập thì không cho vào private paths
   if (privatePaths.some((path) => pathname.startsWith(path)) && !refreshToken) {
+    console.log(2)
     const url = new URL(`/${locale}/login`, request.url)
     url.searchParams.set('clearTokens', 'true')
     return NextResponse.redirect(url)
@@ -37,18 +40,23 @@ export function middleware(request: NextRequest) {
 
   // 2. Trường hợp đã đăng nhập
   if (refreshToken) {
+    console.log(3)
     // 2.1 Nếu cố tình vào trang login sẽ redirect về trang chủ
     if (unAuthPaths.some((path) => pathname.startsWith(path))) {
+      console.log(4)
       if (
         loginPaths.some((path) => pathname.startsWith(path)) &&
         searchParams.get('accessToken')
       ) {
+        console.log(5)
         return response
       }
+      console.log(6)
       return NextResponse.redirect(new URL(`/${locale}`, request.url))
     }
 
     if (tablesPaths.some((path) => pathname.startsWith(path))) {
+      console.log(7)
       return NextResponse.redirect(new URL(`/${locale}`, request.url))
     }
 
@@ -57,7 +65,7 @@ export function middleware(request: NextRequest) {
       privatePaths.some((path) => pathname.startsWith(path)) &&
       !accessToken
     ) {
-      console.log('>>> Vô đây', refreshToken, pathname)
+      console.log(8)
       const url = new URL(`/${locale}/refresh-token`, request.url)
       url.searchParams.set('refreshToken', refreshToken)
       url.searchParams.set('redirect', pathname)
@@ -84,6 +92,7 @@ export function middleware(request: NextRequest) {
       isNotGuestGoToGuestPath ||
       isNotOwnerGoToOwnerPath
     ) {
+      console.log(9)
       return NextResponse.redirect(new URL(`/${locale}`, request.url))
     }
 
