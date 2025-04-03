@@ -1,7 +1,6 @@
 'use client'
 
 import { useSearchParams } from 'next/navigation'
-import { LoaderCircle } from 'lucide-react'
 import { memo, Suspense, useEffect, useRef } from 'react'
 
 import { useRouter } from '@/i18n/routing'
@@ -55,9 +54,7 @@ const Logout = () => {
 
 const LogoutPage = memo(function LogoutInner() {
   return (
-    <Suspense
-      fallback={<LoaderCircle size={28} className="m-auto animate-spin" />}
-    >
+    <Suspense fallback={null}>
       <Logout />
     </Suspense>
   )

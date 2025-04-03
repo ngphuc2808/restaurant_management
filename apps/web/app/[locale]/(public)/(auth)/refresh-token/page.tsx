@@ -1,6 +1,5 @@
 import { Metadata } from 'next'
 import { Suspense } from 'react'
-import { LoaderCircle } from 'lucide-react'
 
 import RefreshToken from '@/app/[locale]/(public)/(auth)/refresh-token/refresh-token'
 import { getTranslations } from 'next-intl/server'
@@ -22,9 +21,7 @@ export async function generateMetadata(props: GlobalProps): Promise<Metadata> {
 
 const RefreshTokenPage = () => {
   return (
-    <Suspense
-      fallback={<LoaderCircle size={28} className="m-auto animate-spin" />}
-    >
+    <Suspense fallback={null}>
       <RefreshToken />
     </Suspense>
   )

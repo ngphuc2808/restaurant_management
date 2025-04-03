@@ -1,7 +1,6 @@
 import { getTranslations } from 'next-intl/server'
 import { Metadata } from 'next'
 import { Suspense } from 'react'
-import { LoaderCircle } from 'lucide-react'
 
 import Oauth from '@/app/[locale]/(public)/(auth)/login/oauth/oauth'
 
@@ -22,9 +21,7 @@ export async function generateMetadata(props: GlobalProps): Promise<Metadata> {
 
 const OAuthPage = () => {
   return (
-    <Suspense
-      fallback={<LoaderCircle size={28} className="m-auto animate-spin" />}
-    >
+    <Suspense fallback={null}>
       <Oauth />
     </Suspense>
   )

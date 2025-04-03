@@ -2,7 +2,6 @@
 
 import { type ReadonlyURLSearchParams, useSearchParams } from 'next/navigation'
 import { Suspense, memo, useEffect, useState } from 'react'
-import { LoaderCircle } from 'lucide-react'
 
 type SearchParamsLoaderProps = {
   onParamsReceived: (params: ReadonlyURLSearchParams) => void
@@ -10,9 +9,7 @@ type SearchParamsLoaderProps = {
 
 function Suspender(props: SearchParamsLoaderProps) {
   return (
-    <Suspense
-      fallback={<LoaderCircle size={28} className="m-auto animate-spin" />}
-    >
+    <Suspense fallback={null}>
       <Suspendend {...props} />
     </Suspense>
   )
