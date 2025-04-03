@@ -12,7 +12,7 @@ import { Role } from '@/constants/type'
 import { RoleType } from '@/types/jwt.types'
 
 export const TIMEOUT = 1000
-export const UNAUTHENTICATED_PATH = ['/login', '/refresh-token']
+export const UNAUTHENTICATED_PATH = ['/login', '/logout', '/refresh-token']
 
 export const menuItemsHomePage: {
   title: string
