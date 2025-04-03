@@ -1,14 +1,12 @@
 'use client'
 
-import { useSearchParams } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useEffect } from 'react'
 
 import {
   checkAndRefreshToken,
   getRefreshTokenFromLocalStorage,
 } from '@/lib/utils'
-
-import { useRouter } from '@/i18n/routing'
 
 const RefreshToken = () => {
   const router = useRouter()
