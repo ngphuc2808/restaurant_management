@@ -57,6 +57,7 @@ export function middleware(request: NextRequest) {
       privatePaths.some((path) => pathname.startsWith(path)) &&
       !accessToken
     ) {
+      console.log('>>> Vô đây', refreshToken, pathname)
       const url = new URL(`/${locale}/refresh-token`, request.url)
       url.searchParams.set('refreshToken', refreshToken)
       url.searchParams.set('redirect', pathname)
