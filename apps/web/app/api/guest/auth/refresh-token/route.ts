@@ -32,25 +32,20 @@ export async function POST(request: Request) {
     const decodedRefreshToken = jwt.decode(payload.data.refreshToken) as {
       exp: number
     }
-
-    const cookieOptions = {
+    cookieStore.set('accessToken', payload.data.accessToken, {
       path: '/',
       httpOnly: true,
-      sameSite: 'none' as const,
+      sameSite: 'lax',
       secure: true,
-      expires: decodedRefreshToken.exp * 1000,
-      domain:
-        process.env.NODE_ENV === 'production'
-          ? process.env.NEXT_PUBLIC_COOKIE_DOMAIN
-          : undefined,
-    }
-
-    cookieStore.set('accessToken', payload.data.accessToken, {
-      ...cookieOptions,
       expires: decodedAccessToken.exp * 1000,
     })
-    cookieStore.set('refreshToken', payload.data.refreshToken, cookieOptions)
-
+    cookieStore.set('refreshToken', payload.data.refreshToken, {
+      path: '/',
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: true,
+      expires: decodedRefreshToken.exp * 1000,
+    })
     return Response.json(payload)
   } catch (error: any) {
     console.log('>>> error: ', error)

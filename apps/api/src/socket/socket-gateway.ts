@@ -14,7 +14,7 @@ import { ManagerRoom } from '@/constants/type';
 
 @WebSocketGateway({
   cors: {
-    origin: [process.env.CLIENT_PUBLIC_URL, process.env.CLIENT_PUBLIC_IP],
+    origin: process.env.CLIENT_PUBLIC_URL,
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Authorization'],
     credentials: true,
