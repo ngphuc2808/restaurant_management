@@ -24,7 +24,6 @@ import {
 } from '@/utils/errors';
 import { Role } from '@/constants/type';
 import { Response } from 'express';
-import queryString from 'query-string';
 
 @Injectable()
 export class AuthService {
@@ -143,18 +142,11 @@ export class AuthService {
 
       const result = await this.generateTokens(account);
 
-      const qs = queryString.stringify({
-        accessToken: result.accessToken,
-        refreshToken: result.refreshToken,
-      });
-
-      res.redirect(`${clientRedirectUrl}?${qs}`);
+      res.redirect(
+        `${clientRedirectUrl}?accessToken=${result.accessToken}&refreshToken=${result.refreshToken}`,
+      );
     } catch (error) {
-      const qs = queryString.stringify({
-        message: error.message,
-      });
-
-      res.redirect(`${clientRedirectUrl}?${qs}`);
+      res.redirect(`${clientRedirectUrl}?message=${error.message}`);
       this.logger.error(error.message);
       throw error;
     }

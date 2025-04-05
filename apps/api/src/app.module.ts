@@ -28,7 +28,9 @@ import { RedisOptions } from '@/utils/redis.configuration';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
     CacheModule.registerAsync(RedisOptions),
     I18nModule.forRootAsync({
       useFactory: () => ({

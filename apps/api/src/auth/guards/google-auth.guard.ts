@@ -2,7 +2,6 @@ import { Injectable, ExecutionContext } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { AuthGuard } from '@nestjs/passport';
 import { I18nService } from 'nestjs-i18n';
-import queryString from 'query-string';
 import { Observable } from 'rxjs';
 
 @Injectable()
@@ -23,15 +22,13 @@ export class GoogleAuthGuard extends AuthGuard('google') {
     if (error === 'access_denied') {
       const res = context.switchToHttp().getResponse();
 
-      const qs = queryString.stringify({
-        message: this.i18n.t('errors.auth.login-failed'),
-      });
-
       const clientRedirectUrl = this.configService.get(
         'GOOGLE_REDIRECT_CLIENT_URL',
       );
 
-      res.redirect(`${clientRedirectUrl}?${qs}`);
+      res.redirect(
+        `${clientRedirectUrl}?message=${this.i18n.t('errors.auth.login-failed')}`,
+      );
 
       return false;
     }
