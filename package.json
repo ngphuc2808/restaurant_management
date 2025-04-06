@@ -11,8 +11,9 @@
     "lint": "turbo lint",
     "start": "turbo start",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
-    "prepare": "node .husky/install.mjs",
-    "test": "turbo test"
+    "prepare": "if [ \"$HUSKY\" != \"0\" ]; then node .husky/install.mjs; fi",
+    "test": "turbo test",
+    "prisma": "turbo run prisma --filter api"
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",

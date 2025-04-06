@@ -1,0 +1,79 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: monorepo_mysql
+    restart: unless-stopped
+    env_file:
+      - ./apps/api/.env.dev.docker
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test:
+        ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p123456"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  redis:
+    image: redis:7
+    container_name: monorepo_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    container_name: monorepo_api
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    env_file:
+      - ./apps/api/.env.dev.docker
+    volumes:
+      - ./apps/api/prisma:/app/apps/api/prisma
+    healthcheck:
+      test:
+        ["CMD", "curl", "--fail", "http://localhost:3001/api-server/v1/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 45s
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    container_name: monorepo_web
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    depends_on:
+      api:
+        condition: service_healthy
+    env_file:
+      - ./apps/web/.env.dev.docker
+
+volumes:
+  mysql_data:
+  redis_data:
+
+networks:
+  app_network:
+    external: true

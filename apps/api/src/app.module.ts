@@ -9,6 +9,7 @@ import * as path from 'path';
 import { AppController } from '@/app.controller';
 
 //modules
+import { HealthModule } from '@/health/health.module';
 import { AuthModule } from '@/auth/auth.module';
 import { AccountModule } from '@/account/account.module';
 import { SocketModule } from '@/socket/socket.module';
@@ -37,7 +38,7 @@ import { RedisOptions } from '@/utils/redis.configuration';
         fallbackLanguage: 'vi',
         loaderOptions: {
           path: path.join(__dirname, '/../src/i18n/'),
-          watch: true,
+          watch: process.env.NODE_ENV !== 'production',
         },
       }),
       resolvers: [new HeaderResolver(['locale'])],
@@ -51,6 +52,7 @@ import { RedisOptions } from '@/utils/redis.configuration';
     TableModule,
     RefreshTokenModule,
     SocketModule,
+    HealthModule,
   ],
   controllers: [AppController],
   providers: [Logger, PrismaService, AppService],
