@@ -1,6 +1,6 @@
 #!/bin/sh
 
-export $(grep -v '^#' .env.dev.docker | xargs)
+export $(grep -v '^#' .env.docker.dev | xargs)
 
 
 npx prisma migrate deploy

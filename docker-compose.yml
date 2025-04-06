@@ -4,7 +4,7 @@ services:
     container_name: monorepo_mysql
     restart: unless-stopped
     env_file:
-      - ./apps/api/.env.dev.docker
+      - ./apps/api/.env.docker.dev
     ports:
       - "3306:3306"
     volumes:
@@ -45,7 +45,7 @@ services:
       redis:
         condition: service_healthy
     env_file:
-      - ./apps/api/.env.dev.docker
+      - ./apps/api/.env.docker.dev
     volumes:
       - ./apps/api/prisma:/app/apps/api/prisma
     healthcheck:
@@ -68,7 +68,7 @@ services:
       api:
         condition: service_healthy
     env_file:
-      - ./apps/web/.env.dev.docker
+      - ./apps/web/.env.docker.dev
 
 volumes:
   mysql_data:
